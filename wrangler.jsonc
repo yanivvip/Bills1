@@ -1,0 +1,10 @@
+{
+  // Cloudflare Workers Builds: serves the built PWA as static assets.
+  "name": "bills1",
+  "compatibility_date": "2026-10-01",
+  "assets": {
+    "directory": "./apps/web/dist",
+    // Single-page app: unknown paths (e.g. /units/123) fall back to index.html so React Router handles them.
+    "not_found_handling": "single-page-application"
+  }
+}

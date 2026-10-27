@@ -11,3 +11,4 @@ coverage/
 playwright-report/
 
 supabase/.access-token
+.wrangler/

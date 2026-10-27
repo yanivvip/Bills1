@@ -1,6 +1,10 @@
-import { BrowserRouter, Navigate, NavLink, Outlet, Route, Routes } from 'react-router-dom';
+import type { ComponentType } from 'react';
+import { BrowserRouter, Navigate, NavLink, Outlet, Route, Routes, useOutletContext } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { AuthProvider, useAuth } from './auth/AuthProvider';
+import { RoleProvider, useRole } from './auth/RoleProvider';
+import PropertyPage from './pages/landlord/PropertyPage';
+import UnitPage from './pages/landlord/UnitPage';
 import { applyLanguage } from './i18n';
 import { supabase } from './lib/supabase';
 import LoginPage from './pages/LoginPage';
@@ -38,7 +42,25 @@ function Shell() {
 function RequireAuth() {
   const { session, loading } = useAuth();
   if (loading) return null;
-  return session ? <Shell /> : <Navigate to="/login" replace />;
+  return session ? (
+    <RoleProvider>
+      <Shell />
+    </RoleProvider>
+  ) : (
+    <Navigate to="/login" replace />
+  );
+}
+
+// Landlord-only pages: renters and new users are sent back to the root page.
+function RequireLandlord() {
+  const { role } = useRole();
+  if (!role) return null;
+  return role.kind === 'landlord' ? <Outlet context={role.orgId} /> : <Navigate to="/" replace />;
+}
+
+function LandlordRoute({ page: Page }: { page: ComponentType<{ orgId: string }> }) {
+  const orgId = useOutletContext<string>();
+  return <Page orgId={orgId} />;
 }
 
 function RequireAdmin() {
@@ -54,6 +76,10 @@ export default function App() {
           <Route path="/login" element={<LoginPage />} />
           <Route element={<RequireAuth />}>
             <Route index element={<HomePage />} />
+            <Route element={<RequireLandlord />}>
+              <Route path="/properties/:propertyId" element={<LandlordRoute page={PropertyPage} />} />
+              <Route path="/units/:unitId" element={<LandlordRoute page={UnitPage} />} />
+            </Route>
             <Route path="/admin" element={<RequireAdmin />} />
           </Route>
           <Route path="*" element={<Navigate to="/" replace />} />

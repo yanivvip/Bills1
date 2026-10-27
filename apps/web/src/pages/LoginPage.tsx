@@ -1,13 +1,18 @@
 import { useState, type FormEvent } from 'react';
 import { useTranslation } from 'react-i18next';
+import { Navigate, useSearchParams } from 'react-router-dom';
+import { useAuth } from '../auth/AuthProvider';
 import { supabase } from '../lib/supabase';
 
 const inputClass = 'rounded-lg bg-white/10 px-3 py-2 outline-none focus:ring-2 focus:ring-violet-500';
 
 export default function LoginPage() {
   const { t } = useTranslation();
-  const [mode, setMode] = useState<'signIn' | 'signUp'>('signIn');
-  const [email, setEmail] = useState('');
+  const { session } = useAuth();
+  // Invitation links look like /login?mode=signup&email=renter@example.com
+  const [params] = useSearchParams();
+  const [mode, setMode] = useState<'signIn' | 'signUp'>(params.get('mode') === 'signup' ? 'signUp' : 'signIn');
+  const [email, setEmail] = useState(params.get('email') ?? '');
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [info, setInfo] = useState<string | null>(null);
@@ -26,6 +31,9 @@ export default function LoginPage() {
     if (err) setError(mode === 'signIn' ? t('auth.error') : err.message);
     else if (mode === 'signUp' && !data.session) setInfo(t('auth.checkEmail'));
   };
+
+  // Already signed in (or just signed in): go to the app.
+  if (session) return <Navigate to="/" replace />;
 
   return (
     <main className="mx-auto flex min-h-dvh max-w-sm flex-col justify-center gap-6 px-4">

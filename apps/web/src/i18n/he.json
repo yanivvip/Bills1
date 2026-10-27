@@ -3,10 +3,46 @@
   "auth": {
     "email": "אימייל", "password": "סיסמה", "signIn": "כניסה", "signOut": "יציאה",
     "signUp": "יצירת חשבון", "toSignUp": "אין לך חשבון? הרשמה", "toSignIn": "כבר רשום? כניסה",
-    "error": "אימייל או סיסמה שגויים", "checkEmail": "נשלח אליך מייל אימות. אשר אותו וחזור להתחבר."
+    "error": "אימייל או סיסמה שגויים, או שעדיין אין חשבון עם האימייל הזה. אפשר להירשם למטה.", "checkEmail": "נשלח אליך מייל אימות. אשר אותו וחזור להתחבר."
   },
   "nav": { "home": "ראשי", "admin": "ניהול" },
   "home": { "welcome": "ברוכים הבאים", "noOrg": "עדיין אין לך ארגון.", "createOrg": "יצירת ארגון", "orgName": "שם הארגון" },
-  "admin": { "title": "ניהול מערכת", "soon": "ניהול משתמשים וארגונים יתווסף בקרוב." },
-  "common": { "loading": "טוען…", "save": "שמור" }
+  "landlord": {
+    "properties": "נכסים", "noProperties": "עדיין אין נכסים. הוסף את הראשון למטה.",
+    "propertyName": "שם הנכס", "address": "כתובת (אופציונלי)", "addProperty": "הוספת נכס",
+    "unitsCount_one": "יחידה {{count}}", "unitsCount_other": "{{count}} יחידות", "rentedCount": "{{count}} מושכרות",
+    "newUnit": "יחידה חדשה", "rentedBy": "מושכר ל", "vacant": "פנוי", "contract": "חוזה שכירות",
+    "history": "חוזים קודמים", "notFound": "לא נמצא.",
+    "units": "יחידות", "noUnits": "עדיין אין יחידות. הוסף את היחידה הראשונה של הנכס.", "newProperty": "נכס חדש",
+    "unitName": "שם היחידה (למשל דירה 2)", "addUnit": "הוספת יחידה",
+    "noContract": "אין חוזה שכירות פעיל", "newContract": "יצירת חוזה",
+    "rent": "שכר דירה חודשי ₪", "renterEmails": "אימיילים של השוכרים (אחד או יותר, מופרדים בפסיקים)",
+    "needRenter": "יש להוסיף לפחות אימייל שוכר אחד.", "renters": "שוכרים", "renterEmail": "אימייל שוכר",
+    "inviteEmail": "שליחת הזמנה במייל", "inviteWhatsapp": "שליחה בוואטסאפ", "inviteCopy": "העתקת ההודעה",
+    "copyManually": "העתק את ההודעה ושלח אותה לשוכר:",
+    "invited": {
+      "email": "טיוטת מייל נפתחה בתוכנת המייל שלך. לחץ שם על שליחה – האפליקציה לא יכולה לדעת אם נשלח.",
+      "whatsapp": "וואטסאפ נפתח עם ההודעה. בחר את השוכר ולחץ שם על שליחה.",
+      "copy": "ההודעה הועתקה. הדבק אותה בכל צ'אט או מייל לשוכר."
+    },
+    "channel": { "email": "מייל", "whatsapp": "וואטסאפ", "copy": "הודעה מועתקת" },
+    "lastInvite": "הזמנה אחרונה נפתחה דרך {{channel}}: {{when}}",
+    "addRenter": "הוספת שוכר", "remove": "הסרה", "endContract": "סיום חוזה",
+    "registered": "נרשם", "pending": "נוסף, עדיין לא נרשם לאפליקציה",
+    "status": { "active": "פעיל", "ended": "הסתיים" }
+  },
+  "invite": {
+    "subject": "הוספתי אותך כשוכר – {{property}}, {{unit}}",
+    "body": "שלום, הוספתי אותך כשוכר ב{{property}} – {{unit}} באפליקציית Bills. כדי לראות את הפרטים, היכנס לקישור והירשם עם אותה כתובת מייל:\n\n{{link}}"
+  },
+  "renter": { "title": "השכירות שלי", "none": "עדיין לא קושר חוזה לחשבון שלך." },
+  "admin": {
+    "title": "ניהול מערכת", "users": "משתמשים", "usersCount_one": "משתמש {{count}}", "usersCount_other": "{{count}} משתמשים",
+    "search": "חיפוש לפי אימייל", "you": "את/ה", "landlord": "משכיר", "renter": "שוכר", "unconfirmed": "אימייל לא אומת",
+    "created": "נוצר", "lastSignIn": "כניסה אחרונה", "noUsers": "אין משתמשים תואמים.",
+    "makeSuper": "הפיכה ל-Super_User", "removeSuper": "הסרת Super_User",
+    "confirmGrant": "לתת ל-{{email}} הרשאת Super_User מלאה על הכול?",
+    "confirmRevoke": "להסיר מ-{{email}} את הרשאת Super_User?"
+  },
+  "common": { "loading": "טוען…", "save": "שמור", "cancel": "ביטול" }
 }

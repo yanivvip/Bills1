@@ -1,0 +1,13 @@
+{
+  "name": "bills",
+  "private": true,
+  "version": "0.0.0",
+  "description": "Bills – utility bill splitting PWA for landlords",
+  "scripts": {
+    "dev": "pnpm --filter @bills/web dev",
+    "build": "pnpm -r build",
+    "test": "pnpm -r test",
+    "typecheck": "pnpm -r typecheck"
+  },
+  "engines": { "node": ">=22" }
+}

@@ -1,0 +1,12 @@
+{
+  "app": { "name": "Bills", "tagline": "Monthly meter reporting" },
+  "auth": {
+    "email": "Email", "password": "Password", "signIn": "Sign in", "signOut": "Sign out",
+    "signUp": "Create account", "toSignUp": "No account? Sign up", "toSignIn": "Already registered? Sign in",
+    "error": "Wrong email or password", "checkEmail": "We sent a confirmation email. Confirm it, then sign in."
+  },
+  "nav": { "home": "Home", "admin": "Admin" },
+  "home": { "welcome": "Welcome", "noOrg": "You don't have an organization yet.", "createOrg": "Create organization", "orgName": "Organization name" },
+  "admin": { "title": "Platform admin", "soon": "User and organization management is coming soon." },
+  "common": { "loading": "Loading…", "save": "Save" }
+}

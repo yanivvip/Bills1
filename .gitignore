@@ -9,3 +9,5 @@ supabase/.temp/
 .DS_Store
 coverage/
 playwright-report/
+
+supabase/.access-token

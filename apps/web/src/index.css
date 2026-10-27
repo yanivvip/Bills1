@@ -3,6 +3,16 @@
 :root {
   color-scheme: dark;
 }
+button:not(:disabled),
+[role='button']:not([aria-disabled='true']),
+a[href],
+select,
+summary {
+  cursor: pointer;
+}
+button:disabled {
+  cursor: not-allowed;
+}
 body {
   margin: 0;
   font-family: 'Heebo', system-ui, sans-serif;

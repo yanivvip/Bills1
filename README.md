@@ -17,7 +17,7 @@ Node 22 is managed by [fnm](https://github.com/Schniz/fnm) and is deliberately *
 
 ```
 scripts\pnpm install
-scripts\pnpm dev            # starts the web app on http://localhost:5173
+scripts\pnpm dev            # starts the web app on http://localhost:5174
 scripts\pnpm test           # engine tests
 scripts\pnpm typecheck
 ```

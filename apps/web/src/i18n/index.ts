@@ -21,7 +21,9 @@ export const applyLanguage = (lng: 'he' | 'en') => {
   }
 };
 
-const initial = saved === 'en' ? 'en' : 'he';
+// English is disabled for now (no language switch in the UI); a previously saved 'en' is ignored.
+void saved;
+const initial = 'he';
 void i18n.use(initReactI18next).init({
   resources: { he: { translation: he }, en: { translation: en } },
   lng: initial,

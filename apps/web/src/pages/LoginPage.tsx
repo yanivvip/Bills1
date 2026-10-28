@@ -2,7 +2,6 @@ import { useState, type FormEvent } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Navigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../auth/AuthProvider';
-import { applyLanguage } from '../i18n';
 import { supabase } from '../lib/supabase';
 
 // text-base (16px) keeps iOS Safari from zooming into the field on focus.
@@ -10,7 +9,7 @@ const inputClass =
   'w-full rounded-xl border border-white/10 bg-white/10 px-4 py-3 text-base outline-none placeholder:text-slate-500 focus:border-violet-400 focus:ring-2 focus:ring-violet-500/60';
 
 export default function LoginPage() {
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
   const { session } = useAuth();
   // Invitation links look like /login?mode=signup&email=renter@example.com
   const [params] = useSearchParams();
@@ -22,12 +21,6 @@ export default function LoginPage() {
   const [error, setError] = useState<string | null>(null);
   const [info, setInfo] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
-
-  const toggleLang = () => {
-    const next = i18n.language === 'he' ? 'en' : 'he';
-    void i18n.changeLanguage(next);
-    applyLanguage(next);
-  };
 
   const submit = async (e: FormEvent) => {
     e.preventDefault();
@@ -51,13 +44,6 @@ export default function LoginPage() {
   return (
     <div className="relative min-h-dvh overflow-hidden bg-gradient-to-b from-violet-950 via-[#150f2e] to-[#0f0f1a]">
       <div aria-hidden className="pointer-events-none absolute -top-24 left-1/2 h-72 w-72 -translate-x-1/2 rounded-full bg-violet-600/30 blur-3xl" />
-      <button
-        onClick={toggleLang}
-        className="absolute top-3 rounded-full bg-white/10 px-3 py-1.5 text-sm text-slate-200 ltr:right-3 rtl:left-3"
-      >
-        {i18n.language === 'he' ? 'EN' : 'עב'}
-      </button>
-
       <main className="relative mx-auto flex min-h-dvh max-w-sm flex-col justify-center gap-6 px-5 py-10">
         <header className="flex flex-col items-center gap-3 text-center">
           <img src="/icons/icon-192.png" alt="" width={88} height={88} className="rounded-[22px] shadow-xl shadow-violet-900/60" />

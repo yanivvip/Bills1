@@ -5,7 +5,23 @@
     "signUp": "Create account", "toSignUp": "No account? Sign up", "toSignIn": "Already registered? Sign in",
     "error": "Wrong email or password, or there is no account with this email yet. You can sign up below.", "checkEmail": "We sent a confirmation email. Confirm it, then sign in."
   },
-  "nav": { "home": "Home", "admin": "Admin" },
+  "nav": { "home": "Home", "admin": "Admin", "readings": "Readings", "report": "Report reading" },
+  "meters": {
+    "mainTitle": "Main meters (whole property)", "unitTitle": "Meters of this unit", "main": "Main meters",
+    "none": "No meters yet.", "add": "Add meter", "electricity": "Electricity", "water": "Water",
+    "namePlaceholder": "Name (optional)", "confirmRemove": "Remove meter \"{{name}}\"?",
+    "removeFailed": "This meter has readings and cannot be removed.",
+    "default": { "electricity": "Electricity meter", "water": "Water meter" }
+  },
+  "readings": {
+    "title": "Monthly readings", "report": "Report reading", "submitted": "Reported", "missing": "Missing",
+    "value": "Meter reading", "last": "Last month", "noPrevious": "No reading last month", "used": "Used",
+    "lowerWarning": "This is lower than last month's reading. Please check it.",
+    "saved": "Saved for {{month}}.", "failed": "Could not save. Please try again.",
+    "locked": "Approved – can no longer be changed.", "progress": "{{done}} of {{total}} readings reported",
+    "noMeters": "No meters yet. Add them on a property page (main meters) or a unit page (unit meters).",
+    "renterNoMeters": "No meters are set up for your unit yet. Please ask your landlord."
+  },
   "home": { "welcome": "Welcome", "noOrg": "You don't have an organization yet.", "createOrg": "Create organization", "orgName": "Organization name" },
   "landlord": {
     "properties": "Properties", "noProperties": "No properties yet. Add your first one below.",

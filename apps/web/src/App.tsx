@@ -5,6 +5,8 @@ import { AuthProvider, useAuth } from './auth/AuthProvider';
 import { RoleProvider, useRole } from './auth/RoleProvider';
 import PropertyPage from './pages/landlord/PropertyPage';
 import UnitPage from './pages/landlord/UnitPage';
+import ReadingsPage from './pages/readings/ReadingsPage';
+import ReportPage from './pages/readings/ReportPage';
 import { applyLanguage } from './i18n';
 import { supabase } from './lib/supabase';
 import LoginPage from './pages/LoginPage';
@@ -14,6 +16,7 @@ import AdminPage from './pages/AdminPage';
 function Shell() {
   const { t, i18n } = useTranslation();
   const { isPlatformAdmin } = useAuth();
+  const { role } = useRole();
   const toggleLang = () => {
     const next = i18n.language === 'he' ? 'en' : 'he';
     void i18n.changeLanguage(next);
@@ -32,7 +35,11 @@ function Shell() {
         <Outlet />
       </main>
       <nav className="flex justify-around border-t border-white/10 p-3 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
-        <NavLink to="/">{t('nav.home')}</NavLink>
+        <NavLink to="/" end>
+          {t('nav.home')}
+        </NavLink>
+        {role?.kind === 'landlord' && <NavLink to="/readings">{t('nav.readings')}</NavLink>}
+        {role?.kind === 'renter' && <NavLink to="/report">{t('nav.report')}</NavLink>}
         {isPlatformAdmin && <NavLink to="/admin">{t('nav.admin')}</NavLink>}
       </nav>
     </div>
@@ -63,6 +70,13 @@ function LandlordRoute({ page: Page }: { page: ComponentType<{ orgId: string }> 
   return <Page orgId={orgId} />;
 }
 
+// Renter-only pages.
+function RequireRenter() {
+  const { role } = useRole();
+  if (!role) return null;
+  return role.kind === 'renter' ? <Outlet /> : <Navigate to="/" replace />;
+}
+
 function RequireAdmin() {
   const { isPlatformAdmin } = useAuth();
   return isPlatformAdmin ? <AdminPage /> : <Navigate to="/" replace />;
@@ -79,6 +93,10 @@ export default function App() {
             <Route element={<RequireLandlord />}>
               <Route path="/properties/:propertyId" element={<LandlordRoute page={PropertyPage} />} />
               <Route path="/units/:unitId" element={<LandlordRoute page={UnitPage} />} />
+              <Route path="/readings" element={<ReadingsPage />} />
+            </Route>
+            <Route element={<RequireRenter />}>
+              <Route path="/report" element={<ReportPage />} />
             </Route>
             <Route path="/admin" element={<RequireAdmin />} />
           </Route>

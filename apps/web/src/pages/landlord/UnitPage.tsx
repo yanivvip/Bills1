@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { supabase } from '../../lib/supabase';
+import MetersSection from './MetersSection';
 import { BackLink, ContractCard, ContractForm, useWriter, type Contract } from './shared';
 
 interface UnitInfo {
@@ -47,6 +48,8 @@ export default function UnitPage({ orgId }: { orgId: string }) {
       {error && <p className="text-sm text-red-400">{error}</p>}
 
       {active ? <ContractCard orgId={orgId} contract={active} run={run} invite={{ property: unit.properties?.name ?? '', unit: unit.name }} /> : <ContractForm orgId={orgId} unitId={unit.id} run={run} />}
+
+      <MetersSection orgId={orgId} propertyId={unit.property_id} unitId={unit.id} />
 
       {past.length > 0 && (
         <>

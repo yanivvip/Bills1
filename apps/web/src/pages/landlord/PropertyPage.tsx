@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { supabase } from '../../lib/supabase';
+import MetersSection from './MetersSection';
 import { AddToggle, BackLink, card, input, useWriter } from './shared';
 
 interface UnitRow {
@@ -77,6 +78,8 @@ export default function PropertyPage({ orgId }: { orgId: string }) {
       >
         <input required autoFocus value={name} onChange={(e) => setName(e.target.value)} placeholder={t('landlord.unitName')} className={input} />
       </AddToggle>
+
+      <MetersSection orgId={orgId} propertyId={propertyId!} unitId={null} />
     </section>
   );
 }

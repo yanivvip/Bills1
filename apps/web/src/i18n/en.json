@@ -1,64 +1,155 @@
 {
-  "app": { "name": "Bills", "tagline": "Monthly meter reporting" },
-  "auth": {
-    "email": "Email", "password": "Password", "signIn": "Sign in", "signOut": "Sign out",
-    "signUp": "Create account", "toSignUp": "No account? Sign up", "toSignIn": "Already registered? Sign in",
-    "error": "Wrong email or password, or there is no account with this email yet. You can sign up below.", "checkEmail": "We sent a confirmation email. Confirm it, then sign in."
+  "app": {
+    "name": "Bills",
+    "tagline": "Monthly meter reporting"
   },
-  "nav": { "home": "Home", "admin": "Admin", "readings": "Readings", "report": "Report reading" },
+  "auth": {
+    "email": "Email",
+    "password": "Password",
+    "signIn": "Sign in",
+    "signOut": "Sign out",
+    "signUp": "Create account",
+    "toSignUp": "No account? Sign up",
+    "toSignIn": "Already registered? Sign in",
+    "error": "Wrong email or password, or there is no account with this email yet. You can sign up below.",
+    "checkEmail": "We sent a confirmation email. Confirm it, then sign in.",
+    "hero": "Your monthly meter readings, simple and clear.",
+    "welcomeBack": "Welcome back",
+    "signInHint": "Sign in to see your properties or your rental.",
+    "createTitle": "Create your account",
+    "signUpHint": "Use the same email your landlord added.",
+    "invitedTitle": "You were invited",
+    "invitedHint": "Choose a password to join. Use the email address shown below.",
+    "show": "Show",
+    "hide": "Hide",
+    "passwordHint": "At least 8 characters."
+  },
+  "nav": {
+    "home": "Home",
+    "admin": "Admin",
+    "readings": "Readings",
+    "report": "Report reading"
+  },
   "meters": {
-    "mainTitle": "Main meters (whole property)", "unitTitle": "Meters of this unit", "main": "Main meters",
-    "none": "No meters yet.", "add": "Add meter", "electricity": "Electricity", "water": "Water",
-    "namePlaceholder": "Name (optional)", "confirmRemove": "Remove meter \"{{name}}\"?",
+    "mainTitle": "Main meters (whole property)",
+    "unitTitle": "Meters of this unit",
+    "main": "Main meters",
+    "none": "No meters yet.",
+    "add": "Add meter",
+    "electricity": "Electricity",
+    "water": "Water",
+    "namePlaceholder": "Name (optional)",
+    "confirmRemove": "Remove meter \"{{name}}\"?",
     "removeFailed": "This meter has readings and cannot be removed.",
-    "default": { "electricity": "Electricity meter", "water": "Water meter" }
+    "default": {
+      "electricity": "Electricity meter",
+      "water": "Water meter"
+    }
   },
   "readings": {
-    "title": "Monthly readings", "report": "Report reading", "submitted": "Reported", "missing": "Missing",
-    "value": "Meter reading", "last": "Last month", "noPrevious": "No reading last month", "used": "Used",
+    "title": "Monthly readings",
+    "report": "Report reading",
+    "submitted": "Reported",
+    "missing": "Missing",
+    "value": "Meter reading",
+    "last": "Last month",
+    "noPrevious": "No reading last month",
+    "used": "Used",
     "lowerWarning": "This is lower than last month's reading. Please check it.",
-    "saved": "Saved for {{month}}.", "failed": "Could not save. Please try again.",
-    "locked": "Approved – can no longer be changed.", "progress": "{{done}} of {{total}} readings reported",
+    "saved": "Saved for {{month}}.",
+    "failed": "Could not save. Please try again.",
+    "locked": "Approved – can no longer be changed.",
+    "progress": "{{done}} of {{total}} readings reported",
     "noMeters": "No meters yet. Add them on a property page (main meters) or a unit page (unit meters).",
     "renterNoMeters": "No meters are set up for your unit yet. Please ask your landlord."
   },
-  "home": { "welcome": "Welcome", "noOrg": "You don't have an organization yet.", "createOrg": "Create organization", "orgName": "Organization name" },
+  "home": {
+    "welcome": "Welcome",
+    "noOrg": "You don't have an organization yet.",
+    "createOrg": "Create organization",
+    "orgName": "Organization name"
+  },
   "landlord": {
-    "properties": "Properties", "noProperties": "No properties yet. Add your first one below.",
-    "propertyName": "Property name", "address": "Address (optional)", "addProperty": "Add property",
-    "unitsCount_one": "{{count}} unit", "unitsCount_other": "{{count}} units", "rentedCount": "{{count}} rented",
-    "newUnit": "New unit", "rentedBy": "Rented by", "vacant": "Vacant", "contract": "Rental contract",
-    "history": "Past contracts", "notFound": "Not found.",
-    "units": "Units", "noUnits": "No units yet. Add the first unit of this property.", "newProperty": "New property",
-    "unitName": "Unit name (e.g. Apartment 2)", "addUnit": "Add unit",
-    "noContract": "No active rental contract", "newContract": "Create contract",
-    "rent": "Monthly rent ₪", "renterEmails": "Renter emails (one or more, separated by commas)",
-    "needRenter": "Add at least one renter email.", "renters": "Renters", "renterEmail": "Renter email",
-    "inviteEmail": "Send invite by email", "inviteWhatsapp": "Send by WhatsApp", "inviteCopy": "Copy message",
+    "properties": "Properties",
+    "noProperties": "No properties yet. Add your first one below.",
+    "propertyName": "Property name",
+    "address": "Address (optional)",
+    "addProperty": "Add property",
+    "unitsCount_one": "{{count}} unit",
+    "unitsCount_other": "{{count}} units",
+    "rentedCount": "{{count}} rented",
+    "newUnit": "New unit",
+    "rentedBy": "Rented by",
+    "vacant": "Vacant",
+    "contract": "Rental contract",
+    "history": "Past contracts",
+    "notFound": "Not found.",
+    "units": "Units",
+    "noUnits": "No units yet. Add the first unit of this property.",
+    "newProperty": "New property",
+    "unitName": "Unit name (e.g. Apartment 2)",
+    "addUnit": "Add unit",
+    "noContract": "No active rental contract",
+    "newContract": "Create contract",
+    "rent": "Monthly rent ₪",
+    "renterEmails": "Renter emails (one or more, separated by commas)",
+    "needRenter": "Add at least one renter email.",
+    "renters": "Renters",
+    "renterEmail": "Renter email",
+    "inviteEmail": "Send invite by email",
+    "inviteWhatsapp": "Send by WhatsApp",
+    "inviteCopy": "Copy message",
     "copyManually": "Copy this message and send it to the renter:",
     "invited": {
       "email": "Email draft opened in your mail app. Press Send there – the app can't tell whether it was sent.",
       "whatsapp": "WhatsApp opened with the message. Choose the renter and press Send there.",
       "copy": "Message copied. Paste it into any chat or email to the renter."
     },
-    "channel": { "email": "email", "whatsapp": "WhatsApp", "copy": "copied message" },
+    "channel": {
+      "email": "email",
+      "whatsapp": "WhatsApp",
+      "copy": "copied message"
+    },
     "lastInvite": "Last invitation opened via {{channel}}: {{when}}",
-    "addRenter": "Add renter", "remove": "Remove", "endContract": "End contract",
-    "registered": "signed up", "pending": "added, hasn't signed up to the app yet",
-    "status": { "active": "Active", "ended": "Ended" }
+    "addRenter": "Add renter",
+    "remove": "Remove",
+    "endContract": "End contract",
+    "registered": "signed up",
+    "pending": "added, hasn't signed up to the app yet",
+    "status": {
+      "active": "Active",
+      "ended": "Ended"
+    }
   },
   "invite": {
     "subject": "You were added as a renter – {{property}}, {{unit}}",
     "body": "Hi, you were added as a renter at {{property}} – {{unit}} in the Bills app. To see your details, open this link and sign up with this same email address:\n\n{{link}}"
   },
-  "renter": { "title": "My rental", "none": "No contract is linked to your account yet." },
+  "renter": {
+    "title": "My rental",
+    "none": "No contract is linked to your account yet."
+  },
   "admin": {
-    "title": "Platform admin", "users": "Users", "usersCount_one": "{{count}} user", "usersCount_other": "{{count}} users",
-    "search": "Search by email", "you": "you", "landlord": "Landlord", "renter": "Renter", "unconfirmed": "Email not confirmed",
-    "created": "Created", "lastSignIn": "Last sign-in", "noUsers": "No users match.",
-    "makeSuper": "Make Super_User", "removeSuper": "Remove Super_User",
+    "title": "Platform admin",
+    "users": "Users",
+    "usersCount_one": "{{count}} user",
+    "usersCount_other": "{{count}} users",
+    "search": "Search by email",
+    "you": "you",
+    "landlord": "Landlord",
+    "renter": "Renter",
+    "unconfirmed": "Email not confirmed",
+    "created": "Created",
+    "lastSignIn": "Last sign-in",
+    "noUsers": "No users match.",
+    "makeSuper": "Make Super_User",
+    "removeSuper": "Remove Super_User",
     "confirmGrant": "Give {{email}} full Super_User access to everything?",
     "confirmRevoke": "Remove Super_User access from {{email}}?"
   },
-  "common": { "loading": "Loading…", "save": "Save", "cancel": "Cancel" }
+  "common": {
+    "loading": "Loading…",
+    "save": "Save",
+    "cancel": "Cancel"
+  }
 }

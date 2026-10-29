@@ -12,3 +12,8 @@ playwright-report/
 
 supabase/.access-token
 .wrangler/
+
+# Playwright
+test-results/
+playwright-report/
+blob-report/

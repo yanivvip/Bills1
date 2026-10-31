@@ -166,7 +166,8 @@
   "common": {
     "loading": "טוען…",
     "save": "שמור",
-    "cancel": "ביטול"
+    "cancel": "ביטול",
+    "back": "חזרה"
   },
   "tariff": {
     "title": "תעריפים",
@@ -234,7 +235,19 @@
       "charge": "חיוב נוסף"
     },
     "myBill": "החשבון שלי",
-    "notPublished": "החשבון לחודש הזה טרם פורסם."
+    "notPublished": "החשבון לחודש הזה טרם פורסם.",
+    "print": "הדפסה / שמירה כ-PDF",
+    "shareWhatsapp": "שיתוף בוואטסאפ",
+    "receipt": "קבלה",
+    "bill": "חשבון",
+    "readingsUsed": "קריאות המונים:",
+    "viewBill": "צפייה והדפסה",
+    "legend": "✓ שולם · ½ שולם חלקית · ● אושר ולא שולם · — אין חשבון",
+    "message": {
+      "head": "חשבון {{month}} – {{property}} · {{unit}}",
+      "total": "סה״כ לתשלום: {{total}}",
+      "paid": "סה״כ {{total}} – שולם ב-{{date}}. תודה!"
+    }
   },
   "report": {
     "title": "דוח שנתי",
@@ -268,14 +281,27 @@
     "prevReading": "קריאה קודמת – חשמל (קוט״ש)",
     "curReading": "קריאה נוכחית – חשמל (קוט״ש)",
     "prevReadingWater": "קריאה קודמת – מים (מ״ק)",
-    "curReadingWater": "קריאה נוכחית – מים (מ״ק)"
+    "curReadingWater": "קריאה נוכחית – מים (מ״ק)",
+    "collections": "גבייה",
+    "billed": "חויב",
+    "collected": "שולם",
+    "open": "פתוח לגבייה",
+    "unit": "יחידה",
+    "month": "חודש",
+    "amount": "סכום (₪)",
+    "age": "חודשים בחוב",
+    "ageMonths_one": "חודש בחוב",
+    "ageMonths_other": "{{count}} חודשים בחוב"
   },
   "attention": {
     "title": "דורש טיפול",
     "allClear": "הכול מעודכן החודש",
     "noReport": "{{unit}}: עדיין לא דווחה קריאת {{kind}} החודש",
     "unpaid": "{{unit}}: חשבון {{month}} ({{amount}}) טרם שולם",
-    "highUsage": "{{name}}: צריכת {{kind}} חריגה ({{usage}} לעומת ממוצע {{average}})"
+    "highUsage": "{{name}}: צריכת {{kind}} חריגה ({{usage}} לעומת ממוצע {{average}})",
+    "remind": "תזכורת",
+    "remindReport": "היי, תזכורת לדווח את קריאת מונה ה{{kind}} של {{unit}} עבור החודש. תודה!",
+    "remindPay": "היי, תזכורת: החשבון של {{unit}} עבור {{month}} ({{amount}}) טרם שולם. תודה!"
   },
   "replace": {
     "button": "החלפת דייר",

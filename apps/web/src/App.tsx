@@ -10,6 +10,7 @@ import ReportPage from './pages/readings/ReportPage';
 import BillsPage from './pages/bills/BillsPage';
 import MyBillPage from './pages/bills/MyBillPage';
 import ReportsPage from './pages/bills/ReportsPage';
+import BillDocument from './pages/bills/BillDocument';
 import { supabase } from './lib/supabase';
 import LoginPage from './pages/LoginPage';
 import HomePage from './pages/HomePage';
@@ -22,7 +23,7 @@ function Shell() {
   const { role } = useRole();
   return (
     <div className="mx-auto flex min-h-dvh max-w-2xl flex-col">
-      <header className="flex items-center justify-between border-b border-white/10 p-3">
+      <header className="flex items-center justify-between border-b border-white/10 p-3 print:hidden">
         <strong>{t('app.name')}</strong>
         <div className="flex gap-3 text-sm">
           <button onClick={() => void supabase.auth.signOut()}>{t('auth.signOut')}</button>
@@ -31,7 +32,7 @@ function Shell() {
       <main className="flex-1">
         <Outlet />
       </main>
-      <nav className="flex justify-around border-t border-white/10 p-3 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
+      <nav className="flex justify-around border-t print:hidden border-white/10 p-3 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
         <NavLink to="/" end>
           {t('nav.home')}
         </NavLink>
@@ -90,6 +91,7 @@ export default function App() {
           <Route path="/login" element={<LoginPage />} />
           <Route element={<RequireAuth />}>
             <Route index element={<HomePage />} />
+            <Route path="/bill/:id" element={<BillDocument />} />
             <Route element={<RequireLandlord />}>
               <Route path="/properties/:propertyId" element={<LandlordRoute page={PropertyPage} />} />
               <Route path="/units/:unitId" element={<LandlordRoute page={UnitPage} />} />

@@ -1,5 +1,5 @@
 import type { TFunction } from 'i18next';
-import type { MonthSummary, UnitYear } from '@bills/engine';
+import type { Collections, MonthSummary, UnitYear } from '@bills/engine';
 
 export type Cell = string | number | null;
 export interface Sheet {
@@ -50,7 +50,7 @@ function unitSpecs(t: TFunction): Spec[] {
 const monthNames = (year: number, lang: string) =>
   Array.from({ length: 12 }, (_, m) => `${new Date(year, m, 1).toLocaleDateString(lang, { month: 'long' })} ${year}`);
 
-export function buildSheets(opts: { year: number; propertyName: string; units: { id: string; name: string }[]; data: UnitYear[]; t: TFunction; lang: string }): Sheet[] {
+export function buildSheets(opts: { year: number; propertyName: string; units: { id: string; name: string }[]; data: UnitYear[]; t: TFunction; lang: string; collections?: Collections }): Sheet[] {
   const { year, propertyName, units, data, t, lang } = opts;
   const months = monthNames(year, lang);
   const sheets: Sheet[] = [];
@@ -111,6 +111,22 @@ export function buildSheets(opts: { year: number; propertyName: string; units: {
     if (k.key === 'total') sections.add(r);
   }
   sheets.push({ name: t('report.summary'), rows, sections, money });
+
+  // collections: billed versus paid, and the open debts
+  if (opts.collections) {
+    const c = opts.collections;
+    const nameOf = (id: string) => units.find((u) => u.id === id)?.name ?? '';
+    const crows: Cell[][] = [
+      [`${t('report.collections')} – ${propertyName} – ${year}`],
+      [t('report.billed'), shekels(c.billed)],
+      [t('report.collected'), shekels(c.paid)],
+      [t('report.open'), shekels(c.open)],
+      [],
+      [t('report.unit'), t('report.month'), t('report.amount'), t('report.age')],
+      ...c.debts.map((d): Cell[] => [nameOf(d.unitId), d.period.slice(0, 7), shekels(d.total), d.ageMonths]),
+    ];
+    sheets.push({ name: t('report.collections'), rows: crows, sections: new Set([0, 5]), money: new Set([1, 2, 3, ...c.debts.map((_, i) => 6 + i)]) });
+  }
   return sheets;
 }
 

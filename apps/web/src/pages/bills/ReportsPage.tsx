@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { buildYear, type ReportStatement } from '@bills/engine';
+import { buildYear, collections as buildCollections, type ReportStatement } from '@bills/engine';
+import { monthLabel, monthStart } from '../../lib/period';
 import { supabase } from '../../lib/supabase';
 import { formatMoney } from '../../lib/money';
 import { buildSheets, downloadCsv, downloadXlsx } from '../../lib/exportReport';
@@ -60,14 +61,15 @@ export default function ReportsPage() {
     const st: ReportStatement[] = (rows ?? []).map((r) => ({ unitId: r.unit_id, period: r.period, lines: r.lines, paidOn: r.paid_on, readings: r.readings }));
     // only units that have at least one approved month this year
     const ids = units.filter((u) => st.some((x) => x.unitId === u.id)).map((u) => u.id);
-    return { years: buildYear(year, ids, st), ids };
+    const coll = buildCollections((rows ?? []).map((r) => ({ unitId: r.unit_id, period: r.period, total: r.total_agorot, paid: !!r.paid_on })), monthStart());
+    return { years: buildYear(year, ids, st), ids, coll };
   }, [rows, units, year]);
 
   if (!properties) return <p className="p-4">{t('common.loading')}</p>;
 
   const property = properties.find((p) => p.id === propertyId)?.name ?? '';
   const reportUnits = units.filter((u) => data.ids.includes(u.id));
-  const sheets = () => buildSheets({ year, propertyName: property, units: reportUnits, data: data.years, t, lang: i18n.language });
+  const sheets = () => buildSheets({ year, propertyName: property, units: reportUnits, data: data.years, t, lang: i18n.language, collections: data.coll });
   const file = `bills-${property.replace(/[^\p{L}\p{N}]+/gu, '-')}-${year}`;
   const grand = data.years.reduce((s, y) => s + y.yearTotal.total, 0);
   const money = (a: number) => formatMoney(a, i18n.language);
@@ -133,6 +135,22 @@ export default function ReportsPage() {
           </div>
         );
       })}
+      {reportUnits.length > 0 && (
+        <div className={card}>
+          <h2 className="text-xl font-semibold text-slate-300">{t('report.collections')}</h2>
+          {line(t('report.billed'), money(data.coll.billed))}
+          {line(t('report.collected'), money(data.coll.paid))}
+          {line(t('report.open'), money(data.coll.open))}
+          {data.coll.debts.map((d, i) => (
+            <div key={i} className="flex justify-between gap-3 text-sm text-amber-300">
+              <span>
+                {units.find((u) => u.id === d.unitId)?.name} · {monthLabel(d.period, i18n.language)} · {t('report.ageMonths', { count: d.ageMonths })}
+              </span>
+              <span dir="ltr">{money(d.total)}</span>
+            </div>
+          ))}
+        </div>
+      )}
       {reportUnits.length > 0 && (
         <>
           <div className="flex justify-between text-lg font-bold">

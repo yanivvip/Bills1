@@ -166,7 +166,8 @@
   "common": {
     "loading": "Loading…",
     "save": "Save",
-    "cancel": "Cancel"
+    "cancel": "Cancel",
+    "back": "Back"
   },
   "tariff": {
     "title": "Tariffs",
@@ -234,7 +235,19 @@
       "charge": "Other charge"
     },
     "myBill": "My bill",
-    "notPublished": "This month’s bill has not been published yet."
+    "notPublished": "This month’s bill has not been published yet.",
+    "print": "Print / save as PDF",
+    "shareWhatsapp": "Share on WhatsApp",
+    "receipt": "Receipt",
+    "bill": "Bill",
+    "readingsUsed": "Meter readings:",
+    "viewBill": "View and print",
+    "legend": "✓ paid · ½ partly paid · ● approved, unpaid · — no bill",
+    "message": {
+      "head": "{{month}} bill – {{property}} · {{unit}}",
+      "total": "Total to pay: {{total}}",
+      "paid": "Total {{total}} – paid on {{date}}. Thank you!"
+    }
   },
   "report": {
     "title": "Annual report",
@@ -268,14 +281,27 @@
     "prevReading": "Previous reading – electricity (kWh)",
     "curReading": "Current reading – electricity (kWh)",
     "prevReadingWater": "Previous reading – water (m³)",
-    "curReadingWater": "Current reading – water (m³)"
+    "curReadingWater": "Current reading – water (m³)",
+    "collections": "Collections",
+    "billed": "Billed",
+    "collected": "Paid",
+    "open": "Open",
+    "unit": "Unit",
+    "month": "Month",
+    "amount": "Amount (₪)",
+    "age": "Months overdue",
+    "ageMonths_one": "1 month overdue",
+    "ageMonths_other": "{{count}} months overdue"
   },
   "attention": {
     "title": "Needs attention",
     "allClear": "Everything is up to date this month",
     "noReport": "{{unit}}: no {{kind}} reading reported this month",
     "unpaid": "{{unit}}: the {{month}} bill ({{amount}}) is not paid yet",
-    "highUsage": "{{name}}: unusual {{kind}} usage ({{usage}} vs. average {{average}})"
+    "highUsage": "{{name}}: unusual {{kind}} usage ({{usage}} vs. average {{average}})",
+    "remind": "Remind",
+    "remindReport": "Hi, a reminder to report the {{kind}} meter reading of {{unit}} for this month. Thanks!",
+    "remindPay": "Hi, a reminder: the {{month}} bill of {{unit}} ({{amount}}) is not paid yet. Thanks!"
   },
   "replace": {
     "button": "Replace tenant",

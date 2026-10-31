@@ -19,3 +19,11 @@ body {
   background: #0f0f1a;
   color: #e8e8f0;
 }
+
+/* "Save as PDF" prints the bill/receipt page: light background, dark text */
+@media print {
+  body {
+    background: #fff;
+    color: #000;
+  }
+}

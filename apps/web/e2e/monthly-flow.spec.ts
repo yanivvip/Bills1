@@ -143,9 +143,17 @@ test('the landlord sets tariffs, approves the month and marks it paid', async ({
   await page.getByRole('button', { name: he.bills.markPaid }).click();
   await expect(page.getByText(/שולם ב-/)).toBeVisible();
 
+  // the month strip marks the month as paid with a symbol, and the printable page is now a receipt
+  await expect(page.locator('button[aria-current="date"]')).toContainText('✓');
+  await page.getByRole('link', { name: he.bills.viewBill }).click();
+  await expect(page.getByRole('heading', { name: he.bills.receipt })).toBeVisible();
+  await expect(page.getByRole('link', { name: he.bills.shareWhatsapp })).toHaveAttribute('href', /wa.me/);
+  await page.goBack();
+
   // the annual report shows the month and exports to CSV and Excel
   await page.getByRole('link', { name: he.nav.reports }).click();
   await expect(page.getByText('₪425.50').first()).toBeVisible();
+  await expect(page.getByRole('heading', { name: he.report.collections })).toBeVisible();
   const [csv] = await Promise.all([page.waitForEvent('download'), page.getByRole('button', { name: he.report.exportCsv }).click()]);
   expect(csv.suggestedFilename()).toMatch(/.csv$/);
   const text = fs.readFileSync((await csv.path())!, 'utf8');
@@ -153,6 +161,7 @@ test('the landlord sets tariffs, approves the month and marks it paid', async ({
   expect(text).toContain('425.5');
   expect(text).toContain('1000'); // previous meter reading
   expect(text).toContain('1250'); // current meter reading
+  expect(text).toContain(he.report.collections);
   const [xlsx] = await Promise.all([page.waitForEvent('download'), page.getByRole('button', { name: he.report.exportExcel }).click()]);
   expect(xlsx.suggestedFilename()).toMatch(/.xlsx$/);
   expect(fs.statSync((await xlsx.path())!).size).toBeGreaterThan(2000);
@@ -163,6 +172,8 @@ test('the renter sees the approved bill and that it is paid', async ({ page }) =
   await page.getByRole('link', { name: he.nav.myBill }).click();
   await expect(page.getByText('₪425.50').first()).toBeVisible();
   await expect(page.getByText(`✓ ${he.bills.paid}`)).toBeVisible();
+  await page.getByRole('link', { name: he.bills.viewBill }).click();
+  await expect(page.getByRole('heading', { name: he.bills.receipt })).toBeVisible();
 });
 
 test('the landlord replaces the tenant; the old renter keeps the bills but cannot report', async ({ page }) => {

@@ -7,6 +7,7 @@ import { monthStart, today } from '../../lib/period';
 import MonthNav from '../readings/MonthNav';
 import { card, input, primary } from '../landlord/shared';
 import StatementView from './StatementView';
+import MonthStrip from './MonthStrip';
 import { useBilling, type StatementRow } from './useBilling';
 
 interface Prop {
@@ -79,6 +80,7 @@ export default function BillsPage({ orgId }: { orgId: string }) {
         </select>
       )}
       <MonthNav period={period} onChange={setPeriod} />
+      {propertyId && <MonthStrip propertyId={propertyId} period={period} onChange={setPeriod} version={b.statements} />}
       {b.error && <p className="text-sm text-red-400">{b.error}</p>}
 
       {properties.length === 0 && <p className="text-slate-400">{t('bills.noProperty')}</p>}
@@ -154,6 +156,9 @@ function StatementCard({ s, unit, busy, act }: { s: StatementRow; unit: string; 
         {s.paid_on ? <span className="rounded-full bg-emerald-700 px-2 py-0.5 text-xs">{t('bills.paid')}</span> : <span className="rounded-full bg-amber-700 px-2 py-0.5 text-xs">{t('bills.unpaid')}</span>}
       </div>
       <StatementView lines={s.lines} total={s.total_agorot} />
+      <Link to={`/bill/${s.id}`} className="self-start text-sm underline">
+        {t('bills.viewBill')}
+      </Link>
       {s.paid_on ? (
         <div className="flex items-center justify-between gap-2 text-sm text-slate-300">
           <span>

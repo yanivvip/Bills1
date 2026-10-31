@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { supabase } from '../../lib/supabase';
 import { formatMoney } from '../../lib/money';
@@ -42,6 +43,9 @@ export default function MyBillPage() {
           </div>
           {s.paid_on && <p className="text-sm text-slate-300">{t('bills.paidOn', { date: s.paid_on })} · {t(`bills.method.${s.paid_method}`)}</p>}
           <StatementView lines={s.lines} total={s.total_agorot} />
+          <Link to={`/bill/${s.id}`} className="self-start text-sm underline">
+            {t('bills.viewBill')}
+          </Link>
         </div>
       )}
     </section>

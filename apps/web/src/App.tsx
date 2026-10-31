@@ -7,6 +7,8 @@ import PropertyPage from './pages/landlord/PropertyPage';
 import UnitPage from './pages/landlord/UnitPage';
 import ReadingsPage from './pages/readings/ReadingsPage';
 import ReportPage from './pages/readings/ReportPage';
+import BillsPage from './pages/bills/BillsPage';
+import MyBillPage from './pages/bills/MyBillPage';
 import { supabase } from './lib/supabase';
 import LoginPage from './pages/LoginPage';
 import HomePage from './pages/HomePage';
@@ -33,7 +35,9 @@ function Shell() {
           {t('nav.home')}
         </NavLink>
         {role?.kind === 'landlord' && <NavLink to="/readings">{t('nav.readings')}</NavLink>}
+        {role?.kind === 'landlord' && <NavLink to="/bills">{t('nav.bills')}</NavLink>}
         {role?.kind === 'renter' && <NavLink to="/report">{t('nav.report')}</NavLink>}
+        {role?.kind === 'renter' && <NavLink to="/my-bill">{t('nav.myBill')}</NavLink>}
         {isPlatformAdmin && <NavLink to="/admin">{t('nav.admin')}</NavLink>}
       </nav>
     </div>
@@ -88,9 +92,11 @@ export default function App() {
               <Route path="/properties/:propertyId" element={<LandlordRoute page={PropertyPage} />} />
               <Route path="/units/:unitId" element={<LandlordRoute page={UnitPage} />} />
               <Route path="/readings" element={<ReadingsPage />} />
+              <Route path="/bills" element={<LandlordRoute page={BillsPage} />} />
             </Route>
             <Route element={<RequireRenter />}>
               <Route path="/report" element={<ReportPage />} />
+              <Route path="/my-bill" element={<MyBillPage />} />
             </Route>
             <Route element={<RequireAdmin />}>
               <Route path="/admin" element={<AdminPage />} />

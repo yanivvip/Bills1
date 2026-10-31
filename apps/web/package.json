@@ -12,6 +12,7 @@
     "test:e2e": "playwright test"
   },
   "dependencies": {
+    "@bills/engine": "workspace:*",
     "@supabase/supabase-js": "^2.118.0",
     "i18next": "^26.5.11",
     "react": "^19.3.1",

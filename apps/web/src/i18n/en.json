@@ -28,7 +28,9 @@
     "home": "Home",
     "admin": "Admin",
     "readings": "Readings",
-    "report": "Report reading"
+    "report": "Report reading",
+    "bills": "Bills",
+    "myBill": "My bill"
   },
   "meters": {
     "mainTitle": "Main meters (whole property)",
@@ -164,5 +166,73 @@
     "loading": "Loading…",
     "save": "Save",
     "cancel": "Cancel"
+  },
+  "tariff": {
+    "title": "Tariffs",
+    "electricityRate": "Electricity (₪ per kWh)",
+    "electricityFixed": "Electricity – fixed monthly charge (₪)",
+    "waterA": "Water tariff A (₪ per m³)",
+    "waterB": "Water tariff B (₪ per m³)",
+    "hint": "The fixed charge is split evenly between the rented units. Tariff A applies up to the unit’s water quota, the rest at tariff B. Changing a tariff never alters months already approved.",
+    "saved": "Saved"
+  },
+  "unitBilling": {
+    "title": "Billing settings for this unit",
+    "communityFee": "Monthly community fee (₪)",
+    "waterQuota": "Water quota at tariff A (m³)",
+    "residual": "Billed by subtraction from the main meters",
+    "residualHint": "For example the landlord’s own home: usage is the main meter minus all the other units. Only one unit per property.",
+    "oneResidual": "This property already has a unit billed by subtraction."
+  },
+  "bills": {
+    "title": "Monthly bills",
+    "noProperty": "No properties yet.",
+    "noTariff": "No tariffs are set for this property yet.",
+    "toProperty": "Set tariffs",
+    "mainMeters": "Main meters",
+    "missingTitle": "Data missing for the calculation:",
+    "problem": {
+      "missing": "reading missing (this or last month)",
+      "backwards": "reading lower than the previous one"
+    },
+    "nothingToBill": "No rented units to bill this month.",
+    "approve": "Approve bills",
+    "approveBlocked": "You can approve only when every reading is present and valid.",
+    "confirmApprove": "Approve the bills for this month? Readings and tariffs are locked and renters will see their bill.",
+    "approved": "Month approved",
+    "reopen": "Re-open to correct",
+    "confirmReopen": "Re-open this month? The bills are deleted and calculated again.",
+    "paid": "Paid",
+    "unpaid": "Unpaid",
+    "paidOn": "Paid on {{date}}",
+    "markPaid": "Mark paid",
+    "markUnpaid": "Undo",
+    "paymentDate": "Payment date",
+    "paymentMethod": "Payment method",
+    "method": {
+      "bit": "Bit",
+      "transfer": "Transfer",
+      "cash": "Cash",
+      "other": "Other"
+    },
+    "charges": "One-off charges",
+    "allUnits": "All units (each)",
+    "chargeTo": "Charge to unit",
+    "chargeDescription": "Description",
+    "chargeAmount": "Amount",
+    "addCharge": "Add",
+    "total": "Total",
+    "kwh": "kWh",
+    "m3": "m³",
+    "line": {
+      "electricity": "Electricity",
+      "electricityFixed": "Electricity – share of fixed charge",
+      "waterA": "Water, tariff A",
+      "waterB": "Water, tariff B",
+      "community": "Community fee",
+      "charge": "Other charge"
+    },
+    "myBill": "My bill",
+    "notPublished": "This month’s bill has not been published yet."
   }
 }

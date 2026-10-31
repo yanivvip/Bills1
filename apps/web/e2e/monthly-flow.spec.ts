@@ -33,7 +33,7 @@ test('landlord sets up an organization, property, unit, contract and meters', as
   // unit
   await page.getByRole('button', { name: he.landlord.addUnit }).click();
   await page.getByPlaceholder(he.landlord.unitName).fill('Apt 1');
-  await page.getByRole('button', { name: he.common.save }).click();
+  await page.locator('form').filter({ has: page.getByPlaceholder(he.landlord.unitName) }).getByRole('button', { name: he.common.save }).click();
 
   // unit electricity meter (meters are managed on the property page only)
   await page.getByRole('combobox').nth(0).selectOption({ label: 'Apt 1' });
@@ -87,6 +87,58 @@ test('the landlord sees the reading, adds the main meter reading and the month i
   await mainInput.fill('480');
   await page.locator('form', { hasText: 'Building water' }).getByRole('button', { name: he.common.save }).click();
   await expect(page.getByText(progress(2, 2))).toBeVisible();
+});
+
+test('the landlord sets tariffs, approves the month and marks it paid', async ({ page }) => {
+  await signIn(page, landlord);
+
+  // the opening (previous month) reading of the unit meter
+  await page.getByRole('link', { name: he.nav.readings }).click();
+  await page.getByLabel('previous month').click();
+  const meterForm = page.locator('form', { hasText: 'Apt 1 electricity' });
+  await meterForm.locator('input[type=number]').fill('1000');
+  await meterForm.getByRole('button', { name: he.common.save }).click();
+  await expect(meterForm.getByText(`✓ ${he.readings.submitted}`)).toBeVisible();
+
+  // tariffs on the property page
+  await page.goto('/');
+  await page.getByRole('link', { name: /Dizengoff 10/ }).click();
+  await page.getByLabel(he.tariff.electricityRate, { exact: true }).fill('0.64');
+  await page.getByLabel(he.tariff.electricityFixed, { exact: true }).fill('90');
+  await page.getByLabel(he.tariff.waterA, { exact: true }).fill('4.543');
+  await page.getByLabel(he.tariff.waterB, { exact: true }).fill('11.658');
+  await page.locator('form', { hasText: he.tariff.title }).getByRole('button', { name: he.common.save }).click();
+  await expect(page.getByText(`✓ ${he.tariff.saved}`)).toBeVisible();
+
+  // billing settings of the unit
+  await page.getByRole('link', { name: /Apt 1/ }).click();
+  await page.getByLabel(he.unitBilling.communityFee).fill('150');
+  await page.locator('form', { hasText: he.unitBilling.title }).getByRole('button', { name: he.common.save }).click();
+  await expect(page.getByText(`✓ ${he.tariff.saved}`)).toBeVisible();
+
+  // preview: 250 kWh * 0.64 = 160 + fixed 90 + community 150 = 400
+  await page.getByRole('link', { name: he.nav.bills }).click();
+  await expect(page.getByText('₪400.00')).toBeVisible();
+
+  // a one-off charge changes the total
+  await page.getByPlaceholder(he.bills.chargeDescription).fill('Repair');
+  await page.getByLabel(he.bills.chargeAmount).fill('25.5');
+  await page.getByRole('button', { name: he.bills.addCharge }).click();
+  await expect(page.getByText('₪425.50')).toBeVisible();
+
+  // approve, then mark paid
+  page.once('dialog', (d) => void d.accept());
+  await page.getByRole('button', { name: he.bills.approve }).click();
+  await expect(page.getByText(`✓ ${he.bills.approved}`)).toBeVisible();
+  await page.getByRole('button', { name: he.bills.markPaid }).click();
+  await expect(page.getByText(/שולם ב-/)).toBeVisible();
+});
+
+test('the renter sees the approved bill and that it is paid', async ({ page }) => {
+  await signIn(page, renter);
+  await page.getByRole('link', { name: he.nav.myBill }).click();
+  await expect(page.getByText('₪425.50').first()).toBeVisible();
+  await expect(page.getByText(`✓ ${he.bills.paid}`)).toBeVisible();
 });
 
 test('another user cannot see this landlord data', async ({ page }) => {

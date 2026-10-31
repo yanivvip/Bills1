@@ -10,6 +10,9 @@ importers:
 
   apps/web:
     dependencies:
+      '@bills/engine':
+        specifier: workspace:*
+        version: link:../../packages/engine
       '@supabase/supabase-js':
         specifier: ^2.118.0
         version: 2.118.0

@@ -1,7 +1,7 @@
 -- Database security tests (pgTAP). Run with: supabase test db
 -- Everything runs in one transaction that is rolled back, so no data is left behind.
 begin;
-select plan(31);
+select plan(46);
 
 -- ── Fixtures (as the postgres superuser) ─────────────────────────────────
 insert into auth.users (id, email, email_confirmed_at, instance_id, aud, role) values
@@ -145,6 +145,49 @@ select pg_temp.act_as('00000000-0000-0000-0000-0000000000b1');
 select throws_ok($q$select * from public.admin_list_units()$q$, null, 'forbidden', 'a landlord cannot list all units');
 select pg_temp.act_as('00000000-0000-0000-0000-0000000000d1');
 select is((select count(*)::int from public.admin_list_units()), 3, 'a Super_User sees the units of every organization');
+
+-- ── Billing: tariffs, approval, statements ───────────────────────────────
+select pg_temp.act_as('00000000-0000-0000-0000-0000000000a1');
+select lives_ok($q$select public.approve_month('20000000-0000-0000-0000-00000000000a', '2026-10-01',
+  '[{"unit_id":"30000000-0000-0000-0000-000000000001","total":1500,"lines":[{"type":"electricity","amount":1000},{"type":"community","amount":500}]},
+    {"unit_id":"30000000-0000-0000-0000-000000000002","total":700,"lines":[{"type":"community","amount":700}]}]'::jsonb, '{"electricityRate":64}'::jsonb)$q$,
+  'a landlord approves a month');
+select throws_ok($q$select public.approve_month('20000000-0000-0000-0000-00000000000a', '2026-10-01',
+  '[{"unit_id":"30000000-0000-0000-0000-000000000001","total":1,"lines":[{"type":"community","amount":1}]}]'::jsonb, '{}'::jsonb)$q$,
+  null, 'month already approved', 'a month cannot be approved twice');
+select throws_ok($q$select public.approve_month('20000000-0000-0000-0000-00000000000a', '2026-09-01',
+  '[{"unit_id":"30000000-0000-0000-0000-000000000001","total":999,"lines":[{"type":"community","amount":1}]}]'::jsonb, '{}'::jsonb)$q$,
+  null, 'statement total does not match its lines', 'a statement whose total does not match its lines is refused');
+
+select pg_temp.act_as('00000000-0000-0000-0000-0000000000b1');
+select is((select count(*)::int from public.statements), 0, 'another landlord sees no statements');
+select throws_ok($q$select public.approve_month('20000000-0000-0000-0000-00000000000a', '2026-08-01',
+  '[{"unit_id":"30000000-0000-0000-0000-000000000001","total":1,"lines":[{"type":"community","amount":1}]}]'::jsonb, '{}'::jsonb)$q$,
+  null, 'forbidden', 'another landlord cannot approve a month for this property');
+
+select pg_temp.act_as('00000000-0000-0000-0000-0000000000c2');
+select is((select sum(total_agorot)::int from public.statements), 700, 'a renter sees only the statement of their own contract');
+select throws_ok($q$select public.set_statement_paid((select id from public.statements limit 1), '2026-10-05', 'cash')$q$,
+  null, 'forbidden', 'a renter cannot mark a statement paid');
+
+select pg_temp.act_as('00000000-0000-0000-0000-0000000000a1');
+select lives_ok($q$select public.set_statement_paid((select id from public.statements where unit_id = '30000000-0000-0000-0000-000000000001'), '2026-10-05', 'bit')$q$,
+  'a landlord marks a statement paid');
+select throws_ok($q$select public.reopen_month((select id from public.billing_periods limit 1))$q$,
+  null, 'month has paid statements', 'a month with a paid statement cannot be re-opened');
+select lives_ok($q$select public.set_statement_paid((select id from public.statements where unit_id = '30000000-0000-0000-0000-000000000001'), null, null)$q$,
+  'a statement can be marked unpaid again');
+select lives_ok($q$select public.reopen_month((select id from public.billing_periods limit 1))$q$, 'an unpaid month can be re-opened');
+select is((select count(*)::int from public.statements), 0, 're-opening removes the statements');
+
+select pg_temp.act_as('00000000-0000-0000-0000-0000000000b1');
+select throws_ok($q$insert into public.tariffs (property_id, org_id, electricity_rate) values ('20000000-0000-0000-0000-00000000000a', '10000000-0000-0000-0000-00000000000a', 64)$q$,
+  '42501', null, 'another landlord cannot set tariffs on this property');
+select pg_temp.act_as('00000000-0000-0000-0000-0000000000a1');
+select lives_ok($q$insert into public.tariffs (property_id, org_id, electricity_rate) values ('20000000-0000-0000-0000-00000000000a', '10000000-0000-0000-0000-00000000000a', 64)$q$,
+  'a landlord sets tariffs');
+select pg_temp.act_as('00000000-0000-0000-0000-0000000000c2');
+select is((select count(*)::int from public.tariffs), 0, 'a renter cannot read tariffs');
 
 select * from finish();
 rollback;

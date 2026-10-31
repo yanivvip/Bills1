@@ -150,7 +150,14 @@
     "confirmGrant": "לתת ל-{{email}} הרשאת Super_User מלאה על הכול?",
     "confirmRevoke": "להסיר מ-{{email}} את הרשאת Super_User?",
     "removeRenter": "הסרה משוכרים ביחידה: {{unit}} ({{property}})",
-    "confirmRemoveRenter": "להסיר את {{email}} כשוכר מהיחידה \"{{unit}}\" ({{property}})? המשתמש יישאר באפליקציה."
+    "confirmRemoveRenter": "להסיר את {{email}} כשוכר מהיחידה \"{{unit}}\" ({{property}})? המשתמש יישאר באפליקציה.",
+    "units": "יחידות",
+    "unitsCount_one": "יחידה {{count}}",
+    "unitsCount_other": "{{count}} יחידות",
+    "searchUnits": "חיפוש לפי יחידה, נכס, משכיר או אימייל",
+    "rented": "מושכרת מאז",
+    "removeRenterShort": "הסרת שוכר",
+    "noUnits": "אין יחידות תואמות."
   },
   "common": {
     "loading": "טוען…",

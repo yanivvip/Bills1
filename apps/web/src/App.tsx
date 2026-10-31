@@ -11,6 +11,7 @@ import { supabase } from './lib/supabase';
 import LoginPage from './pages/LoginPage';
 import HomePage from './pages/HomePage';
 import AdminPage from './pages/AdminPage';
+import AdminUnitsPage from './pages/AdminUnitsPage';
 
 function Shell() {
   const { t } = useTranslation();
@@ -72,7 +73,7 @@ function RequireRenter() {
 
 function RequireAdmin() {
   const { isPlatformAdmin } = useAuth();
-  return isPlatformAdmin ? <AdminPage /> : <Navigate to="/" replace />;
+  return isPlatformAdmin ? <Outlet /> : <Navigate to="/" replace />;
 }
 
 export default function App() {
@@ -91,7 +92,10 @@ export default function App() {
             <Route element={<RequireRenter />}>
               <Route path="/report" element={<ReportPage />} />
             </Route>
-            <Route path="/admin" element={<RequireAdmin />} />
+            <Route element={<RequireAdmin />}>
+              <Route path="/admin" element={<AdminPage />} />
+              <Route path="/admin/units" element={<AdminUnitsPage />} />
+            </Route>
           </Route>
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>

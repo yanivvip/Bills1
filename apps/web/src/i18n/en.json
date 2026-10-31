@@ -150,7 +150,14 @@
     "confirmGrant": "Give {{email}} full Super_User access to everything?",
     "confirmRevoke": "Remove Super_User access from {{email}}?",
     "removeRenter": "Remove as renter of: {{unit}} ({{property}})",
-    "confirmRemoveRenter": "Remove {{email}} as renter of unit \"{{unit}}\" ({{property}})? The user stays in the app."
+    "confirmRemoveRenter": "Remove {{email}} as renter of unit \"{{unit}}\" ({{property}})? The user stays in the app.",
+    "units": "Units",
+    "unitsCount_one": "{{count}} unit",
+    "unitsCount_other": "{{count}} units",
+    "searchUnits": "Search by unit, property, landlord or email",
+    "rented": "Rented since",
+    "removeRenterShort": "Remove renter",
+    "noUnits": "No matching units."
   },
   "common": {
     "loading": "Loading…",

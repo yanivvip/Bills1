@@ -1,7 +1,7 @@
 -- Database security tests (pgTAP). Run with: supabase test db
 -- Everything runs in one transaction that is rolled back, so no data is left behind.
 begin;
-select plan(29);
+select plan(31);
 
 -- ── Fixtures (as the postgres superuser) ─────────────────────────────────
 insert into auth.users (id, email, email_confirmed_at, instance_id, aud, role) values
@@ -139,6 +139,12 @@ select pg_temp.act_as('00000000-0000-0000-0000-0000000000d1');
 select lives_ok($q$select public.admin_remove_renter(current_setting('t.rid')::uuid)$q$, 'a Super_User removes one renter from one rental');
 reset role;
 select is((select count(*)::int from public.contract_renters where user_id = '00000000-0000-0000-0000-0000000000c1'), 0, 'the user is no longer a renter there');
+
+-- ── Super_User units overview ────────────────────────────────────────────
+select pg_temp.act_as('00000000-0000-0000-0000-0000000000b1');
+select throws_ok($q$select * from public.admin_list_units()$q$, null, 'forbidden', 'a landlord cannot list all units');
+select pg_temp.act_as('00000000-0000-0000-0000-0000000000d1');
+select is((select count(*)::int from public.admin_list_units()), 3, 'a Super_User sees the units of every organization');
 
 select * from finish();
 rollback;

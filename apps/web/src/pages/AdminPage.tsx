@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../auth/AuthProvider';
 import { supabase } from '../lib/supabase';
+import AdminTabs from './AdminTabs';
 
 interface UserRow {
   user_id: string;
@@ -72,6 +73,7 @@ export default function AdminPage() {
 
   return (
     <section className="flex flex-col gap-4 p-4">
+      <AdminTabs />
       <div>
         <h1 className="text-2xl font-bold">{t('admin.users')}</h1>
         <p className="text-sm text-slate-400">{t('admin.usersCount', { count: users.length })}</p>

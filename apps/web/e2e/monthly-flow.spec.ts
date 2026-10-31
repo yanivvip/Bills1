@@ -9,6 +9,7 @@ test.describe.configure({ mode: 'serial' });
 const landlord = uniqueEmail('landlord');
 const renter = uniqueEmail('renter');
 const stranger = uniqueEmail('stranger');
+const newRenter = uniqueEmail('newrenter');
 const progress = (done: number, total: number) => he.readings.progress.replace('{{done}}', String(done)).replace('{{total}}', String(total));
 
 test('landlord sets up an organization, property, unit, contract and meters', async ({ page }) => {
@@ -162,6 +163,32 @@ test('the renter sees the approved bill and that it is paid', async ({ page }) =
   await page.getByRole('link', { name: he.nav.myBill }).click();
   await expect(page.getByText('₪425.50').first()).toBeVisible();
   await expect(page.getByText(`✓ ${he.bills.paid}`)).toBeVisible();
+});
+
+test('the landlord replaces the tenant; the old renter keeps the bills but cannot report', async ({ page }) => {
+  await signIn(page, landlord);
+  await page.getByRole('link', { name: /Dizengoff 10/ }).click();
+  await page.getByRole('link', { name: /Apt 1/ }).click();
+  await page.getByRole('button', { name: he.replace.button }).click();
+
+  // the outgoing tenant's account is finished: readings in, month approved, bill paid
+  await expect(page.getByText(`✓ ${he.replace.closingReadings}`)).toBeVisible();
+  await expect(page.getByText(`✓ ${he.replace.monthApproved}`)).toBeVisible();
+  await expect(page.getByText(`✓ ${he.replace.allPaid}`)).toBeVisible();
+
+  await page.getByLabel(he.replace.newRenters).fill(newRenter);
+  page.on('dialog', (d) => void d.accept());
+  await page.getByRole('button', { name: he.replace.submit }).click();
+  await expect(page.getByText(newRenter)).toBeVisible();
+  await expect(page.getByText(he.landlord.pending)).toBeVisible();
+});
+
+test('the outgoing renter still sees the old bill but has no meters to report', async ({ page }) => {
+  await signIn(page, renter);
+  await page.goto('/report');
+  await expect(page.getByText(he.readings.renterNoMeters)).toBeVisible();
+  await page.goto('/my-bill');
+  await expect(page.getByText('₪425.50').first()).toBeVisible();
 });
 
 test('another user cannot see this landlord data', async ({ page }) => {

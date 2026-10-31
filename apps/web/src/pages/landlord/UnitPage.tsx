@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { supabase } from '../../lib/supabase';
+import ReplaceTenant from './ReplaceTenant';
 import UnitBillingSettings from './UnitBillingSettings';
 import { BackLink, ContractCard, ContractForm, useWriter, type Contract } from './shared';
 
@@ -48,6 +49,8 @@ export default function UnitPage({ orgId }: { orgId: string }) {
       {error && <p className="text-sm text-red-400">{error}</p>}
 
       {active ? <ContractCard orgId={orgId} contract={active} run={run} invite={{ property: unit.properties?.name ?? '', unit: unit.name }} /> : <ContractForm orgId={orgId} unitId={unit.id} run={run} />}
+
+      {active && <ReplaceTenant unitId={unit.id} propertyId={unit.property_id} contractId={active.id} onDone={() => void load()} />}
 
       <UnitBillingSettings unitId={unit.id} />
 

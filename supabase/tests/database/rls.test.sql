@@ -1,7 +1,7 @@
 -- Database security tests (pgTAP). Run with: supabase test db
 -- Everything runs in one transaction that is rolled back, so no data is left behind.
 begin;
-select plan(46);
+select plan(53);
 
 -- ── Fixtures (as the postgres superuser) ─────────────────────────────────
 insert into auth.users (id, email, email_confirmed_at, instance_id, aud, role) values
@@ -188,6 +188,21 @@ select lives_ok($q$insert into public.tariffs (property_id, org_id, electricity_
   'a landlord sets tariffs');
 select pg_temp.act_as('00000000-0000-0000-0000-0000000000c2');
 select is((select count(*)::int from public.tariffs), 0, 'a renter cannot read tariffs');
+
+-- ── Replacing a tenant ───────────────────────────────────────────────────
+select pg_temp.act_as('00000000-0000-0000-0000-0000000000b1');
+select throws_ok($q$select public.replace_tenant('30000000-0000-0000-0000-000000000001', '2026-10-31', '2026-11-01', array['new@test.dev'])$q$,
+  null, 'forbidden', 'another landlord cannot replace the tenant of this unit');
+select throws_ok($q$select public.replace_tenant('30000000-0000-0000-0000-0000000000b1', '2026-10-31', '2026-11-01', array['new@test.dev'])$q$,
+  null, 'no active contract', 'a unit without an active contract cannot have its tenant replaced');
+
+select pg_temp.act_as('00000000-0000-0000-0000-0000000000a1');
+select throws_ok($q$select public.replace_tenant('30000000-0000-0000-0000-000000000002', '2026-10-31', '2026-11-01', array['landlord-a@test.dev'])$q$,
+  null, 'landlord_cannot_be_renter', 'the landlord cannot become the new renter');
+select lives_ok($q$select public.replace_tenant('30000000-0000-0000-0000-000000000001', '2026-10-31', '2026-11-01', array['New@Test.dev'])$q$, 'a landlord replaces the tenant of a unit');
+select is((select count(*)::int from public.contracts where unit_id = '30000000-0000-0000-0000-000000000001' and status = 'active' and start_date = '2026-11-01'), 1, 'the new contract is the active one');
+select is((select count(*)::int from public.contracts where unit_id = '30000000-0000-0000-0000-000000000001' and status = 'ended' and end_date = '2026-10-31'), 1, 'the old contract is ended on the handover date');
+select is((select email from public.contract_renters where contract_id = (select id from public.contracts where unit_id = '30000000-0000-0000-0000-000000000001' and status = 'active')), 'new@test.dev', 'the new renter is on the new contract');
 
 select * from finish();
 rollback;

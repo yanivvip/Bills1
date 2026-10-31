@@ -276,5 +276,22 @@
     "noReport": "{{unit}}: no {{kind}} reading reported this month",
     "unpaid": "{{unit}}: the {{month}} bill ({{amount}}) is not paid yet",
     "highUsage": "{{name}}: unusual {{kind}} usage ({{usage}} vs. average {{average}})"
+  },
+  "replace": {
+    "button": "Replace tenant",
+    "title": "Replace tenant",
+    "intro": "Before replacing, finish the outgoing tenant’s account:",
+    "closingReadings": "Closing readings entered for this month (the new tenant’s opening reading)",
+    "monthApproved": "This month’s bill is approved and sent",
+    "allPaid": "All the outgoing tenant’s bills are paid",
+    "unpaid": "{{count}} bills of the outgoing tenant are not paid yet",
+    "open": "Open",
+    "endDate": "End date for the outgoing tenant",
+    "startDate": "New contract starts",
+    "newRenters": "New renters’ email addresses",
+    "note": "The outgoing tenant is not deleted: their history and bills are kept, but they can no longer report readings. The new renters are invited as with any new contract.",
+    "submit": "Replace tenant",
+    "confirm": "End the current contract and start a new one?",
+    "confirmIncomplete": "Some steps are not finished. Replace the tenant anyway?"
   }
 }

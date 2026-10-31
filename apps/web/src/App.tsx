@@ -9,6 +9,7 @@ import ReadingsPage from './pages/readings/ReadingsPage';
 import ReportPage from './pages/readings/ReportPage';
 import BillsPage from './pages/bills/BillsPage';
 import MyBillPage from './pages/bills/MyBillPage';
+import ReportsPage from './pages/bills/ReportsPage';
 import { supabase } from './lib/supabase';
 import LoginPage from './pages/LoginPage';
 import HomePage from './pages/HomePage';
@@ -36,6 +37,7 @@ function Shell() {
         </NavLink>
         {role?.kind === 'landlord' && <NavLink to="/readings">{t('nav.readings')}</NavLink>}
         {role?.kind === 'landlord' && <NavLink to="/bills">{t('nav.bills')}</NavLink>}
+        {role?.kind === 'landlord' && <NavLink to="/reports">{t('nav.reports')}</NavLink>}
         {role?.kind === 'renter' && <NavLink to="/report">{t('nav.report')}</NavLink>}
         {role?.kind === 'renter' && <NavLink to="/my-bill">{t('nav.myBill')}</NavLink>}
         {isPlatformAdmin && <NavLink to="/admin">{t('nav.admin')}</NavLink>}
@@ -93,6 +95,7 @@ export default function App() {
               <Route path="/units/:unitId" element={<LandlordRoute page={UnitPage} />} />
               <Route path="/readings" element={<ReadingsPage />} />
               <Route path="/bills" element={<LandlordRoute page={BillsPage} />} />
+              <Route path="/reports" element={<ReportsPage />} />
             </Route>
             <Route element={<RequireRenter />}>
               <Route path="/report" element={<ReportPage />} />

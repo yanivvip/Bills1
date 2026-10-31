@@ -1,3 +1,4 @@
+import fs from 'node:fs';
 import { expect, test } from '@playwright/test';
 import { he, signIn, signOut, signUp, uniqueEmail } from './helpers';
 
@@ -132,6 +133,18 @@ test('the landlord sets tariffs, approves the month and marks it paid', async ({
   await expect(page.getByText(`✓ ${he.bills.approved}`)).toBeVisible();
   await page.getByRole('button', { name: he.bills.markPaid }).click();
   await expect(page.getByText(/שולם ב-/)).toBeVisible();
+
+  // the annual report shows the month and exports to CSV and Excel
+  await page.getByRole('link', { name: he.nav.reports }).click();
+  await expect(page.getByText('₪425.50').first()).toBeVisible();
+  const [csv] = await Promise.all([page.waitForEvent('download'), page.getByRole('button', { name: he.report.exportCsv }).click()]);
+  expect(csv.suggestedFilename()).toMatch(/.csv$/);
+  const text = fs.readFileSync((await csv.path())!, 'utf8');
+  expect(text).toContain('Apt 1');
+  expect(text).toContain('425.5');
+  const [xlsx] = await Promise.all([page.waitForEvent('download'), page.getByRole('button', { name: he.report.exportExcel }).click()]);
+  expect(xlsx.suggestedFilename()).toMatch(/.xlsx$/);
+  expect(fs.statSync((await xlsx.path())!).size).toBeGreaterThan(2000);
 });
 
 test('the renter sees the approved bill and that it is paid', async ({ page }) => {

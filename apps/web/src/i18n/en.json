@@ -30,7 +30,8 @@
     "readings": "Readings",
     "report": "Report reading",
     "bills": "Bills",
-    "myBill": "My bill"
+    "myBill": "My bill",
+    "reports": "Reports"
   },
   "meters": {
     "mainTitle": "Main meters (whole property)",
@@ -234,5 +235,35 @@
     },
     "myBill": "My bill",
     "notPublished": "This month’s bill has not been published yet."
+  },
+  "report": {
+    "title": "Annual report",
+    "empty": "No approved months this year yet.",
+    "months": "{{count}} approved months",
+    "category": "Category",
+    "yearTotal": "Year total",
+    "summary": "Summary",
+    "allUnits": "All units",
+    "electricity": "Electricity",
+    "kwh": "Consumption (kWh)",
+    "electricityCost": "Consumption cost (₪)",
+    "electricityFixed": "Share of fixed charge (₪)",
+    "electricityTotal": "Total electricity (₪)",
+    "water": "Water",
+    "waterM3": "Total consumption (m³)",
+    "waterAM3": "Consumption tariff A (m³)",
+    "waterACost": "Cost tariff A (₪)",
+    "waterBM3": "Consumption tariff B (m³)",
+    "waterBCost": "Cost tariff B (₪)",
+    "waterTotal": "Total water (₪)",
+    "charges": "Community and charges",
+    "community": "Community fee (₪)",
+    "oneOff": "One-off charges (₪)",
+    "total": "Total to pay (₪)",
+    "paid": "Paid",
+    "unpaid": "Unpaid",
+    "exportExcel": "Export to Excel",
+    "exportCsv": "Export to CSV",
+    "hint": "The file has a sheet per unit (a column per month) and a summary sheet. Only approved months are included."
   }
 }

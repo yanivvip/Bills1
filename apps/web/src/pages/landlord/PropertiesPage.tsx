@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { supabase } from '../../lib/supabase';
+import AttentionCard from './AttentionCard';
 import { AddToggle, card, input, useWriter } from './shared';
 
 interface PropertyRow {
@@ -42,6 +43,7 @@ export default function PropertiesPage({ orgId }: { orgId: string }) {
         <h1 className="text-2xl font-bold">{orgName}</h1>
         <h2 className="text-xl font-semibold text-slate-300">{t('landlord.properties')}</h2>
       </div>
+      <AttentionCard />
       {error && <p className="text-sm text-red-400">{error}</p>}
       {rows.length === 0 && <p className="text-slate-400">{t('landlord.noProperties')}</p>}
 

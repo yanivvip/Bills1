@@ -269,5 +269,12 @@
     "curReading": "Current reading – electricity (kWh)",
     "prevReadingWater": "Previous reading – water (m³)",
     "curReadingWater": "Current reading – water (m³)"
+  },
+  "attention": {
+    "title": "Needs attention",
+    "allClear": "Everything is up to date this month",
+    "noReport": "{{unit}}: no {{kind}} reading reported this month",
+    "unpaid": "{{unit}}: the {{month}} bill ({{amount}}) is not paid yet",
+    "highUsage": "{{name}}: unusual {{kind}} usage ({{usage}} vs. average {{average}})"
   }
 }

@@ -269,5 +269,12 @@
     "curReading": "קריאה נוכחית – חשמל (קוט״ש)",
     "prevReadingWater": "קריאה קודמת – מים (מ״ק)",
     "curReadingWater": "קריאה נוכחית – מים (מ״ק)"
+  },
+  "attention": {
+    "title": "דורש טיפול",
+    "allClear": "הכול מעודכן החודש",
+    "noReport": "{{unit}}: עדיין לא דווחה קריאת {{kind}} החודש",
+    "unpaid": "{{unit}}: חשבון {{month}} ({{amount}}) טרם שולם",
+    "highUsage": "{{name}}: צריכת {{kind}} חריגה ({{usage}} לעומת ממוצע {{average}})"
   }
 }

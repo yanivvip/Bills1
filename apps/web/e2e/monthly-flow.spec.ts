@@ -51,6 +51,10 @@ test('landlord sets up an organization, property, unit, contract and meters', as
   await expect(page.getByText(he.landlord.pending)).toBeVisible();
   // the unit page has no meter form
   await expect(page.getByPlaceholder(he.meters.namePlaceholder)).toHaveCount(0);
+
+  // the home page warns that the renter has not reported yet
+  await page.goto('/');
+  await expect(page.getByRole('region', { name: he.attention.title })).toContainText('Apt 1');
 });
 
 test('the renter signs up, sees their rental and reports a reading', async ({ page }) => {
@@ -88,6 +92,10 @@ test('the landlord sees the reading, adds the main meter reading and the month i
   await mainInput.fill('480');
   await page.locator('form', { hasText: 'Building water' }).getByRole('button', { name: he.common.save }).click();
   await expect(page.getByText(progress(2, 2))).toBeVisible();
+
+  // everything reported: the home page has nothing to warn about
+  await page.goto('/');
+  await expect(page.getByText(`✓ ${he.attention.allClear}`)).toBeVisible();
 });
 
 test('the landlord sets tariffs, approves the month and marks it paid', async ({ page }) => {

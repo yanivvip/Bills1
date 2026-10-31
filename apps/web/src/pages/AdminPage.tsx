@@ -46,6 +46,16 @@ export default function AdminPage() {
     await load();
   };
 
+  const removeRenter = async (u: UserRow) => {
+    if (!window.confirm(t('admin.confirmRemoveRenter', { email: u.email }))) return;
+    setBusyId(u.user_id);
+    setError('');
+    const { error } = await supabase.rpc('admin_remove_renter', { p_user: u.user_id });
+    setBusyId(null);
+    if (error) return setError(error.message);
+    await load();
+  };
+
   if (!users) return <p className="p-4">{t('common.loading')}</p>;
 
   const q = filter.trim().toLowerCase();
@@ -81,13 +91,24 @@ export default function AdminPage() {
           <div className="text-xs text-slate-400">
             {t('admin.created')}: {fmt(u.created_at)} · {t('admin.lastSignIn')}: {fmt(u.last_sign_in_at)}
           </div>
-          <button
-            disabled={busyId === u.user_id}
-            onClick={() => void toggle(u)}
-            className={`self-start rounded-lg px-3 py-1.5 text-sm font-semibold disabled:opacity-60 ${u.is_super_user ? 'bg-white/10' : 'bg-violet-600'}`}
-          >
-            {u.is_super_user ? t('admin.removeSuper') : t('admin.makeSuper')}
-          </button>
+          <div className="flex flex-wrap gap-2">
+            <button
+              disabled={busyId === u.user_id}
+              onClick={() => void toggle(u)}
+              className={`rounded-lg px-3 py-1.5 text-sm font-semibold disabled:opacity-60 ${u.is_super_user ? 'bg-white/10' : 'bg-violet-600'}`}
+            >
+              {u.is_super_user ? t('admin.removeSuper') : t('admin.makeSuper')}
+            </button>
+            {u.renter_contracts > 0 && (
+              <button
+                disabled={busyId === u.user_id}
+                onClick={() => void removeRenter(u)}
+                className="rounded-lg bg-red-900/60 px-3 py-1.5 text-sm font-semibold disabled:opacity-60"
+              >
+                {t('admin.removeRenter')}
+              </button>
+            )}
+          </div>
         </div>
       ))}
       {shown.length === 0 && <p className="text-slate-400">{t('admin.noUsers')}</p>}

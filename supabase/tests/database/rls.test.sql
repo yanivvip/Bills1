@@ -1,7 +1,7 @@
 -- Database security tests (pgTAP). Run with: supabase test db
 -- Everything runs in one transaction that is rolled back, so no data is left behind.
 begin;
-select plan(26);
+select plan(29);
 
 -- ── Fixtures (as the postgres superuser) ─────────────────────────────────
 insert into auth.users (id, email, email_confirmed_at, instance_id, aud, role) values
@@ -128,6 +128,15 @@ select throws_ok($q$insert into public.contract_renters (org_id, contract_id, em
   null, 'landlord_cannot_be_renter', 'a landlord cannot add themselves as a renter of their own organization');
 select lives_ok($q$insert into public.contract_renters (org_id, contract_id, email) values ('10000000-0000-0000-0000-00000000000a', '40000000-0000-0000-0000-000000000001', 'other@test.dev')$q$,
   'other emails can still be added as renters');
+
+-- ── Super_User removes a renter ──────────────────────────────────────────
+select pg_temp.act_as('00000000-0000-0000-0000-0000000000b1');
+select throws_ok($q$select public.admin_remove_renter('00000000-0000-0000-0000-0000000000c1')$q$,
+  null, 'forbidden', 'a landlord cannot use the admin renter removal');
+select pg_temp.act_as('00000000-0000-0000-0000-0000000000d1');
+select is(public.admin_remove_renter('00000000-0000-0000-0000-0000000000c1'), 1, 'a Super_User removes the renter links of a user');
+reset role;
+select is((select count(*)::int from public.contract_renters where user_id = '00000000-0000-0000-0000-0000000000c1'), 0, 'the user is no longer a renter');
 
 select * from finish();
 rollback;

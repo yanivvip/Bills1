@@ -148,7 +148,10 @@
     "makeSuper": "הפיכה ל-Super_User",
     "removeSuper": "הסרת Super_User",
     "confirmGrant": "לתת ל-{{email}} הרשאת Super_User מלאה על הכול?",
-    "confirmRevoke": "להסיר מ-{{email}} את הרשאת Super_User?"
+    "confirmRevoke": "להסיר מ-{{email}} את הרשאת Super_User?",
+    "removeRenter": "הסרה משוכרים",
+    "confirmRemoveRenter": "להסיר את {{email}} מכל חוזי השכירות? המשתמש יישאר באפליקציה.",
+    "renterRemoved": "הוסר מ-{{count}} חוזים"
   },
   "common": {
     "loading": "טוען…",

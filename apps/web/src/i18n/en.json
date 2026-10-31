@@ -148,7 +148,10 @@
     "makeSuper": "Make Super_User",
     "removeSuper": "Remove Super_User",
     "confirmGrant": "Give {{email}} full Super_User access to everything?",
-    "confirmRevoke": "Remove Super_User access from {{email}}?"
+    "confirmRevoke": "Remove Super_User access from {{email}}?",
+    "removeRenter": "Remove as renter",
+    "confirmRemoveRenter": "Remove {{email}} from all rental contracts? The user stays in the app.",
+    "renterRemoved": "Removed from {{count}} contracts"
   },
   "common": {
     "loading": "Loading…",

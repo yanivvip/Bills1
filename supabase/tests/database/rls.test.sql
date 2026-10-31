@@ -130,13 +130,15 @@ select lives_ok($q$insert into public.contract_renters (org_id, contract_id, ema
   'other emails can still be added as renters');
 
 -- ── Super_User removes a renter ──────────────────────────────────────────
+reset role;
+select set_config('t.rid', (select id::text from public.contract_renters where user_id = '00000000-0000-0000-0000-0000000000c1'), false);
 select pg_temp.act_as('00000000-0000-0000-0000-0000000000b1');
-select throws_ok($q$select public.admin_remove_renter('00000000-0000-0000-0000-0000000000c1')$q$,
+select throws_ok($q$select public.admin_remove_renter(current_setting('t.rid')::uuid)$q$,
   null, 'forbidden', 'a landlord cannot use the admin renter removal');
 select pg_temp.act_as('00000000-0000-0000-0000-0000000000d1');
-select is(public.admin_remove_renter('00000000-0000-0000-0000-0000000000c1'), 1, 'a Super_User removes the renter links of a user');
+select lives_ok($q$select public.admin_remove_renter(current_setting('t.rid')::uuid)$q$, 'a Super_User removes one renter from one rental');
 reset role;
-select is((select count(*)::int from public.contract_renters where user_id = '00000000-0000-0000-0000-0000000000c1'), 0, 'the user is no longer a renter');
+select is((select count(*)::int from public.contract_renters where user_id = '00000000-0000-0000-0000-0000000000c1'), 0, 'the user is no longer a renter there');
 
 select * from finish();
 rollback;

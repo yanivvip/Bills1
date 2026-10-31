@@ -12,6 +12,14 @@ interface UserRow {
   is_super_user: boolean;
   org_name: string | null;
   renter_contracts: number;
+  renter_units: RenterUnit[];
+}
+
+interface RenterUnit {
+  id: string;
+  unit: string;
+  property: string;
+  org: string;
 }
 
 const badge = 'rounded-full px-2 py-0.5 text-xs';
@@ -46,11 +54,11 @@ export default function AdminPage() {
     await load();
   };
 
-  const removeRenter = async (u: UserRow) => {
-    if (!window.confirm(t('admin.confirmRemoveRenter', { email: u.email }))) return;
+  const removeRenter = async (u: UserRow, r: RenterUnit) => {
+    if (!window.confirm(t('admin.confirmRemoveRenter', { email: u.email, unit: r.unit, property: r.property }))) return;
     setBusyId(u.user_id);
     setError('');
-    const { error } = await supabase.rpc('admin_remove_renter', { p_user: u.user_id });
+    const { error } = await supabase.rpc('admin_remove_renter', { p_renter: r.id });
     setBusyId(null);
     if (error) return setError(error.message);
     await load();
@@ -99,15 +107,16 @@ export default function AdminPage() {
             >
               {u.is_super_user ? t('admin.removeSuper') : t('admin.makeSuper')}
             </button>
-            {u.renter_contracts > 0 && (
+            {u.renter_units.map((r) => (
               <button
+                key={r.id}
                 disabled={busyId === u.user_id}
-                onClick={() => void removeRenter(u)}
+                onClick={() => void removeRenter(u, r)}
                 className="rounded-lg bg-red-900/60 px-3 py-1.5 text-sm font-semibold disabled:opacity-60"
               >
-                {t('admin.removeRenter')}
+                {t('admin.removeRenter', { unit: r.unit, property: r.property })}
               </button>
-            )}
+            ))}
           </div>
         </div>
       ))}

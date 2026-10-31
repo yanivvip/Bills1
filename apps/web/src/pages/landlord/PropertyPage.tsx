@@ -79,7 +79,7 @@ export default function PropertyPage({ orgId }: { orgId: string }) {
         <input required autoFocus value={name} onChange={(e) => setName(e.target.value)} placeholder={t('landlord.unitName')} className={input} />
       </AddToggle>
 
-      <MetersSection orgId={orgId} propertyId={propertyId!} unitId={null} />
+      <MetersSection orgId={orgId} propertyId={propertyId!} units={units.map((u) => ({ id: u.id, name: u.name }))} />
     </section>
   );
 }

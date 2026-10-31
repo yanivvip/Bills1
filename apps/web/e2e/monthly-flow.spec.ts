@@ -25,7 +25,7 @@ test('landlord sets up an organization, property, unit, contract and meters', as
   await page.getByRole('link', { name: /Dizengoff 10/ }).click();
 
   // main (building) water meter
-  await page.getByRole('combobox').selectOption('water');
+  await page.getByRole('combobox').nth(1).selectOption('water');
   await page.getByPlaceholder(he.meters.namePlaceholder).fill('Building water');
   await page.getByRole('button', { name: he.meters.add }).click();
   await expect(page.getByText('Building water')).toBeVisible();
@@ -34,19 +34,22 @@ test('landlord sets up an organization, property, unit, contract and meters', as
   await page.getByRole('button', { name: he.landlord.addUnit }).click();
   await page.getByPlaceholder(he.landlord.unitName).fill('Apt 1');
   await page.getByRole('button', { name: he.common.save }).click();
-  await page.getByRole('link', { name: /Apt 1/ }).click();
+
+  // unit electricity meter (meters are managed on the property page only)
+  await page.getByRole('combobox').nth(0).selectOption({ label: 'Apt 1' });
+  await page.getByRole('combobox').nth(1).selectOption('electricity');
+  await page.getByPlaceholder(he.meters.namePlaceholder).fill('Apt 1 electricity');
+  await page.getByRole('button', { name: he.meters.add }).click();
+  await expect(page.getByText('Apt 1 electricity')).toBeVisible();
 
   // contract with a renter
+  await page.getByRole('link', { name: /Apt 1/ }).click();
   await page.getByPlaceholder(he.landlord.renterEmails).fill(renter);
   await page.getByRole('button', { name: he.landlord.newContract }).click();
   await expect(page.getByText(renter)).toBeVisible();
   await expect(page.getByText(he.landlord.pending)).toBeVisible();
-
-  // unit electricity meter
-  await page.getByRole('combobox').selectOption('electricity');
-  await page.getByPlaceholder(he.meters.namePlaceholder).fill('Apt 1 electricity');
-  await page.getByRole('button', { name: he.meters.add }).click();
-  await expect(page.getByText('Apt 1 electricity')).toBeVisible();
+  // the unit page has no meter form
+  await expect(page.getByPlaceholder(he.meters.namePlaceholder)).toHaveCount(0);
 });
 
 test('the renter signs up, sees their rental and reports a reading', async ({ page }) => {

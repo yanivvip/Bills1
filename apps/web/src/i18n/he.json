@@ -44,7 +44,9 @@
     "default": {
       "electricity": "מונה חשמל",
       "water": "מונה מים"
-    }
+    },
+    "title": "מונים",
+    "building": "כל הנכס (מונה ראשי)"
   },
   "readings": {
     "title": "קריאות חודשיות",

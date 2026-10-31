@@ -44,7 +44,9 @@
     "default": {
       "electricity": "Electricity meter",
       "water": "Water meter"
-    }
+    },
+    "title": "Meters",
+    "building": "Whole property (main meter)"
   },
   "readings": {
     "title": "Monthly readings",

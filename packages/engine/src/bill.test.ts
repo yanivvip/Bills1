@@ -108,3 +108,11 @@ describe('computeBills', () => {
     expect(r.bills[0]!.lines.map((l) => l.type)).toEqual(['electricityFixed', 'community']);
   });
 });
+
+describe('readings kept with the bill', () => {
+  it('stores the unit meters, summed, and none for the residual unit', () => {
+    const r = computeBills(base());
+    expect(find(r, 'yuval').readings).toEqual({ electricity: { prev: 0, cur: 80 }, water: { prev: 0, cur: 9 } });
+    expect(find(r, 'owner').readings).toEqual({});
+  });
+});

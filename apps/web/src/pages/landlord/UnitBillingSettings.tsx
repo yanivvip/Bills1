@@ -10,6 +10,7 @@ export default function UnitBillingSettings({ unitId }: { unitId: string }) {
   const [fee, setFee] = useState('');
   const [quota, setQuota] = useState('');
   const [residual, setResidual] = useState(false);
+  const [loaded, setLoaded] = useState(false);
   const [state, setState] = useState<'idle' | 'saved' | 'failed'>('idle');
   const [error, setError] = useState('');
 
@@ -20,6 +21,7 @@ export default function UnitBillingSettings({ unitId }: { unitId: string }) {
       .eq('id', unitId)
       .maybeSingle()
       .then(({ data }) => {
+        setLoaded(true);
         if (!data) return;
         setFee(String(Number(data.community_fee_agorot) / 100));
         setQuota(String(Number(data.water_quota)));
@@ -39,6 +41,9 @@ export default function UnitBillingSettings({ unitId }: { unitId: string }) {
     setState(error ? 'failed' : 'saved');
   };
   const touch = () => setState('idle');
+
+  // render only after the saved values arrived, so typing is never overwritten by a late response
+  if (!loaded) return null;
 
   return (
     <form onSubmit={save} className={card}>

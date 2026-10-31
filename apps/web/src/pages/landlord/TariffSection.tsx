@@ -15,6 +15,7 @@ interface Row {
 export default function TariffSection({ orgId, propertyId }: { orgId: string; propertyId: string }) {
   const { t } = useTranslation();
   const [f, setF] = useState({ rate: '', fixed: '', a: '', b: '' });
+  const [loaded, setLoaded] = useState(false);
   const [state, setState] = useState<'idle' | 'saved' | 'failed'>('idle');
   const [error, setError] = useState('');
 
@@ -25,6 +26,7 @@ export default function TariffSection({ orgId, propertyId }: { orgId: string; pr
       .eq('property_id', propertyId)
       .maybeSingle()
       .then(({ data }) => {
+        setLoaded(true);
         const r = data as Row | null;
         if (r) setF({ rate: rateToShekels(Number(r.electricity_rate)), fixed: String(Number(r.electricity_fixed) / 100), a: rateToShekels(Number(r.water_rate_a)), b: rateToShekels(Number(r.water_rate_b)) });
       });
@@ -56,6 +58,9 @@ export default function TariffSection({ orgId, propertyId }: { orgId: string; pr
       <input type="text" inputMode="decimal" dir="ltr" value={f[k]} onChange={set(k)} placeholder="0.00" className={input} />
     </label>
   );
+
+  // render only after the saved values arrived, so typing is never overwritten by a late response
+  if (!loaded) return null;
 
   return (
     <form onSubmit={save} className={card}>

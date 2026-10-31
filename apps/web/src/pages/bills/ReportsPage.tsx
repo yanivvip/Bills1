@@ -44,7 +44,7 @@ export default function ReportsPage() {
     void Promise.all([
       supabase
         .from('statements')
-        .select('id,unit_id,contract_id,period,total_agorot,lines,paid_on,paid_method,units!inner(name,property_id)')
+        .select('id,unit_id,contract_id,period,total_agorot,lines,readings,paid_on,paid_method,units!inner(name,property_id)')
         .eq('units.property_id', propertyId)
         .gte('period', `${year}-01-01`)
         .lte('period', `${year}-12-01`),
@@ -57,7 +57,7 @@ export default function ReportsPage() {
   }, [propertyId, year]);
 
   const data = useMemo(() => {
-    const st: ReportStatement[] = (rows ?? []).map((r) => ({ unitId: r.unit_id, period: r.period, lines: r.lines, paidOn: r.paid_on }));
+    const st: ReportStatement[] = (rows ?? []).map((r) => ({ unitId: r.unit_id, period: r.period, lines: r.lines, paidOn: r.paid_on, readings: r.readings }));
     // only units that have at least one approved month this year
     const ids = units.filter((u) => st.some((x) => x.unitId === u.id)).map((u) => u.id);
     return { years: buildYear(year, ids, st), ids };

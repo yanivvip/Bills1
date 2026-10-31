@@ -24,6 +24,7 @@ export interface StatementRow {
   period: string;
   total_agorot: number;
   lines: BillLine[];
+  readings?: { electricity?: { prev: number; cur: number }; water?: { prev: number; cur: number } } | null;
   paid_on: string | null;
   paid_method: 'bit' | 'transfer' | 'cash' | 'other' | null;
 }

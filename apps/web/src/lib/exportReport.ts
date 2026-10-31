@@ -12,6 +12,9 @@ export interface Sheet {
 
 interface Spec {
   key?: keyof MonthSummary;
+  /** a meter reading row (previous/current) instead of a summary value */
+  read?: 'electricity' | 'water';
+  side?: 'prev' | 'cur';
   label: string;
   kind: 'section' | 'qty' | 'money' | 'total';
 }
@@ -22,11 +25,15 @@ const shekels = (agorot: number) => agorot / 100;
 function unitSpecs(t: TFunction): Spec[] {
   return [
     { label: `⚡ ${t('report.electricity')}`, kind: 'section' },
+    { read: 'electricity', side: 'prev', label: t('report.prevReading'), kind: 'qty' },
+    { read: 'electricity', side: 'cur', label: t('report.curReading'), kind: 'qty' },
     { key: 'kwh', label: t('report.kwh'), kind: 'qty' },
     { key: 'electricityCost', label: t('report.electricityCost'), kind: 'money' },
     { key: 'electricityFixed', label: t('report.electricityFixed'), kind: 'money' },
     { key: 'electricityTotal', label: t('report.electricityTotal'), kind: 'total' },
     { label: `💧 ${t('report.water')}`, kind: 'section' },
+    { read: 'water', side: 'prev', label: t('report.prevReadingWater'), kind: 'qty' },
+    { read: 'water', side: 'cur', label: t('report.curReadingWater'), kind: 'qty' },
     { key: 'waterM3', label: t('report.waterM3'), kind: 'qty' },
     { key: 'waterAM3', label: t('report.waterAM3'), kind: 'qty' },
     { key: 'waterACost', label: t('report.waterACost'), kind: 'money' },
@@ -59,6 +66,15 @@ export function buildSheets(opts: { year: number; propertyName: string; units: {
       if (spec.kind === 'section') {
         sections.add(r);
         rows.push([spec.label]);
+        continue;
+      }
+      if (spec.read) {
+        const pick = (i: number) => y.readings[i]?.[spec.read!]?.[spec.side!] ?? null;
+        const first = y.months.findIndex((m) => m);
+        const last = y.months.length - 1 - [...y.months].reverse().findIndex((m) => m);
+        // the year column: opening reading of the first month and closing reading of the last
+        const yearCol = first >= 0 ? (spec.side === 'prev' ? pick(first) : pick(last)) : null;
+        rows.push([spec.label, ...y.months.map((m, i) => (m ? pick(i) : null)), yearCol]);
         continue;
       }
       const conv = (v: number) => (spec.kind === 'qty' ? v : shekels(v));

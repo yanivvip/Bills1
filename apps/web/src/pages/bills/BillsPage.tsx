@@ -53,7 +53,7 @@ export default function BillsPage({ orgId }: { orgId: string }) {
   const approve = async () => {
     if (!b.result || !b.input || !propertyId) return;
     if (!window.confirm(t('bills.confirmApprove'))) return;
-    const statements = b.result.bills.map((x) => ({ unit_id: x.unitId, total: x.total, lines: x.lines }));
+    const statements = b.result.bills.map((x) => ({ unit_id: x.unitId, total: x.total, lines: x.lines, readings: x.readings }));
     const snapshot = {
       ...b.input.tariff,
       units: b.input.units.filter((u) => u.billed).map((u) => ({ id: u.id, communityFee: u.communityFee, waterQuota: u.waterQuota, residual: u.residual })),

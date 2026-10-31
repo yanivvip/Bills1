@@ -1,5 +1,6 @@
 import type { Agorot } from './money.js';
 import type { BillLine } from './bill.js';
+import type { Reading } from './usage.js';
 
 /** One month's totals for one unit, taken from its approved statement. All money in agorot. */
 export interface MonthSummary {
@@ -47,6 +48,8 @@ export interface ReportStatement {
   period: string;
   lines: readonly BillLine[];
   paidOn: string | null;
+  /** meter readings stored with the statement (older statements have none) */
+  readings?: { electricity?: Reading; water?: Reading } | null;
 }
 
 export interface UnitYear {
@@ -54,6 +57,7 @@ export interface UnitYear {
   /** index 0 = January; undefined where the month has no approved statement */
   months: (MonthSummary | undefined)[];
   paid: (string | null | undefined)[];
+  readings: ({ electricity?: Reading; water?: Reading } | undefined)[];
   yearTotal: MonthSummary;
 }
 
@@ -68,13 +72,15 @@ export function buildYear(year: number, unitIds: readonly string[], statements: 
   return unitIds.map((unitId) => {
     const months: (MonthSummary | undefined)[] = Array<MonthSummary | undefined>(12).fill(undefined);
     const paid: (string | null | undefined)[] = Array<string | null | undefined>(12).fill(undefined);
+    const readings: UnitYear['readings'] = Array<UnitYear['readings'][number]>(12).fill(undefined);
     for (const st of statements) {
       if (st.unitId !== unitId || !st.period.startsWith(`${year}-`)) continue;
       const m = Number(st.period.slice(5, 7)) - 1;
       months[m] = summarizeLines(st.lines);
       paid[m] = st.paidOn;
+      readings[m] = st.readings ?? undefined;
     }
     const yearTotal = months.reduce<MonthSummary>((acc, m) => (m ? add(acc, m) : acc), summarizeLines([]));
-    return { unitId, months, paid, yearTotal };
+    return { unitId, months, paid, readings, yearTotal };
   });
 }

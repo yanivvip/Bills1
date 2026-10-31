@@ -142,6 +142,8 @@ test('the landlord sets tariffs, approves the month and marks it paid', async ({
   const text = fs.readFileSync((await csv.path())!, 'utf8');
   expect(text).toContain('Apt 1');
   expect(text).toContain('425.5');
+  expect(text).toContain('1000'); // previous meter reading
+  expect(text).toContain('1250'); // current meter reading
   const [xlsx] = await Promise.all([page.waitForEvent('download'), page.getByRole('button', { name: he.report.exportExcel }).click()]);
   expect(xlsx.suggestedFilename()).toMatch(/.xlsx$/);
   expect(fs.statSync((await xlsx.path())!).size).toBeGreaterThan(2000);

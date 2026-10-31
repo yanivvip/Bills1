@@ -56,6 +56,8 @@ export interface BillLine {
 
 export interface UnitBill {
   unitId: string;
+  /** the unit's own meters this month (previous and current reading, summed); absent for a residual unit or a kind with no meter */
+  readings: { electricity?: Reading; water?: Reading };
   lines: BillLine[];
   total: Agorot;
 }
@@ -138,7 +140,14 @@ export function computeBills(input: BillInput): BillResult {
     for (const c of charges) {
       if (c.unitId === null || c.unitId === u.id) lines.push({ type: 'charge', description: c.description, amount: c.amount });
     }
-    bills.push({ unitId: u.id, lines, total: lines.reduce((s, l) => s + l.amount, 0) });
+    const own = (m: MeterReadings): Reading | undefined =>
+      !u.residual && m.length > 0 && defined(m) ? { prev: m.reduce((s, r) => s + r.prev, 0), cur: m.reduce((s, r) => s + r.cur, 0) } : undefined;
+    const readings: UnitBill['readings'] = {};
+    const e = own(u.electricity);
+    const w = own(u.water);
+    if (e) readings.electricity = e;
+    if (w) readings.water = w;
+    bills.push({ unitId: u.id, readings, lines, total: lines.reduce((s, l) => s + l.amount, 0) });
   });
 
   return { bills, problems };

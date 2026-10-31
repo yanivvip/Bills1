@@ -264,6 +264,10 @@
     "unpaid": "Unpaid",
     "exportExcel": "Export to Excel",
     "exportCsv": "Export to CSV",
-    "hint": "The file has a sheet per unit (a column per month) and a summary sheet. Only approved months are included."
+    "hint": "The file has a sheet per unit (a column per month) and a summary sheet. Only approved months are included.",
+    "prevReading": "Previous reading – electricity (kWh)",
+    "curReading": "Current reading – electricity (kWh)",
+    "prevReadingWater": "Previous reading – water (m³)",
+    "curReadingWater": "Current reading – water (m³)"
   }
 }

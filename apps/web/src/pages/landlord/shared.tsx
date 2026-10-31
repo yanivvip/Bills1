@@ -84,17 +84,15 @@ export interface InviteContext {
   unit: string;
 }
 
-// Ready-made invitation (Hebrew, the pilot language) as a mail link and a WhatsApp link.
+// Ready-made invitation (Hebrew, the pilot language) as WhatsApp text and copyable text.
 function inviteLinks(email: string, ctx: InviteContext, t: TFunction) {
   const base = (import.meta.env.VITE_APP_URL ?? window.location.origin).replace(/\/$/, '');
   // Keep "@" readable; it is valid in a query string and shortens the link.
   const link = `${base}/login?mode=signup&email=${encodeURIComponent(email).replace('%40', '@')}`;
   const vars = { lng: 'he', property: ctx.property, unit: ctx.unit, link };
-  const subject = t('invite.subject', vars);
   const body = t('invite.body', vars);
   return {
     body,
-    mail: `mailto:${email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`,
     whatsapp: `https://wa.me/?text=${encodeURIComponent(body)}`,
   };
 }
@@ -125,9 +123,6 @@ function InviteActions({ renter, invite, run }: { renter: Renter; invite: Invite
   return (
     <div className="flex flex-col gap-1">
       <div className="flex flex-wrap gap-2 text-xs">
-        <a href={links.mail} onClick={() => void record('email')} className={btn}>
-          ✉ {t('landlord.inviteEmail')}
-        </a>
         <a href={links.whatsapp} target="_blank" rel="noreferrer" onClick={() => void record('whatsapp')} className={btn}>
           💬 {t('landlord.inviteWhatsapp')}
         </a>

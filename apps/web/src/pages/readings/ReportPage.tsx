@@ -26,7 +26,7 @@ export default function ReportPage() {
       {error && <p className="text-sm text-red-400">{error}</p>}
       {meters.length === 0 && <p className="text-slate-400">{t('readings.renterNoMeters')}</p>}
       {meters.map((m) => (
-        <ReadingInput key={m.id} meter={m} period={period} current={current(m.id)} previous={previous(m.id)} onSave={(v) => save(m, v)} />
+        <ReadingInput key={m.id} meter={m} period={period} current={current(m.id)} previous={previous(m.id)} onSave={(v, d) => save(m, v, d)} />
       ))}
     </section>
   );

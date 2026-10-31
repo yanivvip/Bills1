@@ -63,8 +63,11 @@ test('the renter signs up, sees their rental and reports a reading', async ({ pa
   await expect(page.getByText('Building water')).toHaveCount(0);
 
   await page.locator('input[type=number]').fill('1250');
+  await page.locator('input[type=date]').fill('2026-10-02'); // the renter chooses the date the meter was read
   await page.getByRole('button', { name: he.common.save }).click();
   await expect(page.getByText(`✓ ${he.readings.submitted}`)).toBeVisible();
+  await page.reload();
+  await expect(page.locator('input[type=date]')).toHaveValue('2026-10-02');
 
   // landlord-only pages bounce a renter back home
   await page.goto('/readings');

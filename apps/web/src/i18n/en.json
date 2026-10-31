@@ -63,7 +63,8 @@
     "locked": "Approved – can no longer be changed.",
     "progress": "{{done}} of {{total}} readings reported",
     "noMeters": "No meters yet. Add them on a property page (main meters) or a unit page (unit meters).",
-    "renterNoMeters": "No meters are set up for your unit yet. Please ask your landlord."
+    "renterNoMeters": "No meters are set up for your unit yet. Please ask your landlord.",
+    "date": "Reading date"
   },
   "home": {
     "welcome": "Welcome",

@@ -21,6 +21,7 @@ export interface ReadingRow {
   value: number;
   status: 'submitted' | 'approved';
   submitted_at: string;
+  read_on: string;
 }
 
 // Meters visible to the signed-in user (RLS decides: landlord sees all, renter only their unit)
@@ -33,7 +34,7 @@ export function useMonthlyReadings(period: string) {
   const load = useCallback(async () => {
     const [m, r] = await Promise.all([
       supabase.from('meters').select('id,org_id,property_id,unit_id,kind,name,properties(name),units(name)').order('created_at'),
-      supabase.from('readings').select('id,meter_id,period,value,status,submitted_at').in('period', [period, shiftMonth(period, -1)]),
+      supabase.from('readings').select('id,meter_id,period,value,status,submitted_at,read_on').in('period', [period, shiftMonth(period, -1)]),
     ]);
     setError(m.error?.message ?? r.error?.message ?? '');
     setMeters((m.data as unknown as MeterRow[]) ?? []);
@@ -44,10 +45,10 @@ export function useMonthlyReadings(period: string) {
     void load();
   }, [load]);
 
-  const save = async (meter: MeterRow, value: number) => {
+  const save = async (meter: MeterRow, value: number, readOn: string) => {
     const { error } = await supabase
       .from('readings')
-      .upsert({ org_id: meter.org_id, meter_id: meter.id, period, value }, { onConflict: 'meter_id,period' });
+      .upsert({ org_id: meter.org_id, meter_id: meter.id, period, value, read_on: readOn }, { onConflict: 'meter_id,period' });
     setError(error?.message ?? '');
     if (!error) await load();
     return !error;

@@ -121,7 +121,8 @@
     "status": {
       "active": "פעיל",
       "ended": "הסתיים"
-    }
+    },
+    "landlordCannotBeRenter": "בעל הנכס לא יכול להיות גם שוכר בארגון שלו."
   },
   "invite": {
     "subject": "הוספתי אותך כשוכר – {{property}}, {{unit}}",

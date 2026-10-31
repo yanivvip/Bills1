@@ -121,7 +121,8 @@
     "status": {
       "active": "Active",
       "ended": "Ended"
-    }
+    },
+    "landlordCannotBeRenter": "A landlord cannot also be a renter in their own organization."
   },
   "invite": {
     "subject": "You were added as a renter – {{property}}, {{unit}}",

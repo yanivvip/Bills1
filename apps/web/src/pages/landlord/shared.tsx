@@ -33,10 +33,11 @@ export type Run = (op: PromiseLike<{ error: { message: string } | null }>) => Pr
 
 // Runs a write, remembers the error message, and reloads the page's data on success.
 export function useWriter(reload: () => Promise<void>) {
+  const { t } = useTranslation();
   const [error, setError] = useState('');
   const run: Run = async (op) => {
     const { error } = await op;
-    setError(error?.message ?? '');
+    setError(error?.message.includes('landlord_cannot_be_renter') ? t('landlord.landlordCannotBeRenter') : (error?.message ?? ''));
     if (!error) await reload();
     return !error;
   };

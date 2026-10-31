@@ -1,7 +1,7 @@
 -- Database security tests (pgTAP). Run with: supabase test db
 -- Everything runs in one transaction that is rolled back, so no data is left behind.
 begin;
-select plan(24);
+select plan(26);
 
 -- ── Fixtures (as the postgres superuser) ─────────────────────────────────
 insert into auth.users (id, email, email_confirmed_at, instance_id, aud, role) values
@@ -121,6 +121,13 @@ select throws_ok($q$select public.admin_set_super_user('00000000-0000-0000-0000-
   null, 'cannot remove the last Super_User', 'the last Super_User cannot be removed');
 select lives_ok($q$select public.admin_set_super_user('00000000-0000-0000-0000-0000000000a1', true)$q$,
   'a Super_User can grant Super_User to someone else');
+
+-- ── A landlord cannot be a renter in their own organization ──────────────
+select pg_temp.act_as('00000000-0000-0000-0000-0000000000a1');
+select throws_ok($q$insert into public.contract_renters (org_id, contract_id, email) values ('10000000-0000-0000-0000-00000000000a', '40000000-0000-0000-0000-000000000001', 'landlord-a@test.dev')$q$,
+  null, 'landlord_cannot_be_renter', 'a landlord cannot add themselves as a renter of their own organization');
+select lives_ok($q$insert into public.contract_renters (org_id, contract_id, email) values ('10000000-0000-0000-0000-00000000000a', '40000000-0000-0000-0000-000000000001', 'other@test.dev')$q$,
+  'other emails can still be added as renters');
 
 select * from finish();
 rollback;

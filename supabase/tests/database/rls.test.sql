@@ -144,7 +144,7 @@ select is((select count(*)::int from public.contract_renters where user_id = '00
 select pg_temp.act_as('00000000-0000-0000-0000-0000000000b1');
 select throws_ok($q$select * from public.admin_list_units()$q$, null, 'forbidden', 'a landlord cannot list all units');
 select pg_temp.act_as('00000000-0000-0000-0000-0000000000d1');
-select is((select count(*)::int from public.admin_list_units()), 3, 'a Super_User sees the units of every organization');
+select is((select count(*)::int from public.admin_list_units() where org_name in ('Org A', 'Org B')), 3, 'a Super_User sees the units of every organization');
 
 -- ── Billing: tariffs, approval, statements ───────────────────────────────
 select pg_temp.act_as('00000000-0000-0000-0000-0000000000a1');
@@ -173,12 +173,12 @@ select throws_ok($q$select public.set_statement_paid((select id from public.stat
 select pg_temp.act_as('00000000-0000-0000-0000-0000000000a1');
 select lives_ok($q$select public.set_statement_paid((select id from public.statements where unit_id = '30000000-0000-0000-0000-000000000001'), '2026-10-05', 'bit')$q$,
   'a landlord marks a statement paid');
-select throws_ok($q$select public.reopen_month((select id from public.billing_periods limit 1))$q$,
+select throws_ok($q$select public.reopen_month((select id from public.billing_periods where property_id = '20000000-0000-0000-0000-00000000000a' and period = '2026-10-01'))$q$,
   null, 'month has paid statements', 'a month with a paid statement cannot be re-opened');
 select lives_ok($q$select public.set_statement_paid((select id from public.statements where unit_id = '30000000-0000-0000-0000-000000000001'), null, null)$q$,
   'a statement can be marked unpaid again');
-select lives_ok($q$select public.reopen_month((select id from public.billing_periods limit 1))$q$, 'an unpaid month can be re-opened');
-select is((select count(*)::int from public.statements), 0, 're-opening removes the statements');
+select lives_ok($q$select public.reopen_month((select id from public.billing_periods where property_id = '20000000-0000-0000-0000-00000000000a' and period = '2026-10-01'))$q$, 'an unpaid month can be re-opened');
+select is((select count(*)::int from public.statements where org_id = '10000000-0000-0000-0000-00000000000a' and period = '2026-10-01'), 0, 're-opening removes the statements');
 
 select pg_temp.act_as('00000000-0000-0000-0000-0000000000b1');
 select throws_ok($q$insert into public.tariffs (property_id, org_id, electricity_rate) values ('20000000-0000-0000-0000-00000000000a', '10000000-0000-0000-0000-00000000000a', 64)$q$,

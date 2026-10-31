@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { buildYear, collections as buildCollections, type ReportStatement } from '@bills/engine';
+import { buildYear, collections as buildCollections, reconcile, type ReportStatement } from '@bills/engine';
 import { monthLabel, monthStart } from '../../lib/period';
 import { supabase } from '../../lib/supabase';
 import { formatMoney } from '../../lib/money';
@@ -26,6 +26,7 @@ export default function ReportsPage() {
   const [units, setUnits] = useState<{ id: string; name: string }[]>([]);
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
+  const [supplierRows, setSupplierRows] = useState<{ period: string; kind: 'electricity' | 'water'; amount_agorot: number }[]>([]);
 
   useEffect(() => {
     void supabase
@@ -45,14 +46,16 @@ export default function ReportsPage() {
     void Promise.all([
       supabase
         .from('statements')
-        .select('id,unit_id,contract_id,period,total_agorot,lines,readings,paid_on,paid_method,units!inner(name,property_id)')
+        .select('id,unit_id,contract_id,period,total_agorot,lines,readings,paid_agorot,paid_on,paid_method,units!inner(name,property_id)')
         .eq('units.property_id', propertyId)
         .gte('period', `${year}-01-01`)
         .lte('period', `${year}-12-01`),
       supabase.from('units').select('id,name').eq('property_id', propertyId).order('created_at'),
-    ]).then(([s, u]) => {
+      supabase.from('supplier_bills').select('period,kind,amount_agorot').eq('property_id', propertyId).gte('period', `${year}-01-01`).lte('period', `${year}-12-01`),
+    ]).then(([s, u, sb]) => {
+      setSupplierRows(((sb.data ?? []) as { period: string; kind: 'electricity' | 'water'; amount_agorot: number }[]).map((x) => ({ ...x, amount_agorot: Number(x.amount_agorot) })));
       setError(s.error?.message ?? u.error?.message ?? '');
-      setRows(((s.data ?? []) as unknown as Row[]).map((x) => ({ ...x, total_agorot: Number(x.total_agorot) })));
+      setRows(((s.data ?? []) as unknown as Row[]).map((x) => ({ ...x, total_agorot: Number(x.total_agorot), paid_agorot: Number(x.paid_agorot) })));
       setUnits((u.data as { id: string; name: string }[]) ?? []);
     });
   }, [propertyId, year]);
@@ -61,15 +64,23 @@ export default function ReportsPage() {
     const st: ReportStatement[] = (rows ?? []).map((r) => ({ unitId: r.unit_id, period: r.period, lines: r.lines, paidOn: r.paid_on, readings: r.readings }));
     // only units that have at least one approved month this year
     const ids = units.filter((u) => st.some((x) => x.unitId === u.id)).map((u) => u.id);
-    const coll = buildCollections((rows ?? []).map((r) => ({ unitId: r.unit_id, period: r.period, total: r.total_agorot, paid: !!r.paid_on })), monthStart());
-    return { years: buildYear(year, ids, st), ids, coll };
-  }, [rows, units, year]);
+    const coll = buildCollections((rows ?? []).map((r) => ({ unitId: r.unit_id, period: r.period, total: r.total_agorot, paidAmount: r.paid_agorot })), monthStart());
+    // supplier reconciliation per month of the year (only months with an approved bill)
+    const recon = Array.from({ length: 12 }, (_, m) => {
+      const p = `${year}-${String(m + 1).padStart(2, '0')}-01`;
+      const of = (rows ?? []).filter((r) => r.period === p);
+      if (of.length === 0) return undefined;
+      const sup = (k: 'electricity' | 'water') => supplierRows.find((x) => x.period === p && x.kind === k)?.amount_agorot;
+      return reconcile(of.map((r) => r.lines), { electricity: sup('electricity'), water: sup('water') });
+    });
+    return { years: buildYear(year, ids, st), ids, coll, recon };
+  }, [rows, units, year, supplierRows]);
 
   if (!properties) return <p className="p-4">{t('common.loading')}</p>;
 
   const property = properties.find((p) => p.id === propertyId)?.name ?? '';
   const reportUnits = units.filter((u) => data.ids.includes(u.id));
-  const sheets = () => buildSheets({ year, propertyName: property, units: reportUnits, data: data.years, t, lang: i18n.language, collections: data.coll });
+  const sheets = () => buildSheets({ year, propertyName: property, units: reportUnits, data: data.years, t, lang: i18n.language, collections: data.coll, reconciliation: data.recon });
   const file = `bills-${property.replace(/[^\p{L}\p{N}]+/gu, '-')}-${year}`;
   const grand = data.years.reduce((s, y) => s + y.yearTotal.total, 0);
   const money = (a: number) => formatMoney(a, i18n.language);

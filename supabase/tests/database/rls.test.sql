@@ -1,7 +1,7 @@
 -- Database security tests (pgTAP). Run with: supabase test db
 -- Everything runs in one transaction that is rolled back, so no data is left behind.
 begin;
-select plan(53);
+select plan(65);
 
 -- ── Fixtures (as the postgres superuser) ─────────────────────────────────
 insert into auth.users (id, email, email_confirmed_at, instance_id, aud, role) values
@@ -188,6 +188,26 @@ select lives_ok($q$insert into public.tariffs (property_id, org_id, electricity_
   'a landlord sets tariffs');
 select pg_temp.act_as('00000000-0000-0000-0000-0000000000c2');
 select is((select count(*)::int from public.tariffs), 0, 'a renter cannot read tariffs');
+
+-- ── Partial payments and supplier bills ──────────────────────────────────
+select pg_temp.act_as('00000000-0000-0000-0000-0000000000a1');
+select lives_ok($q$select public.approve_month('20000000-0000-0000-0000-00000000000a', '2026-07-01',
+  '[{"unit_id":"30000000-0000-0000-0000-000000000001","total":1500,"lines":[{"type":"community","amount":1500}]}]'::jsonb, '{}'::jsonb)$q$, 'a month is approved for the payment tests');
+select lives_ok($q$select public.add_payment((select id from public.statements where unit_id = '30000000-0000-0000-0000-000000000001' and period = '2026-07-01'), 500, '2026-07-05', 'bit')$q$, 'a landlord records a partial payment');
+select is((select paid_agorot::int from public.statements where id = (select id from public.statements where unit_id = '30000000-0000-0000-0000-000000000001' and period = '2026-07-01')), 500, 'the statement shows what was paid so far');
+select is((select paid_on from public.statements where id = (select id from public.statements where unit_id = '30000000-0000-0000-0000-000000000001' and period = '2026-07-01')), null, 'a partly paid statement is not marked paid');
+select throws_ok($q$select public.add_payment((select id from public.statements where unit_id = '30000000-0000-0000-0000-000000000001' and period = '2026-07-01'), 1100, '2026-07-06', 'cash')$q$, null, 'payment exceeds the balance', 'a payment cannot exceed the balance');
+select lives_ok($q$select public.add_payment((select id from public.statements where unit_id = '30000000-0000-0000-0000-000000000001' and period = '2026-07-01'), 1000, '2026-07-06', 'cash')$q$, 'the remaining balance can be paid');
+select is((select paid_on::text from public.statements where id = (select id from public.statements where unit_id = '30000000-0000-0000-0000-000000000001' and period = '2026-07-01')), '2026-07-06', 'a fully paid statement is marked paid on the last payment date');
+select lives_ok($q$select public.delete_payment((select id from public.payments where amount_agorot = 1000))$q$, 'a payment can be removed');
+select is((select paid_on from public.statements where id = (select id from public.statements where unit_id = '30000000-0000-0000-0000-000000000001' and period = '2026-07-01')), null, 'removing a payment makes the statement unpaid again');
+
+select pg_temp.act_as('00000000-0000-0000-0000-0000000000b1');
+select throws_ok($q$select public.add_payment((select id from public.statements limit 1), 100, '2026-07-07', 'bit')$q$, null, 'forbidden', 'another landlord cannot record payments');
+select throws_ok($q$insert into public.supplier_bills (org_id, property_id, period, kind, amount_agorot) values ('10000000-0000-0000-0000-00000000000a', '20000000-0000-0000-0000-00000000000a', '2026-07-01', 'water', 1000)$q$,
+  '42501', null, 'another landlord cannot enter supplier bills for this property');
+select pg_temp.act_as('00000000-0000-0000-0000-0000000000a1');
+select lives_ok($q$insert into public.supplier_bills (org_id, property_id, period, kind, amount_agorot) values ('10000000-0000-0000-0000-00000000000a', '20000000-0000-0000-0000-00000000000a', '2026-07-01', 'water', 1000)$q$, 'a landlord enters a supplier bill');
 
 -- ── Replacing a tenant ───────────────────────────────────────────────────
 select pg_temp.act_as('00000000-0000-0000-0000-0000000000b1');

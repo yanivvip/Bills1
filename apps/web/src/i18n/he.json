@@ -207,7 +207,7 @@
     "paid": "שולם",
     "unpaid": "לא שולם",
     "paidOn": "שולם ב-{{date}}",
-    "markPaid": "סמן כשולם",
+    "markPaid": "רישום תשלום",
     "markUnpaid": "בטל סימון",
     "paymentDate": "תאריך תשלום",
     "paymentMethod": "אמצעי תשלום",
@@ -247,7 +247,20 @@
       "head": "חשבון {{month}} – {{property}} · {{unit}}",
       "total": "סה״כ לתשלום: {{total}}",
       "paid": "סה״כ {{total}} – שולם ב-{{date}}. תודה!"
-    }
+    },
+    "partlyPaid": "שולם חלקית",
+    "removePayment": "מחיקה",
+    "remaining": "נותר לתשלום: {{amount}}",
+    "paymentAmount": "סכום",
+    "balanceDue": "יתרה לתשלום",
+    "partialSummary": "שולם חלקית: {{paid}} מתוך {{total}}",
+    "supplierTitle": "התאמה מול הספקים",
+    "supplierHint": "הזן כמה חברת החשמל וחברת המים חייבו אותך החודש, ותראה מה נגבה מהדיירים.",
+    "supplierAmount": "חשבון ספק (₪)",
+    "collectedFromRenters": "חויב לדיירים: {{amount}}",
+    "landlordCovered": "שילמת {{amount}} יותר ממה שחויב",
+    "collectedExtra": "חויב {{amount}} יותר מהספק",
+    "balanced": "מאוזן"
   },
   "report": {
     "title": "דוח שנתי",
@@ -291,7 +304,11 @@
     "amount": "סכום (₪)",
     "age": "חודשים בחוב",
     "ageMonths_one": "חודש בחוב",
-    "ageMonths_other": "{{count}} חודשים בחוב"
+    "ageMonths_other": "{{count}} חודשים בחוב",
+    "reconciliation": "התאמה מול ספקים",
+    "supplierElectricity": "חשבון חברת החשמל (₪)",
+    "supplierWater": "חשבון חברת המים (₪)",
+    "difference": "הפרש (₪)"
   },
   "attention": {
     "title": "דורש טיפול",

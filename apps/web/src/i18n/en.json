@@ -207,7 +207,7 @@
     "paid": "Paid",
     "unpaid": "Unpaid",
     "paidOn": "Paid on {{date}}",
-    "markPaid": "Mark paid",
+    "markPaid": "Record payment",
     "markUnpaid": "Undo",
     "paymentDate": "Payment date",
     "paymentMethod": "Payment method",
@@ -247,7 +247,20 @@
       "head": "{{month}} bill – {{property}} · {{unit}}",
       "total": "Total to pay: {{total}}",
       "paid": "Total {{total}} – paid on {{date}}. Thank you!"
-    }
+    },
+    "partlyPaid": "Partly paid",
+    "removePayment": "Delete",
+    "remaining": "Remaining: {{amount}}",
+    "paymentAmount": "Amount",
+    "balanceDue": "Balance due",
+    "partialSummary": "Partly paid: {{paid}} of {{total}}",
+    "supplierTitle": "Supplier reconciliation",
+    "supplierHint": "Enter what the electricity and water companies charged you this month to compare with what was billed to renters.",
+    "supplierAmount": "Supplier bill (₪)",
+    "collectedFromRenters": "Billed to renters: {{amount}}",
+    "landlordCovered": "You paid {{amount}} more than was billed",
+    "collectedExtra": "Billed {{amount}} more than the supplier charged",
+    "balanced": "Balanced"
   },
   "report": {
     "title": "Annual report",
@@ -291,7 +304,11 @@
     "amount": "Amount (₪)",
     "age": "Months overdue",
     "ageMonths_one": "1 month overdue",
-    "ageMonths_other": "{{count}} months overdue"
+    "ageMonths_other": "{{count}} months overdue",
+    "reconciliation": "Supplier reconciliation",
+    "supplierElectricity": "Electricity company bill (₪)",
+    "supplierWater": "Water company bill (₪)",
+    "difference": "Difference (₪)"
   },
   "attention": {
     "title": "Needs attention",

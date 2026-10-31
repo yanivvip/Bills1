@@ -1,5 +1,5 @@
 import type { TFunction } from 'i18next';
-import type { Collections, MonthSummary, UnitYear } from '@bills/engine';
+import type { Collections, MonthSummary, Reconciliation, UnitYear } from '@bills/engine';
 
 export type Cell = string | number | null;
 export interface Sheet {
@@ -50,7 +50,7 @@ function unitSpecs(t: TFunction): Spec[] {
 const monthNames = (year: number, lang: string) =>
   Array.from({ length: 12 }, (_, m) => `${new Date(year, m, 1).toLocaleDateString(lang, { month: 'long' })} ${year}`);
 
-export function buildSheets(opts: { year: number; propertyName: string; units: { id: string; name: string }[]; data: UnitYear[]; t: TFunction; lang: string; collections?: Collections }): Sheet[] {
+export function buildSheets(opts: { year: number; propertyName: string; units: { id: string; name: string }[]; data: UnitYear[]; t: TFunction; lang: string; collections?: Collections; reconciliation?: (Reconciliation | undefined)[] }): Sheet[] {
   const { year, propertyName, units, data, t, lang } = opts;
   const months = monthNames(year, lang);
   const sheets: Sheet[] = [];
@@ -126,6 +126,19 @@ export function buildSheets(opts: { year: number; propertyName: string; units: {
       ...c.debts.map((d): Cell[] => [nameOf(d.unitId), d.period.slice(0, 7), shekels(d.total), d.ageMonths]),
     ];
     sheets.push({ name: t('report.collections'), rows: crows, sections: new Set([0, 5]), money: new Set([1, 2, 3, ...c.debts.map((_, i) => 6 + i)]) });
+  }
+  // supplier reconciliation, one row per approved month
+  if (opts.reconciliation && opts.reconciliation.some(Boolean)) {
+    const head = [t('report.month'), t('report.electricityTotal'), t('report.supplierElectricity'), t('report.difference'), t('report.waterTotal'), t('report.supplierWater'), t('report.difference')];
+    const rrows: Cell[][] = [[`${t('report.reconciliation')} – ${propertyName} – ${year}`], head];
+    const rmoney = new Set<number>();
+    opts.reconciliation.forEach((r, m) => {
+      if (!r) return;
+      const v = (n: number | null) => (n === null ? null : shekels(n));
+      rmoney.add(rrows.length);
+      rrows.push([months[m]!, v(r.electricity.collected), v(r.electricity.supplier), v(r.electricity.difference), v(r.water.collected), v(r.water.supplier), v(r.water.difference)]);
+    });
+    sheets.push({ name: t('report.reconciliation'), rows: rrows, sections: new Set([0, 1]), money: rmoney });
   }
   return sheets;
 }

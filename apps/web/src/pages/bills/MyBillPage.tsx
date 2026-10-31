@@ -18,17 +18,23 @@ export default function MyBillPage() {
   useEffect(() => {
     void supabase
       .from('statements')
-      .select('id,unit_id,contract_id,period,total_agorot,lines,paid_on,paid_method')
+      .select('id,unit_id,contract_id,period,total_agorot,lines,paid_agorot,paid_on,paid_method')
       .order('period', { ascending: false })
-      .then(({ data }) => setStatements(((data ?? []) as StatementRow[]).map((x) => ({ ...x, total_agorot: Number(x.total_agorot) }))));
+      .then(({ data }) => setStatements(((data ?? []) as StatementRow[]).map((x) => ({ ...x, total_agorot: Number(x.total_agorot), paid_agorot: Number(x.paid_agorot) }))));
   }, []);
 
   if (!statements) return <p className="p-4">{t('common.loading')}</p>;
   const s = statements.find((x) => x.period === period);
+  const balance = statements.reduce((sum, x) => sum + (x.total_agorot - x.paid_agorot), 0);
 
   return (
     <section className="flex flex-col gap-4 p-4">
       <h1 className="text-2xl font-bold">{t('bills.myBill')}</h1>
+      {balance > 0 && (
+        <div className="rounded-2xl bg-amber-900/30 p-3 text-amber-200">
+          {t('bills.balanceDue')}: <strong dir="ltr">{formatMoney(balance, i18n.language)}</strong>
+        </div>
+      )}
       <MonthNav period={period} onChange={setPeriod} />
       {!s && <p className="text-slate-400">{t('bills.notPublished')}</p>}
       {s && (
@@ -37,6 +43,8 @@ export default function MyBillPage() {
             <span className="text-3xl font-bold" dir="ltr">{formatMoney(s.total_agorot, i18n.language)}</span>
             {s.paid_on ? (
               <span className="rounded-full bg-emerald-700 px-2 py-0.5 text-xs">✓ {t('bills.paid')}</span>
+            ) : s.paid_agorot > 0 ? (
+              <span className="rounded-full bg-sky-700 px-2 py-0.5 text-xs">{t('bills.partlyPaid')}</span>
             ) : (
               <span className="rounded-full bg-amber-700 px-2 py-0.5 text-xs">{t('bills.unpaid')}</span>
             )}

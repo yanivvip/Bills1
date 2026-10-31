@@ -15,18 +15,19 @@ export default function MonthStrip({ propertyId, period, onChange, version }: { 
   useEffect(() => {
     void supabase
       .from('statements')
-      .select('period,paid_on,units!inner(property_id)')
+      .select('period,total_agorot,paid_agorot,units!inner(property_id)')
       .eq('units.property_id', propertyId)
       .gte('period', `${year}-01-01`)
       .lte('period', `${year}-12-01`)
       .then(({ data }) => {
         const next = Array<State>(12).fill('none');
-        const rows = (data ?? []) as { period: string; paid_on: string | null }[];
+        const rows = (data ?? []) as { period: string; total_agorot: number; paid_agorot: number }[];
         for (let m = 0; m < 12; m++) {
           const of = rows.filter((r) => Number(r.period.slice(5, 7)) - 1 === m);
           if (of.length === 0) continue;
-          const paid = of.filter((r) => r.paid_on).length;
-          next[m] = paid === of.length ? 'paid' : paid === 0 ? 'open' : 'partial';
+          const paid = of.filter((r) => Number(r.paid_agorot) >= Number(r.total_agorot)).length;
+          const touched = of.some((r) => Number(r.paid_agorot) > 0);
+          next[m] = paid === of.length ? 'paid' : touched ? 'partial' : 'open';
         }
         setStates(next);
       });

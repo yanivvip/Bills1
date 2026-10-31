@@ -140,6 +140,16 @@ test('the landlord sets tariffs, approves the month and marks it paid', async ({
   page.once('dialog', (d) => void d.accept());
   await page.getByRole('button', { name: he.bills.approve }).click();
   await expect(page.getByText(`✓ ${he.bills.approved}`)).toBeVisible();
+  // supplier reconciliation: billed to the renter 160 + 90 = 250, the supplier charged 300
+  await page.getByLabel(`${he.bills.supplierAmount} ${he.meters.electricity}`).fill('300');
+  await page.getByRole('button', { name: he.common.save }).first().click();
+  await expect(page.getByText(/שילמת.*50.00/)).toBeVisible();
+
+  // a partial payment first, then the rest
+  await page.getByLabel(he.bills.paymentAmount, { exact: true }).fill('100');
+  await page.getByRole('button', { name: he.bills.markPaid }).click();
+  await expect(page.getByText(he.bills.partlyPaid)).toBeVisible();
+  await expect(page.getByText(/325.50/)).toBeVisible(); // the remaining balance: 425.50 - 100
   await page.getByRole('button', { name: he.bills.markPaid }).click();
   await expect(page.getByText(/שולם ב-/)).toBeVisible();
 

@@ -25,7 +25,7 @@ export default function AttentionCard() {
         supabase.from('units').select('id,name,properties(name),contracts(status)'),
         supabase.from('meters').select('id,unit_id,kind,name'),
         supabase.from('readings').select('meter_id,period,value').gte('period', shiftMonth(period, -4)),
-        supabase.from('statements').select('unit_id,period,total_agorot,paid_on').is('paid_on', null),
+        supabase.from('statements').select('unit_id,period,total_agorot,paid_agorot').is('paid_on', null),
       ]);
       type U = { id: string; name: string; properties: { name: string } | null; contracts: { status: string }[] };
       const units = (u.data ?? []) as unknown as U[];
@@ -34,7 +34,9 @@ export default function AttentionCard() {
         units: units.map((x) => ({ id: x.id, name: x.name, rented: x.contracts.some((c) => c.status === 'active') })),
         meters: ((m.data ?? []) as { id: string; unit_id: string | null; kind: 'electricity' | 'water'; name: string }[]).map((x) => ({ id: x.id, unitId: x.unit_id, kind: x.kind, name: x.name })),
         readings: ((r.data ?? []) as { meter_id: string; period: string; value: number }[]).map((x) => ({ meterId: x.meter_id, period: x.period, value: Number(x.value) })),
-        statements: ((s.data ?? []) as { unit_id: string; period: string; total_agorot: number }[]).map((x) => ({ unitId: x.unit_id, period: x.period, total: Number(x.total_agorot), paid: false })),
+        statements: ((s.data ?? []) as { unit_id: string; period: string; total_agorot: number; paid_agorot: number }[])
+          .filter((x) => Number(x.total_agorot) > Number(x.paid_agorot))
+          .map((x) => ({ unitId: x.unit_id, period: x.period, total: Number(x.total_agorot) - Number(x.paid_agorot), paid: false })),
       });
       setData({
         items,

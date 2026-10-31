@@ -25,9 +25,19 @@ export interface StatementRow {
   total_agorot: number;
   lines: BillLine[];
   readings?: { electricity?: { prev: number; cur: number }; water?: { prev: number; cur: number } } | null;
+  paid_agorot: number;
   paid_on: string | null;
   paid_method: 'bit' | 'transfer' | 'cash' | 'other' | null;
 }
+export interface PaymentRow {
+  id: string;
+  statement_id: string;
+  amount_agorot: number;
+  paid_on: string;
+  method: 'bit' | 'transfer' | 'cash' | 'other';
+  note: string | null;
+}
+export type SupplierAmounts = { electricity?: number; water?: number };
 interface TariffRow {
   electricity_rate: number;
   electricity_fixed: number;
@@ -58,16 +68,20 @@ export function useBilling(propertyId: string | undefined, period: string) {
   const [charges, setCharges] = useState<ChargeRow[]>([]);
   const [billing, setBilling] = useState<{ id: string } | null>(null);
   const [statements, setStatements] = useState<StatementRow[]>([]);
+  const [payments, setPayments] = useState<PaymentRow[]>([]);
+  const [supplier, setSupplier] = useState<SupplierAmounts>({});
 
   const load = useCallback(async () => {
     if (!propertyId) return;
-    const [t, u, m, r, c, b] = await Promise.all([
+    const [t, u, m, r, c, b, sb] = await Promise.all([
+
       supabase.from('tariffs').select('electricity_rate,electricity_fixed,water_rate_a,water_rate_b').eq('property_id', propertyId).maybeSingle(),
       supabase.from('units').select('id,name,community_fee_agorot,water_quota,is_residual,contracts(id,status)').eq('property_id', propertyId).order('created_at'),
       supabase.from('meters').select('id,unit_id,kind').eq('property_id', propertyId),
       supabase.from('readings').select('meter_id,period,value').in('period', [period, shiftMonth(period, -1)]),
       supabase.from('charges').select('id,unit_id,description,amount').eq('property_id', propertyId).eq('period', period).order('created_at'),
       supabase.from('billing_periods').select('id').eq('property_id', propertyId).eq('period', period).maybeSingle(),
+      supabase.from('supplier_bills').select('kind,amount_agorot').eq('property_id', propertyId).eq('period', period),
     ]);
     const err = [t, u, m, r, c, b].find((x) => x.error)?.error;
     setError(err?.message ?? '');
@@ -77,14 +91,21 @@ export function useBilling(propertyId: string | undefined, period: string) {
     setReadings(((r.data ?? []) as { meter_id: string; period: string; value: number }[]).map((x) => ({ ...x, value: Number(x.value) })));
     setCharges(((c.data ?? []) as ChargeRow[]).map((x) => ({ ...x, amount: Number(x.amount) })));
     setBilling((b.data as { id: string } | null) ?? null);
+    const sup: SupplierAmounts = {};
+    for (const x of (sb.data ?? []) as { kind: 'electricity' | 'water'; amount_agorot: number }[]) sup[x.kind] = Number(x.amount_agorot);
+    setSupplier(sup);
     if (b.data) {
       const s = await supabase
         .from('statements')
-        .select('id,unit_id,contract_id,period,total_agorot,lines,paid_on,paid_method')
+        .select('id,unit_id,contract_id,period,total_agorot,lines,paid_agorot,paid_on,paid_method')
         .eq('billing_id', (b.data as { id: string }).id);
-      setStatements(((s.data ?? []) as StatementRow[]).map((x) => ({ ...x, total_agorot: Number(x.total_agorot) })));
+      const rows = ((s.data ?? []) as StatementRow[]).map((x) => ({ ...x, total_agorot: Number(x.total_agorot), paid_agorot: Number(x.paid_agorot) }));
+      setStatements(rows);
+      const p = rows.length > 0 ? await supabase.from('payments').select('id,statement_id,amount_agorot,paid_on,method,note').in('statement_id', rows.map((x) => x.id)).order('paid_on') : { data: [] };
+      setPayments(((p.data ?? []) as PaymentRow[]).map((x) => ({ ...x, amount_agorot: Number(x.amount_agorot) })));
     } else {
       setStatements([]);
+      setPayments([]);
     }
     setLoaded(true);
   }, [propertyId, period]);
@@ -122,5 +143,5 @@ export function useBilling(propertyId: string | undefined, period: string) {
     return { input: inp, result: computeBills(inp) };
   }, [tariff, units, meters, readings, charges, period]);
 
-  return { loaded, error, setError, tariff, units, charges, billing, statements, input, result, reload: load };
+  return { loaded, error, setError, tariff, units, charges, billing, statements, payments, supplier, input, result, reload: load };
 }

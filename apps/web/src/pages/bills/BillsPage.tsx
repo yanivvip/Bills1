@@ -8,7 +8,8 @@ import MonthNav from '../readings/MonthNav';
 import { card, input, primary } from '../landlord/shared';
 import StatementView from './StatementView';
 import MonthStrip from './MonthStrip';
-import { useBilling, type StatementRow } from './useBilling';
+import { reconcile } from '@bills/engine';
+import { useBilling, type PaymentRow, type StatementRow, type SupplierAmounts } from './useBilling';
 
 interface Prop {
   id: string;
@@ -97,8 +98,9 @@ export default function BillsPage({ orgId }: { orgId: string }) {
         <>
           <p className="text-sm text-emerald-400">✓ {t('bills.approved')}</p>
           {b.statements.map((s) => (
-            <StatementCard key={s.id} s={s} unit={unitName(s.unit_id)} busy={busy} act={act} />
+            <StatementCard key={s.id} s={s} unit={unitName(s.unit_id)} payments={b.payments.filter((p) => p.statement_id === s.id)} busy={busy} act={act} />
           ))}
+          <SupplierCard orgId={orgId} propertyId={propertyId!} period={period} supplier={b.supplier} lines={b.statements.map((s) => s.lines)} act={act} busy={busy} />
           <button className="self-start text-sm text-slate-400 underline" onClick={() => void reopen()}>
             {t('bills.reopen')}
           </button>
@@ -145,48 +147,118 @@ export default function BillsPage({ orgId }: { orgId: string }) {
   );
 }
 
-function StatementCard({ s, unit, busy, act }: { s: StatementRow; unit: string; busy: boolean; act: (op: PromiseLike<{ error: { message: string } | null }>) => Promise<boolean> }) {
-  const { t } = useTranslation();
+function StatementCard({ s, unit, payments, busy, act }: { s: StatementRow; unit: string; payments: PaymentRow[]; busy: boolean; act: (op: PromiseLike<{ error: { message: string } | null }>) => Promise<boolean> }) {
+  const { t, i18n } = useTranslation();
+  const remaining = s.total_agorot - s.paid_agorot;
   const [date, setDate] = useState(today());
   const [method, setMethod] = useState<(typeof METHODS)[number]>('bit');
+  const [amount, setAmount] = useState('');
+  const typed = amount.trim() === '' ? remaining : parseAgorot(amount);
+  const valid = typed !== null && typed > 0 && typed <= remaining && !!date;
+  const money = (a: number) => formatMoney(a, i18n.language);
+  const full = remaining <= 0;
   return (
     <div className={card}>
       <div className="flex items-center justify-between gap-2">
         <strong className="text-lg">{unit}</strong>
-        {s.paid_on ? <span className="rounded-full bg-emerald-700 px-2 py-0.5 text-xs">{t('bills.paid')}</span> : <span className="rounded-full bg-amber-700 px-2 py-0.5 text-xs">{t('bills.unpaid')}</span>}
+        {full ? (
+          <span className="rounded-full bg-emerald-700 px-2 py-0.5 text-xs">{t('bills.paid')}</span>
+        ) : s.paid_agorot > 0 ? (
+          <span className="rounded-full bg-sky-700 px-2 py-0.5 text-xs">{t('bills.partlyPaid')}</span>
+        ) : (
+          <span className="rounded-full bg-amber-700 px-2 py-0.5 text-xs">{t('bills.unpaid')}</span>
+        )}
       </div>
       <StatementView lines={s.lines} total={s.total_agorot} />
       <Link to={`/bill/${s.id}`} className="self-start text-sm underline">
         {t('bills.viewBill')}
       </Link>
-      {s.paid_on ? (
-        <div className="flex items-center justify-between gap-2 text-sm text-slate-300">
-          <span>
-            {t('bills.paidOn', { date: s.paid_on })} · {t(`bills.method.${s.paid_method}`)}
-          </span>
-          <button disabled={busy} className="text-slate-400 underline" onClick={() => void act(supabase.rpc('set_statement_paid', { p_statement: s.id, p_paid_on: null, p_method: null }))}>
-            {t('bills.markUnpaid')}
-          </button>
-        </div>
-      ) : (
-        <div className="flex flex-wrap items-center gap-2">
-          <input type="date" value={date} max={today()} onChange={(e) => setDate(e.target.value)} className={input} aria-label={t('bills.paymentDate')} />
-          <select value={method} onChange={(e) => setMethod(e.target.value as (typeof METHODS)[number])} className={input} aria-label={t('bills.paymentMethod')}>
-            {METHODS.map((m) => (
-              <option key={m} value={m}>
-                {t(`bills.method.${m}`)}
-              </option>
-            ))}
-          </select>
-          <button
-            disabled={busy || !date}
-            className={`${primary} disabled:opacity-50`}
-            onClick={() => void act(supabase.rpc('set_statement_paid', { p_statement: s.id, p_paid_on: date, p_method: method }))}
-          >
-            {t('bills.markPaid')}
-          </button>
-        </div>
+      {full && s.paid_on && (
+        <p className="text-sm text-slate-300">
+          {t('bills.paidOn', { date: s.paid_on })} · {t(`bills.method.${s.paid_method}`)}
+        </p>
       )}
+      {payments.length > 0 && (
+        <ul className="flex flex-col gap-1 text-sm text-slate-300">
+          {payments.map((p) => (
+            <li key={p.id} className="flex items-center justify-between gap-2">
+              <span>
+                <span dir="ltr">{money(p.amount_agorot)}</span> · {p.paid_on} · {t(`bills.method.${p.method}`)}
+              </span>
+              <button disabled={busy} className="text-slate-400 underline" onClick={() => void act(supabase.rpc('delete_payment', { p_payment: p.id }))}>
+                {t('bills.removePayment')}
+              </button>
+            </li>
+          ))}
+        </ul>
+      )}
+      {!full && (
+        <>
+          {s.paid_agorot > 0 && <p className="text-sm text-amber-300">{t('bills.remaining', { amount: money(remaining) })}</p>}
+          <div className="flex flex-wrap items-center gap-2">
+            <input type="text" inputMode="decimal" dir="ltr" value={amount} onChange={(e) => setAmount(e.target.value)} placeholder={`${t('bills.paymentAmount')} (${money(remaining)})`} className={`${input} w-40`} aria-label={t('bills.paymentAmount')} />
+            <input type="date" value={date} max={today()} onChange={(e) => setDate(e.target.value)} className={input} aria-label={t('bills.paymentDate')} />
+            <select value={method} onChange={(e) => setMethod(e.target.value as (typeof METHODS)[number])} className={input} aria-label={t('bills.paymentMethod')}>
+              {METHODS.map((m) => (
+                <option key={m} value={m}>
+                  {t(`bills.method.${m}`)}
+                </option>
+              ))}
+            </select>
+            <button
+              disabled={busy || !valid}
+              className={`${primary} disabled:opacity-50`}
+              onClick={() => {
+                const paying = typed;
+                setAmount(''); // clear at once so a second click cannot pay the same amount again
+                void act(supabase.rpc('add_payment', { p_statement: s.id, p_amount: paying, p_paid_on: date, p_method: method }));
+              }}
+            >
+              {t('bills.markPaid')}
+            </button>
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
+
+function SupplierCard({ orgId, propertyId, period, supplier, lines, act, busy }: { orgId: string; propertyId: string; period: string; supplier: SupplierAmounts; lines: StatementRow['lines'][]; act: (op: PromiseLike<{ error: { message: string } | null }>) => Promise<boolean>; busy: boolean }) {
+  const { t, i18n } = useTranslation();
+  const [text, setText] = useState({ electricity: '', water: '' });
+  useEffect(() => {
+    setText({ electricity: supplier.electricity != null ? String(supplier.electricity / 100) : '', water: supplier.water != null ? String(supplier.water / 100) : '' });
+  }, [supplier.electricity, supplier.water, period]);
+  const r = reconcile(lines, supplier);
+  const money = (a: number) => formatMoney(a, i18n.language);
+  const save = async (kind: 'electricity' | 'water') => {
+    const a = parseAgorot(text[kind]);
+    if (a === null || a < 0) return;
+    await act(supabase.from('supplier_bills').upsert({ org_id: orgId, property_id: propertyId, period, kind, amount_agorot: a, updated_at: new Date().toISOString() }, { onConflict: 'property_id,period,kind' }));
+  };
+  return (
+    <div className={card}>
+      <h2 className="text-xl font-semibold text-slate-300">{t('bills.supplierTitle')}</h2>
+      <p className="text-xs text-slate-400">{t('bills.supplierHint')}</p>
+      {(['electricity', 'water'] as const).map((k) => (
+        <div key={k} className="flex flex-col gap-1">
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="w-16 text-sm">{t(`meters.${k}`)}</span>
+            <input type="text" inputMode="decimal" dir="ltr" value={text[k]} onChange={(e) => setText({ ...text, [k]: e.target.value })} placeholder={t('bills.supplierAmount')} className={`${input} w-32`} aria-label={`${t('bills.supplierAmount')} ${t(`meters.${k}`)}`} />
+            <button disabled={busy || parseAgorot(text[k]) === null} className="rounded-lg bg-white/10 px-3 py-2 text-sm font-semibold disabled:opacity-50" onClick={() => void save(k)}>
+              {t('common.save')}
+            </button>
+          </div>
+          <div className="flex flex-wrap justify-between gap-2 text-sm text-slate-300">
+            <span>{t('bills.collectedFromRenters', { amount: money(r[k].collected) })}</span>
+            {r[k].difference !== null && (
+              <span className={r[k].difference > 0 ? 'text-amber-300' : 'text-emerald-300'}>
+                {r[k].difference > 0 ? t('bills.landlordCovered', { amount: money(r[k].difference) }) : r[k].difference < 0 ? t('bills.collectedExtra', { amount: money(-r[k].difference) }) : t('bills.balanced')}
+              </span>
+            )}
+          </div>
+        </div>
+      ))}
     </div>
   );
 }

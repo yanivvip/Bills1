@@ -6,7 +6,7 @@ import { formatMoney } from '../../lib/money';
 import { monthLabel } from '../../lib/period';
 import { billMessage, whatsappLink } from '../../lib/billLabels';
 import StatementView from './StatementView';
-import type { StatementRow } from './useBilling';
+import type { PaymentRow, StatementRow } from './useBilling';
 
 interface Doc extends StatementRow {
   units: { name: string; properties: { name: string; address: string | null } | null } | null;
@@ -18,14 +18,21 @@ export default function BillDocument() {
   const { t, i18n } = useTranslation();
   const { id } = useParams();
   const [doc, setDoc] = useState<Doc | null | undefined>(undefined);
+  const [payments, setPayments] = useState<PaymentRow[]>([]);
 
   useEffect(() => {
     void supabase
       .from('statements')
-      .select('id,unit_id,contract_id,period,total_agorot,lines,readings,paid_on,paid_method,units(name,properties(name,address))')
+      .select('id,unit_id,contract_id,period,total_agorot,lines,readings,paid_agorot,paid_on,paid_method,units(name,properties(name,address))')
       .eq('id', id!)
       .maybeSingle()
-      .then(({ data }) => setDoc(data ? ({ ...(data as unknown as Doc), total_agorot: Number((data as { total_agorot: number }).total_agorot) }) : null));
+      .then(({ data }) => setDoc(data ? ({ ...(data as unknown as Doc), total_agorot: Number((data as { total_agorot: number }).total_agorot), paid_agorot: Number((data as { paid_agorot: number }).paid_agorot) }) : null));
+    void supabase
+      .from('payments')
+      .select('id,statement_id,amount_agorot,paid_on,method,note')
+      .eq('statement_id', id!)
+      .order('paid_on')
+      .then(({ data }) => setPayments(((data ?? []) as PaymentRow[]).map((x) => ({ ...x, amount_agorot: Number(x.amount_agorot) }))));
   }, [id]);
 
   if (doc === undefined) return <p className="p-4">{t('common.loading')}</p>;
@@ -77,8 +84,21 @@ export default function BillDocument() {
             {reading('water') && <div>{reading('water')}</div>}
           </div>
         )}
+        {payments.length > 0 && (
+          <ul className="text-sm text-slate-300 print:text-black">
+            {payments.map((p) => (
+              <li key={p.id}>
+                {money(p.amount_agorot)} · {p.paid_on} · {t(`bills.method.${p.method}`)}
+              </li>
+            ))}
+          </ul>
+        )}
         <p className={`font-semibold ${paid ? 'text-emerald-400 print:text-black' : 'text-amber-400 print:text-black'}`}>
-          {paid ? `✓ ${t('bills.paidOn', { date: doc.paid_on })} · ${t(`bills.method.${doc.paid_method}`)}` : t('bills.unpaid')}
+          {paid
+            ? `✓ ${t('bills.paidOn', { date: doc.paid_on })} · ${t(`bills.method.${doc.paid_method}`)}`
+            : doc.paid_agorot > 0
+              ? t('bills.partialSummary', { paid: money(doc.paid_agorot), total: money(doc.total_agorot) })
+              : t('bills.unpaid')}
         </p>
       </div>
     </section>

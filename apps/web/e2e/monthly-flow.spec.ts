@@ -27,7 +27,8 @@ test('landlord sets up an organization, property, unit, contract and meters', as
   await page.getByRole('link', { name: /Dizengoff 10/ }).click();
 
   // main (building) water meter
-  await page.getByRole('combobox').nth(1).selectOption('water');
+  const meterForm = page.locator('form').filter({ has: page.getByPlaceholder(he.meters.namePlaceholder) });
+  await meterForm.getByRole('combobox').nth(1).selectOption('water');
   await page.getByPlaceholder(he.meters.namePlaceholder).fill('Building water');
   await page.getByRole('button', { name: he.meters.add }).click();
   await expect(page.getByText('Building water')).toBeVisible();
@@ -38,8 +39,8 @@ test('landlord sets up an organization, property, unit, contract and meters', as
   await page.locator('form').filter({ has: page.getByPlaceholder(he.landlord.unitName) }).getByRole('button', { name: he.common.save }).click();
 
   // unit electricity meter (meters are managed on the property page only)
-  await page.getByRole('combobox').nth(0).selectOption({ label: 'Apt 1' });
-  await page.getByRole('combobox').nth(1).selectOption('electricity');
+  await meterForm.getByRole('combobox').nth(0).selectOption({ label: 'Apt 1' });
+  await meterForm.getByRole('combobox').nth(1).selectOption('electricity');
   await page.getByPlaceholder(he.meters.namePlaceholder).fill('Apt 1 electricity');
   await page.getByRole('button', { name: he.meters.add }).click();
   await expect(page.getByText('Apt 1 electricity')).toBeVisible();
@@ -117,12 +118,24 @@ test('the landlord sets tariffs, approves the month and marks it paid', async ({
   await page.getByLabel(he.tariff.electricityFixed, { exact: true }).fill('90');
   await page.getByLabel(he.tariff.waterA, { exact: true }).fill('4.543');
   await page.getByLabel(he.tariff.waterB, { exact: true }).fill('11.658');
-  await page.locator('form', { hasText: he.tariff.title }).getByRole('button', { name: he.common.save }).click();
+  // property tax every two months, last due last month: this month is not a property-tax month, so nothing is added
+  const lastMonth = new Date();
+  lastMonth.setDate(1);
+  lastMonth.setMonth(lastMonth.getMonth() - 1);
+  const anchor = `${lastMonth.getFullYear()}-${String(lastMonth.getMonth() + 1).padStart(2, '0')}`;
+  const tariffForm = page.locator('form', { hasText: he.tariff.title });
+  await expect(page.getByLabel(he.tariff.propertyTaxAnchor)).toHaveCount(0);
+  await page.getByLabel(he.tariff.propertyTaxEvery).selectOption('2');
+  await expect(tariffForm.getByRole('button', { name: he.common.save })).toBeDisabled(); // needs a property-tax month
+  await page.getByLabel(he.tariff.propertyTaxAnchor).fill(anchor);
+  await page.getByLabel(he.tariff.sewageRate).fill('6.5');
+  await tariffForm.getByRole('button', { name: he.common.save }).click();
   await expect(page.getByText(`✓ ${he.tariff.saved}`)).toBeVisible();
 
   // billing settings of the unit
   await page.getByRole('link', { name: /Apt 1/ }).click();
   await page.getByLabel(he.unitBilling.communityFee).fill('150');
+  await page.getByLabel(he.unitBilling.propertyTax).fill('100');
   await page.locator('form', { hasText: he.unitBilling.title }).getByRole('button', { name: he.common.save }).click();
   await expect(page.getByText(`✓ ${he.tariff.saved}`)).toBeVisible();
 
@@ -133,8 +146,11 @@ test('the landlord sets tariffs, approves the month and marks it paid', async ({
   // a one-off charge changes the total
   await page.getByPlaceholder(he.bills.chargeDescription).fill('Repair');
   await page.getByLabel(he.bills.chargeAmount).fill('25.5');
+  await page.getByLabel(he.bills.chargeRecurring).check();
   await page.getByRole('button', { name: he.bills.addCharge }).click();
   await expect(page.getByText('₪425.50')).toBeVisible();
+  await expect(page.getByText(/↻ Repair/)).toBeVisible();
+  await expect(page.getByLabel(`${he.bills.sewageQty} Apt 1`)).toHaveCount(0); // not a property-tax month
 
   // approve, then mark paid
   page.once('dialog', (d) => void d.accept());

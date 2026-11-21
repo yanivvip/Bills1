@@ -72,15 +72,68 @@ describe('computeBills', () => {
     expect(find(r, 'roni').lines.find((l) => l.type === 'electricityFixed')!.amount).toBe(4500);
   });
 
-  it('adds one-off charges to one unit or to every unit', () => {
+  it('a charge for one unit goes entirely to that unit', () => {
+    const input = base();
+    input.charges = [{ id: 'c1', scope: 'unit', unitId: 'roni', description: 'Repair', amount: 5000 }];
+    const r = computeBills(input);
+    expect(find(r, 'roni').lines.filter((l) => l.type === 'charge').map((l) => l.amount)).toEqual([5000]);
+    expect(find(r, 'yuval').lines.filter((l) => l.type === 'charge')).toEqual([]);
+  });
+
+  // The old app billed a charge "for everyone" in full to each consumer while showing amount / 3. Here the split is made once.
+  it('a charge for the units is split between them, never charged in full to each', () => {
+    const input = base();
+    input.charges = [{ id: 'c2', scope: 'units', unitId: null, description: 'Stairwell cleaning', amount: 30000 }];
+    const r = computeBills(input);
+    const charged = (id: string) => find(r, id).lines.filter((l) => l.type === 'charge').map((l) => l.amount);
+    expect([charged('owner'), charged('roni'), charged('yuval')]).toEqual([[10000], [10000], [10000]]);
+  });
+
+  it('a charge for all includes the landlord household: its share is not billed to anyone', () => {
+    const input = base();
+    input.units = input.units.map((u) => (u.id === 'owner' ? { ...u, billed: false } : u));
+    input.charges = [{ id: 'c3', scope: 'all', unitId: null, description: 'Roof', amount: 30000 }];
+    const r = computeBills(input);
+    expect(r.bills.map((b) => b.unitId)).toEqual(['roni', 'yuval']);
+    for (const b of r.bills) expect(b.lines.filter((l) => l.type === 'charge').map((l) => l.amount)).toEqual([10000]);
+  });
+
+  it('the parts of a split charge sum exactly, a credit is split too', () => {
     const input = base();
     input.charges = [
-      { id: 'c1', unitId: 'roni', description: 'Repair', amount: 5000 },
-      { id: 'c2', unitId: null, description: 'Stairwell cleaning', amount: 1000 },
+      { id: 'c4', scope: 'units', unitId: null, description: 'Odd', amount: 1000 },
+      { id: 'c5', scope: 'units', unitId: null, description: 'Credit', amount: -1000 },
     ];
     const r = computeBills(input);
-    expect(find(r, 'roni').lines.filter((l) => l.type === 'charge').map((l) => l.amount)).toEqual([5000, 1000]);
-    expect(find(r, 'yuval').lines.filter((l) => l.type === 'charge').map((l) => l.amount)).toEqual([1000]);
+    const sumOf = (d: string) => r.bills.flatMap((b) => b.lines).filter((l) => l.description === d).reduce((s, l) => s + l.amount, 0);
+    expect(sumOf('Odd')).toBe(1000);
+    expect(sumOf('Credit')).toBe(-1000);
+  });
+
+  it('a fixed charge can be shared with the landlord household, or carried by the landlord alone', () => {
+    const input = base();
+    input.units = input.units.map((u) => (u.id === 'owner' ? { ...u, billed: false } : u));
+    input.tariff = { ...tariff, electricityFixed: 9000, electricityFixedScope: 'all', waterFixed: 6000, waterFixedScope: 'landlord' };
+    const r = computeBills(input);
+    expect(find(r, 'roni').lines.find((l) => l.type === 'electricityFixed')!.amount).toBe(3000);
+    expect(find(r, 'roni').lines.some((l) => l.type === 'waterFixed')).toBe(false);
+  });
+
+  it('a water fixed charge is split between the units by default', () => {
+    const input = base();
+    input.tariff = { ...tariff, waterFixed: 6000 };
+    const r = computeBills(input);
+    expect(r.bills.map((b) => b.lines.find((l) => l.type === 'waterFixed')!.amount)).toEqual([2000, 2000, 2000]);
+  });
+
+  it('bills property tax and sewage only when they are due', () => {
+    const input = base();
+    input.tariff = { ...tariff, sewageRate: 650 };
+    input.units = input.units.map((u) => (u.id === 'roni' ? { ...u, propertyTax: 27200, sewageQty: 6.2 } : u));
+    const roni = find(computeBills(input), 'roni').lines;
+    expect(roni.find((l) => l.type === 'propertyTax')!.amount).toBe(27200);
+    expect(roni.find((l) => l.type === 'sewage')).toMatchObject({ qty: 6.2, rate: 650, amount: 4030 });
+    expect(find(computeBills(input), 'yuval').lines.some((l) => l.type === 'sewage' || l.type === 'propertyTax')).toBe(false);
   });
 
   it('reports a missing reading and gives that unit no bill', () => {

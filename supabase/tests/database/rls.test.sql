@@ -1,7 +1,7 @@
 -- Database security tests (pgTAP). Run with: supabase test db
 -- Everything runs in one transaction that is rolled back, so no data is left behind.
 begin;
-select plan(65);
+select plan(71);
 
 -- ── Fixtures (as the postgres superuser) ─────────────────────────────────
 insert into auth.users (id, email, email_confirmed_at, instance_id, aud, role) values
@@ -223,6 +223,16 @@ select lives_ok($q$select public.replace_tenant('30000000-0000-0000-0000-0000000
 select is((select count(*)::int from public.contracts where unit_id = '30000000-0000-0000-0000-000000000001' and status = 'active' and start_date = '2026-11-01'), 1, 'the new contract is the active one');
 select is((select count(*)::int from public.contracts where unit_id = '30000000-0000-0000-0000-000000000001' and status = 'ended' and end_date = '2026-10-31'), 1, 'the old contract is ended on the handover date');
 select is((select email from public.contract_renters where contract_id = (select id from public.contracts where unit_id = '30000000-0000-0000-0000-000000000001' and status = 'active')), 'new@test.dev', 'the new renter is on the new contract');
+
+-- ── Charge scopes, fixed-charge choices and sewage ───────────────────────
+select pg_temp.act_as('00000000-0000-0000-0000-0000000000a1');
+select lives_ok($q$insert into public.charges (org_id, property_id, period, description, amount, scope) values ('10000000-0000-0000-0000-00000000000a', '20000000-0000-0000-0000-00000000000a', '2026-08-01', 'Roof', 30000, 'units')$q$, 'a charge can be split between the units');
+select throws_ok($q$insert into public.charges (org_id, property_id, period, description, amount, scope) values ('10000000-0000-0000-0000-00000000000a', '20000000-0000-0000-0000-00000000000a', '2026-08-01', 'Roof', 30000, 'unit')$q$, '23514', null, 'a charge for one unit needs that unit');
+select throws_ok($q$insert into public.charges (org_id, property_id, unit_id, period, description, amount, scope) values ('10000000-0000-0000-0000-00000000000a', '20000000-0000-0000-0000-00000000000a', '30000000-0000-0000-0000-000000000001', '2026-08-01', 'Roof', 30000, 'units')$q$, '23514', null, 'a split charge cannot also name a unit');
+select throws_ok($q$update public.tariffs set water_fixed_scope = 'everyone' where property_id = '20000000-0000-0000-0000-00000000000a'$q$, '23514', null, 'a fixed charge can only be shared in the known ways');
+select lives_ok($q$insert into public.sewage_entries (property_id, org_id, unit_id, period, qty) values ('20000000-0000-0000-0000-00000000000a', '10000000-0000-0000-0000-00000000000a', '30000000-0000-0000-0000-000000000001', '2026-08-01', 6.2)$q$, 'a landlord enters the sewage quantity of a unit');
+select pg_temp.act_as('00000000-0000-0000-0000-0000000000b1');
+select throws_ok($q$insert into public.sewage_entries (property_id, org_id, unit_id, period, qty) values ('20000000-0000-0000-0000-00000000000a', '10000000-0000-0000-0000-00000000000a', '30000000-0000-0000-0000-000000000001', '2026-09-01', 3)$q$, '42501', null, 'another landlord cannot enter sewage quantities');
 
 select * from finish();
 rollback;

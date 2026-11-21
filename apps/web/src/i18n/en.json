@@ -175,8 +175,21 @@
     "electricityFixed": "Electricity – fixed monthly charge (₪)",
     "waterA": "Water tariff A (₪ per m³)",
     "waterB": "Water tariff B (₪ per m³)",
-    "hint": "The fixed charge is split evenly between the rented units. Tariff A applies up to the unit’s water quota, the rest at tariff B. Changing a tariff never alters months already approved.",
-    "saved": "Saved"
+    "hint": "The fixed charge is split evenly as chosen: between the rented units, between everyone including my own home, or on me alone. Tariff A applies up to the unit’s water quota, the rest at tariff B. Changing a rate does not change months already approved.",
+    "saved": "Saved",
+    "waterFixed": "Water – fixed monthly charge (₪)",
+    "electricityFixedScope": "Electricity fixed – who pays",
+    "waterFixedScope": "Water fixed – who pays",
+    "sewageRate": "Sewage (₪ per m³)",
+    "propertyTaxEvery": "Property tax – how often",
+    "monthly": "Monthly",
+    "bimonthly": "Every two months",
+    "propertyTaxAnchor": "A property-tax month",
+    "scope": {
+      "units": "Between the rented units",
+      "all": "Between everyone (incl. my home)",
+      "landlord": "Me alone"
+    }
   },
   "unitBilling": {
     "title": "Billing settings for this unit",
@@ -184,7 +197,8 @@
     "waterQuota": "Water quota at tariff A (m³)",
     "residual": "Billed by subtraction from the main meters",
     "residualHint": "For example the landlord’s own home: usage is the main meter minus all the other units. Only one unit per property.",
-    "oneResidual": "This property already has a unit billed by subtraction."
+    "oneResidual": "This property already has a unit billed by subtraction.",
+    "propertyTax": "Property tax per bill (₪)"
   },
   "bills": {
     "title": "Monthly bills",
@@ -232,7 +246,10 @@
       "waterA": "Water, tariff A",
       "waterB": "Water, tariff B",
       "community": "Community fee",
-      "charge": "Other charge"
+      "charge": "Other charge",
+      "waterFixed": "Water – share of fixed charge",
+      "sewage": "Sewage",
+      "propertyTax": "Property tax"
     },
     "myBill": "My bill",
     "notPublished": "This month’s bill has not been published yet.",
@@ -260,7 +277,16 @@
     "collectedFromRenters": "Billed to renters: {{amount}}",
     "landlordCovered": "You paid {{amount}} more than was billed",
     "collectedExtra": "Billed {{amount}} more than the supplier charged",
-    "balanced": "Balanced"
+    "balanced": "Balanced",
+    "chargeUnits": "Between the rented units",
+    "chargeAll": "Between everyone (incl. my home)",
+    "chargeRecurring": "Repeats every month",
+    "copyRecurring": "Copy recurring charges from last month",
+    "noRecurring": "No recurring charges last month",
+    "chargeSplitHint": "The amount is the total, split evenly.",
+    "sewageTitle": "Sewage – water quantity on the property-tax voucher (m³)",
+    "sewageHint": "Property-tax month: enter each unit’s sewage quantity from the voucher.",
+    "sewageQty": "Sewage quantity"
   },
   "report": {
     "title": "Annual report",
@@ -308,7 +334,11 @@
     "reconciliation": "Supplier reconciliation",
     "supplierElectricity": "Electricity company bill (₪)",
     "supplierWater": "Water company bill (₪)",
-    "difference": "Difference (₪)"
+    "difference": "Difference (₪)",
+    "waterFixed": "Water – share of fixed charge (₪)",
+    "sewageM3": "Sewage (m³)",
+    "sewage": "Sewage (₪)",
+    "propertyTax": "Property tax (₪)"
   },
   "attention": {
     "title": "Needs attention",

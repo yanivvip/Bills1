@@ -9,6 +9,7 @@ export default function UnitBillingSettings({ unitId }: { unitId: string }) {
   const { t } = useTranslation();
   const [fee, setFee] = useState('');
   const [quota, setQuota] = useState('');
+  const [tax, setTax] = useState('');
   const [residual, setResidual] = useState(false);
   const [loaded, setLoaded] = useState(false);
   const [state, setState] = useState<'idle' | 'saved' | 'failed'>('idle');
@@ -17,7 +18,7 @@ export default function UnitBillingSettings({ unitId }: { unitId: string }) {
   useEffect(() => {
     void supabase
       .from('units')
-      .select('community_fee_agorot,water_quota,is_residual')
+      .select('community_fee_agorot,water_quota,is_residual,property_tax_agorot')
       .eq('id', unitId)
       .maybeSingle()
       .then(({ data }) => {
@@ -25,18 +26,20 @@ export default function UnitBillingSettings({ unitId }: { unitId: string }) {
         if (!data) return;
         setFee(String(Number(data.community_fee_agorot) / 100));
         setQuota(String(Number(data.water_quota)));
+        setTax(String(Number(data.property_tax_agorot) / 100));
         setResidual(Boolean(data.is_residual));
       });
   }, [unitId]);
 
   const feeAgorot = fee.trim() === '' ? 0 : parseAgorot(fee);
   const quotaNum = quota.trim() === '' ? 0 : Number(quota.replace(',', '.'));
-  const valid = feeAgorot !== null && feeAgorot >= 0 && Number.isFinite(quotaNum) && quotaNum >= 0;
+  const taxAgorot = tax.trim() === '' ? 0 : parseAgorot(tax);
+  const valid = feeAgorot !== null && feeAgorot >= 0 && taxAgorot !== null && taxAgorot >= 0 && Number.isFinite(quotaNum) && quotaNum >= 0;
 
   const save = async (e: FormEvent) => {
     e.preventDefault();
     if (!valid) return;
-    const { error } = await supabase.from('units').update({ community_fee_agorot: feeAgorot, water_quota: quotaNum, is_residual: residual }).eq('id', unitId);
+    const { error } = await supabase.from('units').update({ community_fee_agorot: feeAgorot, water_quota: quotaNum, property_tax_agorot: taxAgorot, is_residual: residual }).eq('id', unitId);
     setError(error?.message.includes('units_one_residual_per_property') ? t('unitBilling.oneResidual') : (error?.message ?? ''));
     setState(error ? 'failed' : 'saved');
   };
@@ -56,6 +59,10 @@ export default function UnitBillingSettings({ unitId }: { unitId: string }) {
         <label className="flex flex-col gap-1 text-sm text-slate-300">
           {t('unitBilling.waterQuota')}
           <input type="text" inputMode="decimal" dir="ltr" value={quota} onChange={(e) => { setQuota(e.target.value); touch(); }} placeholder="0" className={input} />
+        </label>
+        <label className="flex flex-col gap-1 text-sm text-slate-300">
+          {t('unitBilling.propertyTax')}
+          <input type="text" inputMode="decimal" dir="ltr" value={tax} onChange={(e) => { setTax(e.target.value); touch(); }} placeholder="0.00" className={input} />
         </label>
       </div>
       <label className="flex items-center gap-2 text-sm">

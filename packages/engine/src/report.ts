@@ -13,7 +13,11 @@ export interface MonthSummary {
   waterACost: Agorot;
   waterBM3: number;
   waterBCost: Agorot;
+  waterFixed: Agorot;
   waterTotal: Agorot;
+  sewageM3: number;
+  sewage: Agorot;
+  propertyTax: Agorot;
   community: Agorot;
   charges: Agorot;
   total: Agorot;
@@ -22,8 +26,8 @@ export interface MonthSummary {
 export function summarizeLines(lines: readonly BillLine[]): MonthSummary {
   const s: MonthSummary = {
     kwh: 0, electricityCost: 0, electricityFixed: 0, electricityTotal: 0,
-    waterM3: 0, waterAM3: 0, waterACost: 0, waterBM3: 0, waterBCost: 0, waterTotal: 0,
-    community: 0, charges: 0, total: 0,
+    waterM3: 0, waterAM3: 0, waterACost: 0, waterBM3: 0, waterBCost: 0, waterFixed: 0, waterTotal: 0,
+    sewageM3: 0, sewage: 0, propertyTax: 0, community: 0, charges: 0, total: 0,
   };
   for (const l of lines) {
     s.total += l.amount;
@@ -32,13 +36,16 @@ export function summarizeLines(lines: readonly BillLine[]): MonthSummary {
       case 'electricityFixed': s.electricityFixed += l.amount; break;
       case 'waterA': s.waterAM3 += l.qty ?? 0; s.waterACost += l.amount; break;
       case 'waterB': s.waterBM3 += l.qty ?? 0; s.waterBCost += l.amount; break;
+      case 'waterFixed': s.waterFixed += l.amount; break;
+      case 'sewage': s.sewageM3 += l.qty ?? 0; s.sewage += l.amount; break;
+      case 'propertyTax': s.propertyTax += l.amount; break;
       case 'community': s.community += l.amount; break;
       case 'charge': s.charges += l.amount; break;
     }
   }
   s.electricityTotal = s.electricityCost + s.electricityFixed;
   s.waterM3 = s.waterAM3 + s.waterBM3;
-  s.waterTotal = s.waterACost + s.waterBCost;
+  s.waterTotal = s.waterACost + s.waterBCost + s.waterFixed;
   return s;
 }
 

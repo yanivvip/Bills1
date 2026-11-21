@@ -8,6 +8,7 @@ import MonthNav from '../readings/MonthNav';
 import { card, input, primary } from '../landlord/shared';
 import StatementView from './StatementView';
 import MonthStrip from './MonthStrip';
+import { Charges, SewageEntries } from './ChargesSection';
 import { reconcile } from '@bills/engine';
 import { useBilling, type PaymentRow, type StatementRow, type SupplierAmounts } from './useBilling';
 
@@ -131,6 +132,7 @@ export default function BillsPage({ orgId }: { orgId: string }) {
           ))}
           {b.result.bills.length === 0 && b.result.problems.length === 0 && <p className="text-slate-400">{t('bills.nothingToBill')}</p>}
 
+          <SewageEntries orgId={orgId} propertyId={propertyId!} period={period} b={b} act={act} busy={busy} />
           <Charges orgId={orgId} propertyId={propertyId!} period={period} b={b} unitName={unitName} act={act} busy={busy} money={money} />
 
           <button
@@ -259,78 +261,6 @@ function SupplierCard({ orgId, propertyId, period, supplier, lines, act, busy }:
           </div>
         </div>
       ))}
-    </div>
-  );
-}
-
-function Charges({
-  orgId,
-  propertyId,
-  period,
-  b,
-  unitName,
-  act,
-  busy,
-  money,
-}: {
-  orgId: string;
-  propertyId: string;
-  period: string;
-  b: ReturnType<typeof useBilling>;
-  unitName: (id: string | null) => string;
-  act: (op: PromiseLike<{ error: { message: string } | null }>) => Promise<boolean>;
-  busy: boolean;
-  money: (a: number) => string;
-}) {
-  const { t } = useTranslation();
-  const [unit, setUnit] = useState('');
-  const [description, setDescription] = useState('');
-  const [amount, setAmount] = useState('');
-  const agorot = parseAgorot(amount);
-
-  const add = async (e: FormEvent) => {
-    e.preventDefault();
-    if (agorot === null || agorot === 0 || !description.trim()) return;
-    const ok = await act(
-      supabase.from('charges').insert({ org_id: orgId, property_id: propertyId, unit_id: unit || null, period, description: description.trim(), amount: agorot }),
-    );
-    if (ok) {
-      setDescription('');
-      setAmount('');
-    }
-  };
-
-  return (
-    <div className="flex flex-col gap-2">
-      <h2 className="text-xl font-semibold text-slate-300">{t('bills.charges')}</h2>
-      {b.charges.map((c) => (
-        <div key={c.id} className="flex items-center justify-between gap-2 rounded-xl bg-white/5 px-3 py-2 text-sm">
-          <span>
-            {c.description} · {c.unit_id ? unitName(c.unit_id) : t('bills.allUnits')}
-          </span>
-          <span className="flex items-center gap-3">
-            <span dir="ltr">{money(c.amount)}</span>
-            <button disabled={busy} className="text-red-400" onClick={() => void act(supabase.from('charges').delete().eq('id', c.id))}>
-              {t('landlord.remove')}
-            </button>
-          </span>
-        </div>
-      ))}
-      <form onSubmit={add} className={`${card} flex-row flex-wrap items-center`}>
-        <select value={unit} onChange={(e) => setUnit(e.target.value)} className={input} aria-label={t('bills.chargeTo')}>
-          <option value="">{t('bills.allUnits')}</option>
-          {b.units.map((u) => (
-            <option key={u.id} value={u.id}>
-              {u.name}
-            </option>
-          ))}
-        </select>
-        <input value={description} onChange={(e) => setDescription(e.target.value)} placeholder={t('bills.chargeDescription')} className={`${input} min-w-0 flex-1`} />
-        <input type="text" inputMode="decimal" value={amount} onChange={(e) => setAmount(e.target.value)} placeholder="₪" className={`${input} w-24`} aria-label={t('bills.chargeAmount')} />
-        <button disabled={busy || !agorot || !description.trim()} className={`${primary} disabled:opacity-50`}>
-          {t('bills.addCharge')}
-        </button>
-      </form>
     </div>
   );
 }

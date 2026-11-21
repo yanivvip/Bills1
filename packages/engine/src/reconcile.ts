@@ -22,7 +22,7 @@ export function reconcile(statements: readonly (readonly BillLine[])[], supplier
   for (const lines of statements) {
     for (const l of lines) {
       if (l.type === 'electricity' || l.type === 'electricityFixed') e += l.amount;
-      if (l.type === 'waterA' || l.type === 'waterB') w += l.amount;
+      if (l.type === 'waterA' || l.type === 'waterB' || l.type === 'waterFixed') w += l.amount;
     }
   }
   const make = (collected: Agorot, sup: Agorot | null | undefined): KindReconciliation => ({

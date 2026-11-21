@@ -1,18 +1,31 @@
-import { splitEvenly, type Agorot } from './money.js';
+import { splitByWeights, type Agorot } from './money.js';
 import { consumption, type Reading } from './usage.js';
 import { flatCost } from './tariff.js';
 
 /** All meters of one kind. An entry is `undefined` while its reading (this or last month) is still missing. */
 export type MeterReadings = readonly (Reading | undefined)[];
 
+/**
+ * Who shares a fixed charge: every billed unit and the landlord's own household ('all'),
+ * the billed units only ('units'), or the landlord alone ('landlord': nobody is billed).
+ */
+export type FixedScope = 'all' | 'units' | 'landlord';
+
 export interface BillTariff {
   /** agorot per kWh (may be fractional) */
   electricityRate: number;
-  /** fixed monthly electricity charge for the whole property, split evenly between the billed units */
+  /** fixed monthly electricity charge for the whole property */
   electricityFixed: Agorot;
+  /** default 'units' */
+  electricityFixedScope?: FixedScope;
   /** agorot per m3 up to the unit's quota, and above it */
   waterRateA: number;
   waterRateB: number;
+  /** fixed monthly water charge for the whole property */
+  waterFixed?: Agorot;
+  waterFixedScope?: FixedScope;
+  /** agorot per m3 of sewage (the quantity is entered per unit in a property-tax month) */
+  sewageRate?: number;
 }
 
 export interface BillUnit {
@@ -22,17 +35,26 @@ export interface BillUnit {
   /** true: consumption = main meter minus the other units' meters (the landlord's own household) */
   residual: boolean;
   communityFee: Agorot;
+  /** property tax due this month (0 outside a property-tax month) */
+  propertyTax?: Agorot;
+  /** m3 of sewage entered for this month (only in a property-tax month) */
+  sewageQty?: number;
   /** m3 per month charged at rate A; the rest at rate B */
   waterQuota: number;
   electricity: MeterReadings;
   water: MeterReadings;
 }
 
+/** 'unit': the whole amount to one unit; 'units': split evenly between the billed units; 'all': split evenly between the billed units and the landlord's household. */
+export type ChargeScope = 'all' | 'units' | 'unit';
+
 export interface BillCharge {
   id: string;
-  /** null = charged to every billed unit (the full amount to each) */
+  scope: ChargeScope;
+  /** the unit that pays everything when scope is 'unit' */
   unitId: string | null;
   description: string;
+  /** the total, split according to the scope; negative = credit */
   amount: Agorot;
 }
 
@@ -43,7 +65,7 @@ export interface BillInput {
   charges: readonly BillCharge[];
 }
 
-export type LineType = 'electricity' | 'electricityFixed' | 'waterA' | 'waterB' | 'community' | 'charge';
+export type LineType = 'electricity' | 'electricityFixed' | 'waterA' | 'waterB' | 'waterFixed' | 'sewage' | 'propertyTax' | 'community' | 'charge';
 
 export interface BillLine {
   type: LineType;
@@ -87,7 +109,20 @@ export function computeBills(input: BillInput): BillResult {
   const { tariff, units, main, charges } = input;
   const problems: BillProblem[] = [];
   const billed = units.filter((u) => u.billed);
-  const fixedShares = billed.length > 0 ? splitEvenly(tariff.electricityFixed, billed.length) : [];
+  // The landlord's own household shares 'all' charges but is never billed: a residual unit nobody rents.
+  const landlordHome = units.some((u) => u.residual && !u.billed);
+
+  /** What each billed unit (by position in `billed`) pays of `total`. The parts sum to the whole; the landlord's part is not billed. */
+  const share = (total: Agorot, scope: FixedScope | ChargeScope): Agorot[] => {
+    if (scope === 'landlord' || scope === 'unit' || total === 0) return billed.map(() => 0);
+    const n = billed.length + (scope === 'all' && landlordHome ? 1 : 0);
+    if (n === 0) return [];
+    const parts = splitByWeights(Math.abs(total), Array<number>(n).fill(1)).map((p) => Math.sign(total) * p);
+    return parts.slice(0, billed.length);
+  };
+  const electricityFixed = share(tariff.electricityFixed, tariff.electricityFixedScope ?? 'units');
+  const waterFixed = share(tariff.waterFixed ?? 0, tariff.waterFixedScope ?? 'units');
+  const chargeShares = charges.map((c) => (c.scope === 'unit' ? undefined : share(c.amount, c.scope)));
 
   /** Usage in kWh / m3 for a unit, or null when it cannot be computed. */
   const usage = (u: BillUnit, kind: Kind): number | null => {
@@ -127,7 +162,7 @@ export function computeBills(input: BillInput): BillResult {
 
     const lines: BillLine[] = [];
     if (kwh > 0) lines.push({ type: 'electricity', qty: kwh, rate: tariff.electricityRate, amount: flatCost(kwh, tariff.electricityRate) });
-    const fixed = fixedShares[i] ?? 0;
+    const fixed = electricityFixed[i] ?? 0;
     if (fixed > 0) lines.push({ type: 'electricityFixed', amount: fixed });
 
     // water: the first `waterQuota` m3 at rate A, the rest at rate B (each line rounded to whole agorot)
@@ -136,10 +171,18 @@ export function computeBills(input: BillInput): BillResult {
     if (qtyA > 0) lines.push({ type: 'waterA', qty: qtyA, rate: tariff.waterRateA, amount: flatCost(qtyA, tariff.waterRateA) });
     if (qtyB > 0) lines.push({ type: 'waterB', qty: qtyB, rate: tariff.waterRateB, amount: flatCost(qtyB, tariff.waterRateB) });
 
+    const wFixed = waterFixed[i] ?? 0;
+    if (wFixed > 0) lines.push({ type: 'waterFixed', amount: wFixed });
+
+    const sewageQty = u.sewageQty ?? 0;
+    const sewageRate = tariff.sewageRate ?? 0;
+    if (sewageQty > 0 && sewageRate > 0) lines.push({ type: 'sewage', qty: sewageQty, rate: sewageRate, amount: flatCost(sewageQty, sewageRate) });
+    if ((u.propertyTax ?? 0) > 0) lines.push({ type: 'propertyTax', amount: u.propertyTax ?? 0 });
     if (u.communityFee > 0) lines.push({ type: 'community', amount: u.communityFee });
-    for (const c of charges) {
-      if (c.unitId === null || c.unitId === u.id) lines.push({ type: 'charge', description: c.description, amount: c.amount });
-    }
+    charges.forEach((c, k) => {
+      const mine = c.scope === 'unit' ? (c.unitId === u.id ? c.amount : 0) : (chargeShares[k]?.[i] ?? 0);
+      if (mine !== 0) lines.push({ type: 'charge', description: c.description, amount: mine });
+    });
     const own = (m: MeterReadings): Reading | undefined =>
       !u.residual && m.length > 0 && defined(m) ? { prev: m.reduce((s, r) => s + r.prev, 0), cur: m.reduce((s, r) => s + r.cur, 0) } : undefined;
     const readings: UnitBill['readings'] = {};

@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { computeBills, type BillCharge, type BillInput, type BillLine, type BillResult, type BillTariff, type MeterReadings } from '@bills/engine';
+import { computeBills, isDueMonth, type BillCharge, type ChargeScope, type FixedScope, type BillInput, type BillLine, type BillResult, type BillTariff, type MeterReadings } from '@bills/engine';
 import { supabase } from '../../lib/supabase';
 import { shiftMonth } from '../../lib/period';
 
@@ -9,11 +9,14 @@ export interface UnitInfo {
   community_fee_agorot: number;
   water_quota: number;
   is_residual: boolean;
+  property_tax_agorot: number;
   contracts: { id: string; status: string }[];
 }
 export interface ChargeRow {
   id: string;
   unit_id: string | null;
+  scope: ChargeScope;
+  recurring: boolean;
   description: string;
   amount: number;
 }
@@ -43,6 +46,12 @@ interface TariffRow {
   electricity_fixed: number;
   water_rate_a: number;
   water_rate_b: number;
+  water_fixed: number;
+  electricity_fixed_scope: FixedScope;
+  water_fixed_scope: FixedScope;
+  sewage_rate: number;
+  property_tax_every: 1 | 2;
+  property_tax_anchor: string | null;
 }
 interface MeterInfo {
   id: string;
@@ -55,7 +64,12 @@ export const tariffFromRow = (t: TariffRow): BillTariff => ({
   electricityFixed: Number(t.electricity_fixed),
   waterRateA: Number(t.water_rate_a),
   waterRateB: Number(t.water_rate_b),
+  waterFixed: Number(t.water_fixed),
+  electricityFixedScope: t.electricity_fixed_scope,
+  waterFixedScope: t.water_fixed_scope,
+  sewageRate: Number(t.sewage_rate),
 });
+export const TARIFF_COLUMNS = 'electricity_rate,electricity_fixed,water_rate_a,water_rate_b,water_fixed,electricity_fixed_scope,water_fixed_scope,sewage_rate,property_tax_every,property_tax_anchor';
 
 // Everything the landlord's billing page needs for one property and month, and the computed preview.
 export function useBilling(propertyId: string | undefined, period: string) {
@@ -70,18 +84,19 @@ export function useBilling(propertyId: string | undefined, period: string) {
   const [statements, setStatements] = useState<StatementRow[]>([]);
   const [payments, setPayments] = useState<PaymentRow[]>([]);
   const [supplier, setSupplier] = useState<SupplierAmounts>({});
+  const [sewage, setSewage] = useState<Record<string, number>>({});
 
   const load = useCallback(async () => {
     if (!propertyId) return;
-    const [t, u, m, r, c, b, sb] = await Promise.all([
-
-      supabase.from('tariffs').select('electricity_rate,electricity_fixed,water_rate_a,water_rate_b').eq('property_id', propertyId).maybeSingle(),
-      supabase.from('units').select('id,name,community_fee_agorot,water_quota,is_residual,contracts(id,status)').eq('property_id', propertyId).order('created_at'),
+    const [t, u, m, r, c, b, sb, sw] = await Promise.all([
+      supabase.from('tariffs').select(TARIFF_COLUMNS).eq('property_id', propertyId).maybeSingle(),
+      supabase.from('units').select('id,name,community_fee_agorot,water_quota,is_residual,property_tax_agorot,contracts(id,status)').eq('property_id', propertyId).order('created_at'),
       supabase.from('meters').select('id,unit_id,kind').eq('property_id', propertyId),
       supabase.from('readings').select('meter_id,period,value').in('period', [period, shiftMonth(period, -1)]),
-      supabase.from('charges').select('id,unit_id,description,amount').eq('property_id', propertyId).eq('period', period).order('created_at'),
+      supabase.from('charges').select('id,unit_id,scope,recurring,description,amount').eq('property_id', propertyId).eq('period', period).order('created_at'),
       supabase.from('billing_periods').select('id').eq('property_id', propertyId).eq('period', period).maybeSingle(),
       supabase.from('supplier_bills').select('kind,amount_agorot').eq('property_id', propertyId).eq('period', period),
+      supabase.from('sewage_entries').select('unit_id,qty').eq('property_id', propertyId).eq('period', period),
     ]);
     const err = [t, u, m, r, c, b].find((x) => x.error)?.error;
     setError(err?.message ?? '');
@@ -94,6 +109,7 @@ export function useBilling(propertyId: string | undefined, period: string) {
     const sup: SupplierAmounts = {};
     for (const x of (sb.data ?? []) as { kind: 'electricity' | 'water'; amount_agorot: number }[]) sup[x.kind] = Number(x.amount_agorot);
     setSupplier(sup);
+    setSewage(Object.fromEntries(((sw.data ?? []) as { unit_id: string; qty: number }[]).map((x) => [x.unit_id, Number(x.qty)])));
     if (b.data) {
       const s = await supabase
         .from('statements')
@@ -115,6 +131,9 @@ export function useBilling(propertyId: string | undefined, period: string) {
     void load();
   }, [load]);
 
+  // property tax and sewage are billed only in the months the property-tax bill falls in
+  const taxDue = tariff ? isDueMonth(Number(tariff.property_tax_every) === 2 ? 2 : 1, tariff.property_tax_anchor, period) : false;
+
   const { input, result } = useMemo(() => {
     if (!tariff) return { input: null, result: null as BillResult | null };
     const prev = shiftMonth(period, -1);
@@ -125,7 +144,7 @@ export function useBilling(propertyId: string | undefined, period: string) {
     };
     const of = (unitId: string | null, kind: MeterInfo['kind']): MeterReadings =>
       meters.filter((x) => x.unit_id === unitId && x.kind === kind).map((x) => read(x.id));
-    const billCharges: BillCharge[] = charges.map((x) => ({ id: x.id, unitId: x.unit_id, description: x.description, amount: x.amount }));
+    const billCharges: BillCharge[] = charges.map((x) => ({ id: x.id, scope: x.scope, unitId: x.unit_id, description: x.description, amount: x.amount }));
     const inp: BillInput = {
       tariff: tariffFromRow(tariff),
       main: { electricity: of(null, 'electricity'), water: of(null, 'water') },
@@ -134,6 +153,8 @@ export function useBilling(propertyId: string | undefined, period: string) {
         billed: u.contracts.some((c) => c.status === 'active'),
         residual: u.is_residual,
         communityFee: Number(u.community_fee_agorot),
+        propertyTax: taxDue ? Number(u.property_tax_agorot) : 0,
+        sewageQty: taxDue ? (sewage[u.id] ?? 0) : 0,
         waterQuota: Number(u.water_quota),
         electricity: of(u.id, 'electricity'),
         water: of(u.id, 'water'),
@@ -141,7 +162,7 @@ export function useBilling(propertyId: string | undefined, period: string) {
       charges: billCharges,
     };
     return { input: inp, result: computeBills(inp) };
-  }, [tariff, units, meters, readings, charges, period]);
+  }, [tariff, units, meters, readings, charges, period, taxDue, sewage]);
 
-  return { loaded, error, setError, tariff, units, charges, billing, statements, payments, supplier, input, result, reload: load };
+  return { loaded, error, setError, tariff, taxDue, sewage, units, charges, billing, statements, payments, supplier, input, result, reload: load };
 }

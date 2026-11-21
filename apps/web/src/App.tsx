@@ -16,6 +16,23 @@ import LoginPage from './pages/LoginPage';
 import HomePage from './pages/HomePage';
 import AdminPage from './pages/AdminPage';
 import AdminUnitsPage from './pages/AdminUnitsPage';
+import AlertsPage from './pages/landlord/AlertsPage';
+import HistoryPage from './pages/landlord/HistoryPage';
+import { useAlerts } from './pages/landlord/useAlerts';
+
+// The bell in the header: a link to the alerts centre with the number of alerts not read yet.
+function AlertsBell() {
+  const { t } = useTranslation();
+  const { unread } = useAlerts();
+  return (
+    <NavLink to="/alerts" aria-label={t('alerts.title')} className="relative px-1 text-lg">
+      🔔
+      {unread.length > 0 && (
+        <span className="absolute -end-1 -top-1 min-w-4 rounded-full bg-amber-500 px-1 text-center text-[10px] font-bold leading-4 text-black">{unread.length}</span>
+      )}
+    </NavLink>
+  );
+}
 
 function Shell() {
   const { t } = useTranslation();
@@ -25,7 +42,8 @@ function Shell() {
     <div className="mx-auto flex min-h-dvh max-w-2xl flex-col">
       <header className="flex items-center justify-between border-b border-white/10 p-3 print:hidden">
         <strong>{t('app.name')}</strong>
-        <div className="flex gap-3 text-sm">
+        <div className="flex items-center gap-3 text-sm">
+          {role?.kind === 'landlord' && <AlertsBell />}
           <button onClick={() => void supabase.auth.signOut()}>{t('auth.signOut')}</button>
         </div>
       </header>
@@ -38,6 +56,7 @@ function Shell() {
         </NavLink>
         {role?.kind === 'landlord' && <NavLink to="/readings">{t('nav.readings')}</NavLink>}
         {role?.kind === 'landlord' && <NavLink to="/bills">{t('nav.bills')}</NavLink>}
+        {role?.kind === 'landlord' && <NavLink to="/history">{t('nav.history')}</NavLink>}
         {role?.kind === 'landlord' && <NavLink to="/reports">{t('nav.reports')}</NavLink>}
         {role?.kind === 'renter' && <NavLink to="/report">{t('nav.report')}</NavLink>}
         {role?.kind === 'renter' && <NavLink to="/my-bill">{t('nav.myBill')}</NavLink>}
@@ -98,6 +117,8 @@ export default function App() {
               <Route path="/readings" element={<ReadingsPage />} />
               <Route path="/bills" element={<LandlordRoute page={BillsPage} />} />
               <Route path="/reports" element={<ReportsPage />} />
+              <Route path="/history" element={<HistoryPage />} />
+              <Route path="/alerts" element={<AlertsPage />} />
             </Route>
             <Route element={<RequireRenter />}>
               <Route path="/report" element={<ReportPage />} />

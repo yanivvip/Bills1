@@ -209,6 +209,28 @@ test('the renter sees the approved bill and that it is paid', async ({ page }) =
   await expect(page.getByRole('heading', { name: he.bills.receipt })).toBeVisible();
 });
 
+test('the landlord sees the consumption history and the alerts centre', async ({ page }) => {
+  await signIn(page, landlord);
+
+  // history: the unit used 250 kWh this month (1000 -> 1250) and paid 425.50
+  await page.getByRole('link', { name: he.nav.history }).click();
+  await expect(page.getByRole('heading', { name: he.history.title })).toBeVisible();
+  const chart = page.getByRole('img', { name: he.history.last6 });
+  await expect(chart).toContainText('250');
+  await page.getByRole('button', { name: 'Apt 1' }).click();
+  await expect(chart).toContainText('250');
+  await page.getByRole('button', { name: he.history.cost }).click();
+  await expect(chart).toContainText('425.50');
+
+  // alerts: the renter reported this month; reading them moves the alert to "earlier" and clears the bell's count
+  await page.getByRole('link', { name: he.alerts.title }).click();
+  await expect(page.getByRole('heading', { name: he.alerts.title })).toBeVisible();
+  await expect(page.getByText(he.alerts.reported.title)).toBeVisible();
+  await page.getByRole('button', { name: he.alerts.markAllRead }).click();
+  await expect(page.getByText(he.alerts.earlier)).toBeVisible();
+  await expect(page.getByRole('button', { name: he.alerts.markAllRead })).toHaveCount(0);
+});
+
 test('the landlord replaces the tenant; the old renter keeps the bills but cannot report', async ({ page }) => {
   await signIn(page, landlord);
   await page.getByRole('link', { name: /Dizengoff 10/ }).click();

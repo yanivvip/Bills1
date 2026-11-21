@@ -31,7 +31,8 @@
     "report": "Report reading",
     "bills": "Bills",
     "myBill": "My bill",
-    "reports": "Reports"
+    "reports": "Reports",
+    "history": "History"
   },
   "meters": {
     "mainTitle": "Main meters (whole property)",
@@ -397,5 +398,45 @@
       "shared": "A single main meter. Consumption is divided by people (the landlord home counts too) or by percentages set on each unit. Whatever is not assigned stays with the landlord.",
       "direct": "Nothing is billed for this kind. Readings are kept for tracking only."
     }
+  },
+  "alerts": {
+    "title": "Alerts",
+    "markAllRead": "Mark all as read",
+    "new": "New",
+    "earlier": "Earlier",
+    "none": "No alerts. Everything is up to date.",
+    "highUsage": {
+      "title": "Unusual {{kind}} usage",
+      "body": "{{name}} – {{pct}}% above the average. Worth checking for a leak or a fault."
+    },
+    "noReport": {
+      "title": "Meters not reported yet",
+      "body": "{{unit}}: the {{kind}} reading is missing this month."
+    },
+    "unpaid": {
+      "title": "Unpaid bill",
+      "body": "{{unit}}: the bill for {{month}} ({{amount}}) is not paid yet."
+    },
+    "reported": {
+      "title": "Readings reported",
+      "body": "{{unit}}: the renter reported the meters. Worth checking the readings."
+    },
+    "contractEnding": {
+      "title": "Contract ending soon",
+      "body": "{{unit}}: the contract ends on {{date}} (in {{count}} days)."
+    }
+  },
+  "history": {
+    "title": "Consumption history",
+    "cost": "Total ₪",
+    "wholeProperty": "Whole property",
+    "house": "Main house",
+    "last6": "Last 6 months",
+    "average": "Monthly average",
+    "avgCost": "Average cost",
+    "insights": "Insights",
+    "noData": "Not enough readings to show yet.",
+    "higher": "{{what}} in {{month}} is {{pct}}% above the average of the 3 months before.",
+    "lower": "{{what}} in {{month}} is {{pct}}% below the average of the 3 months before."
   }
 }

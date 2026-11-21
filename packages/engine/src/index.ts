@@ -7,3 +7,5 @@ export * from './attention.js';
 export * from './collections.js';
 export * from './reconcile.js';
 export * from './schedule.js';
+export * from './history.js';
+export * from './alerts.js';

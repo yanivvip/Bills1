@@ -125,6 +125,13 @@ test('the landlord sets tariffs, approves the month and marks it paid', async ({
   const anchor = `${lastMonth.getFullYear()}-${String(lastMonth.getMonth() + 1).padStart(2, '0')}`;
   const tariffForm = page.locator('form', { hasText: he.tariff.title });
   await expect(page.getByLabel(he.tariff.propertyTaxAnchor)).toHaveCount(0);
+  // meter layout: the extra choice follows the layout; this unit has its own electricity meter, so 'separate' bills the same
+  await page.getByLabel(he.layout.water).selectOption('shared');
+  await expect(page.getByLabel(he.layout.splitLabel)).toBeVisible();
+  await page.getByLabel(he.layout.water).selectOption('main_sub');
+  await expect(page.getByLabel(he.layout.splitLabel)).toHaveCount(0);
+  await expect(page.getByLabel(he.layout.differenceLabel).first()).toBeVisible();
+  await page.getByLabel(he.layout.electricity).selectOption('separate');
   await page.getByLabel(he.tariff.propertyTaxEvery).selectOption('2');
   await expect(tariffForm.getByRole('button', { name: he.common.save })).toBeDisabled(); // needs a property-tax month
   await page.getByLabel(he.tariff.propertyTaxAnchor).fill(anchor);

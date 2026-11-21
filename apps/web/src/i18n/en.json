@@ -198,7 +198,10 @@
     "residual": "Billed by subtraction from the main meters",
     "residualHint": "For example the landlord’s own home: usage is the main meter minus all the other units. Only one unit per property.",
     "oneResidual": "This property already has a unit billed by subtraction.",
-    "propertyTax": "Property tax per bill (₪)"
+    "propertyTax": "Property tax per bill (₪)",
+    "occupants": "People living in the unit",
+    "electricityPercent": "Share of the shared electricity meter (%)",
+    "waterPercent": "Share of the shared water meter (%)"
   },
   "bills": {
     "title": "Monthly bills",
@@ -209,7 +212,8 @@
     "missingTitle": "Data missing for the calculation:",
     "problem": {
       "missing": "reading missing (this or last month)",
-      "backwards": "reading lower than the previous one"
+      "backwards": "reading lower than the previous one",
+      "noShare": "Missing share (people or percentage) to divide the shared meter"
     },
     "nothingToBill": "No rented units to bill this month.",
     "approve": "Approve bills",
@@ -366,5 +370,32 @@
     "submit": "Replace tenant",
     "confirm": "End the current contract and start a new one?",
     "confirmIncomplete": "Some steps are not finished. Replace the tenant anyway?"
+  },
+  "layout": {
+    "title": "Meter layout",
+    "electricity": "Electricity – how the meters are connected",
+    "water": "Water – how the meters are connected",
+    "mode": {
+      "main_sub": "Main meter + sub-meters",
+      "separate": "A separate meter for each unit",
+      "shared": "One shared meter, no sub-meters",
+      "direct": "The renter pays the supplier directly"
+    },
+    "differenceLabel": "The difference between the main meter and the sub-meters – who carries it?",
+    "difference": {
+      "landlord": "Me (the main house)",
+      "units": "Shared between the units"
+    },
+    "splitLabel": "How is the shared meter divided?",
+    "split": {
+      "heads": "By number of people",
+      "percent": "By percentage"
+    },
+    "hint": {
+      "main_sub": "One meter for the property and one for each unit. The difference is the main house consumption, or is shared evenly between the units.",
+      "separate": "Every meter is connected straight to the supplier. A main meter, if any, is not part of the bill.",
+      "shared": "A single main meter. Consumption is divided by people (the landlord home counts too) or by percentages set on each unit. Whatever is not assigned stays with the landlord.",
+      "direct": "Nothing is billed for this kind. Readings are kept for tracking only."
+    }
   }
 }

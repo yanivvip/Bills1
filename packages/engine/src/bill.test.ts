@@ -169,3 +169,106 @@ describe('readings kept with the bill', () => {
     expect(find(r, 'owner').readings).toEqual({});
   });
 });
+
+// Main meter 1000 -> 1600 (600 kWh) and 50 -> 80 (30 m3); roni 100 kWh / 10 m3, yuval 80 kWh / 9 m3.
+describe('meter layouts', () => {
+  const qty = (r: ReturnType<typeof computeBills>, id: string, type: 'electricity' | 'waterA' | 'waterB') => find(r, id).lines.find((l) => l.type === type)?.qty;
+
+  it('main meter with sub-meters, the difference shared by the units instead of billed to the landlord home', () => {
+    const input = base();
+    input.units = input.units.filter((u) => u.id !== 'owner').map((u) => ({ ...u }));
+    input.layout = { electricity: { mode: 'main_sub', difference: 'units' } };
+    const r = computeBills(input);
+    // 600 - 180 = 420 kWh of difference, 210 each on top of the unit's own meter
+    expect(qty(r, 'roni', 'electricity')).toBe(310);
+    expect(qty(r, 'yuval', 'electricity')).toBe(290);
+  });
+
+  it('the difference shared by the units is not billed to a landlord home that nobody rents', () => {
+    const input = base();
+    input.units = input.units.map((u) => (u.id === 'owner' ? { ...u, billed: false } : u));
+    input.layout = { electricity: { mode: 'main_sub', difference: 'units' } };
+    const r = computeBills(input);
+    expect(r.bills.map((b) => b.unitId)).toEqual(['roni', 'yuval']);
+    expect(qty(r, 'roni', 'electricity')).toBe(310);
+  });
+
+  it('main meter with sub-meters and no household for the landlord: the difference is simply not billed', () => {
+    const input = base();
+    input.units = input.units.filter((u) => u.id !== 'owner');
+    const r = computeBills(input);
+    expect(qty(r, 'roni', 'electricity')).toBe(100);
+    expect(qty(r, 'yuval', 'electricity')).toBe(80);
+  });
+
+  it('a shared meter is divided by percentage, the rest stays with the landlord', () => {
+    const input = base();
+    input.units = [
+      unit({ id: 'a', percent: { electricity: 30 } }),
+      unit({ id: 'b', percent: { electricity: 20 } }),
+    ];
+    input.layout = { electricity: { mode: 'shared', split: 'percent' } };
+    const r = computeBills(input);
+    expect(qty(r, 'a', 'electricity')).toBe(180);
+    expect(qty(r, 'b', 'electricity')).toBe(120);
+  });
+
+  it('a shared meter is divided by head-count, the landlord household takes its people too', () => {
+    const input = base();
+    input.units = [
+      unit({ id: 'a', occupants: 2 }),
+      unit({ id: 'b', occupants: 1 }),
+      unit({ id: 'home', billed: false, residual: true, occupants: 3 }),
+    ];
+    input.layout = { electricity: { mode: 'shared', split: 'heads' } };
+    const r = computeBills(input);
+    expect(qty(r, 'a', 'electricity')).toBe(200); // 2 of 6 people
+    expect(qty(r, 'b', 'electricity')).toBe(100);
+  });
+
+  it('a shared water meter still uses each unit quota for the cheaper rate', () => {
+    const input = base();
+    input.units = [unit({ id: 'a', occupants: 1, waterQuota: 5 }), unit({ id: 'b', occupants: 1, waterQuota: 0 })];
+    input.layout = { water: { mode: 'shared', split: 'heads' } };
+    const r = computeBills(input);
+    expect(qty(r, 'a', 'waterA')).toBe(5);
+    expect(qty(r, 'a', 'waterB')).toBe(10); // 15 m3 each
+    expect(qty(r, 'b', 'waterA')).toBeUndefined();
+    expect(qty(r, 'b', 'waterB')).toBe(15);
+  });
+
+  it('a unit without a percentage cannot be billed from a shared meter', () => {
+    const input = base();
+    input.units = [unit({ id: 'a', percent: { electricity: 30 } }), unit({ id: 'b' })];
+    input.layout = { electricity: { mode: 'shared', split: 'percent' } };
+    const r = computeBills(input);
+    expect(r.problems).toContainEqual({ unitId: 'b', kind: 'electricity', reason: 'noShare' });
+    expect(r.bills.map((b) => b.unitId)).toEqual(['a']); // only the unit with the problem is left out; approval stays blocked
+  });
+
+  it('separate meters ignore the main meter, even for a unit flagged as the household', () => {
+    const input = base();
+    input.units = input.units.map((u) => (u.id === 'owner' ? { ...u, electricity: [{ prev: 0, cur: 50 }] } : u));
+    input.layout = { electricity: { mode: 'separate' } };
+    expect(qty(computeBills(input), 'owner', 'electricity')).toBe(50);
+  });
+
+  it('when the renter pays the supplier directly nothing of that kind is billed and missing readings do not matter', () => {
+    const input = base();
+    input.units = input.units.map((u) => ({ ...u, electricity: [undefined] }));
+    input.layout = { electricity: { mode: 'direct' } };
+    const r = computeBills(input);
+    expect(r.problems.filter((p) => p.kind === 'electricity')).toEqual([]);
+    expect(r.bills.every((b) => !b.lines.some((l) => l.type === 'electricity'))).toBe(true);
+  });
+
+  it('a missing main reading blocks a shared meter and is reported once for the main meter', () => {
+    const input = base();
+    input.main = { ...input.main, electricity: [undefined] };
+    input.units = [unit({ id: 'a', occupants: 1 })];
+    input.layout = { electricity: { mode: 'shared', split: 'heads' } };
+    const r = computeBills(input);
+    expect(r.problems).toEqual([{ unitId: null, kind: 'electricity', reason: 'missing' }]);
+    expect(r.bills).toEqual([]);
+  });
+});

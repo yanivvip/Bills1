@@ -1,7 +1,7 @@
 -- Database security tests (pgTAP). Run with: supabase test db
 -- Everything runs in one transaction that is rolled back, so no data is left behind.
 begin;
-select plan(71);
+select plan(75);
 
 -- ── Fixtures (as the postgres superuser) ─────────────────────────────────
 insert into auth.users (id, email, email_confirmed_at, instance_id, aud, role) values
@@ -233,6 +233,13 @@ select throws_ok($q$update public.tariffs set water_fixed_scope = 'everyone' whe
 select lives_ok($q$insert into public.sewage_entries (property_id, org_id, unit_id, period, qty) values ('20000000-0000-0000-0000-00000000000a', '10000000-0000-0000-0000-00000000000a', '30000000-0000-0000-0000-000000000001', '2026-08-01', 6.2)$q$, 'a landlord enters the sewage quantity of a unit');
 select pg_temp.act_as('00000000-0000-0000-0000-0000000000b1');
 select throws_ok($q$insert into public.sewage_entries (property_id, org_id, unit_id, period, qty) values ('20000000-0000-0000-0000-00000000000a', '10000000-0000-0000-0000-00000000000a', '30000000-0000-0000-0000-000000000001', '2026-09-01', 3)$q$, '42501', null, 'another landlord cannot enter sewage quantities');
+
+-- ── Meter layouts ────────────────────────────────────────────────────────
+select pg_temp.act_as('00000000-0000-0000-0000-0000000000a1');
+select lives_ok($q$update public.tariffs set electricity_layout = 'shared', electricity_split = 'percent', water_difference = 'units' where property_id = '20000000-0000-0000-0000-00000000000a'$q$, 'a landlord chooses how the meters are connected');
+select throws_ok($q$update public.tariffs set water_layout = 'bogus' where property_id = '20000000-0000-0000-0000-00000000000a'$q$, '23514', null, 'only the known meter layouts are accepted');
+select lives_ok($q$update public.units set occupants = 3, electricity_percent = 40.5 where id = '30000000-0000-0000-0000-000000000001'$q$, 'a landlord sets the people and the percentage of a unit');
+select throws_ok($q$update public.units set water_percent = 120 where id = '30000000-0000-0000-0000-000000000001'$q$, '23514', null, 'a share cannot be more than 100 percent');
 
 select * from finish();
 rollback;

@@ -1,9 +1,9 @@
 import { useEffect, useState, type FormEvent } from 'react';
 import { useTranslation } from 'react-i18next';
-import type { FixedScope } from '@bills/engine';
+import type { FixedScope, KindLayout } from '@bills/engine';
 import { supabase } from '../../lib/supabase';
 import { parseAgorot, parseRate, rateToShekels } from '../../lib/money';
-import { TARIFF_COLUMNS } from '../bills/useBilling';
+import { TARIFF_COLUMNS, layoutFromRow } from '../bills/useBilling';
 import { card, input, primary } from './shared';
 
 interface Row {
@@ -17,7 +17,16 @@ interface Row {
   sewage_rate: number;
   property_tax_every: 1 | 2;
   property_tax_anchor: string | null;
+  electricity_layout: KindLayout['mode'];
+  electricity_difference: KindLayout['difference'];
+  electricity_split: KindLayout['split'];
+  water_layout: KindLayout['mode'];
+  water_difference: KindLayout['difference'];
+  water_split: KindLayout['split'];
 }
+
+type Layouts = { electricity: KindLayout; water: KindLayout };
+const MODES: KindLayout['mode'][] = ['main_sub', 'separate', 'shared', 'direct'];
 
 const SCOPES: FixedScope[] = ['units', 'all', 'landlord'];
 
@@ -29,6 +38,7 @@ export default function TariffSection({ orgId, propertyId }: { orgId: string; pr
   const [waterScope, setWaterScope] = useState<FixedScope>('units');
   const [taxEvery, setTaxEvery] = useState<1 | 2>(1);
   const [taxAnchor, setTaxAnchor] = useState(''); // YYYY-MM
+  const [layout, setLayout] = useState<Layouts>({ electricity: { mode: 'main_sub', difference: 'landlord', split: 'heads' }, water: { mode: 'main_sub', difference: 'landlord', split: 'heads' } });
   const [loaded, setLoaded] = useState(false);
   const [state, setState] = useState<'idle' | 'saved' | 'failed'>('idle');
   const [error, setError] = useState('');
@@ -51,6 +61,7 @@ export default function TariffSection({ orgId, propertyId }: { orgId: string; pr
           waterFixed: String(Number(r.water_fixed) / 100),
           sewage: rateToShekels(Number(r.sewage_rate)),
         });
+        setLayout(layoutFromRow(r));
         setElecScope(r.electricity_fixed_scope);
         setWaterScope(r.water_fixed_scope);
         setTaxEvery(Number(r.property_tax_every) === 2 ? 2 : 1);
@@ -86,6 +97,12 @@ export default function TariffSection({ orgId, propertyId }: { orgId: string; pr
       water_fixed: waterFixed,
       water_fixed_scope: waterScope,
       sewage_rate: sewage,
+      electricity_layout: layout.electricity.mode,
+      electricity_difference: layout.electricity.difference,
+      electricity_split: layout.electricity.split,
+      water_layout: layout.water.mode,
+      water_difference: layout.water.difference,
+      water_split: layout.water.split,
       property_tax_every: taxEvery,
       property_tax_anchor: taxEvery === 2 ? `${taxAnchor}-01` : null,
       updated_at: new Date().toISOString(),
@@ -113,11 +130,56 @@ export default function TariffSection({ orgId, propertyId }: { orgId: string; pr
     </label>
   );
 
+  // how one kind of meter is connected; the extra choice depends on the layout
+  const layoutBlock = (kind: 'electricity' | 'water') => {
+    const l = layout[kind];
+    const change = (patch: Partial<KindLayout>) => {
+      setLayout({ ...layout, [kind]: { ...l, ...patch } });
+      touch();
+    };
+    return (
+      <div className="flex flex-col gap-2 rounded-xl bg-white/5 p-3">
+        <label className="flex flex-col gap-1 text-sm text-slate-300">
+          {t(`layout.${kind}`)}
+          <select value={l.mode} onChange={(e) => change({ mode: e.target.value as KindLayout['mode'] })} className={input}>
+            {MODES.map((m) => (
+              <option key={m} value={m}>
+                {t(`layout.mode.${m}`)}
+              </option>
+            ))}
+          </select>
+        </label>
+        {l.mode === 'main_sub' && (
+          <label className="flex flex-col gap-1 text-sm text-slate-300">
+            {t('layout.differenceLabel')}
+            <select value={l.difference} onChange={(e) => change({ difference: e.target.value as KindLayout['difference'] })} className={input}>
+              <option value="landlord">{t('layout.difference.landlord')}</option>
+              <option value="units">{t('layout.difference.units')}</option>
+            </select>
+          </label>
+        )}
+        {l.mode === 'shared' && (
+          <label className="flex flex-col gap-1 text-sm text-slate-300">
+            {t('layout.splitLabel')}
+            <select value={l.split} onChange={(e) => change({ split: e.target.value as KindLayout['split'] })} className={input}>
+              <option value="heads">{t('layout.split.heads')}</option>
+              <option value="percent">{t('layout.split.percent')}</option>
+            </select>
+          </label>
+        )}
+        <p className="text-xs text-slate-400">{t(`layout.hint.${l.mode}`)}</p>
+      </div>
+    );
+  };
+
   // render only after the saved values arrived, so typing is never overwritten by a late response
   if (!loaded) return null;
 
   return (
     <form onSubmit={save} className={card}>
+      <h2 className="text-xl font-semibold text-slate-300">{t('layout.title')}</h2>
+      {layoutBlock('electricity')}
+      {layoutBlock('water')}
       <h2 className="text-xl font-semibold text-slate-300">{t('tariff.title')}</h2>
       <div className="grid grid-cols-2 gap-3">
         {field('rate', t('tariff.electricityRate'))}

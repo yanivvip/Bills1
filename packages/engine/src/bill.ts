@@ -35,6 +35,10 @@ export interface BillUnit {
   /** true: consumption = main meter minus the other units' meters (the landlord's own household) */
   residual: boolean;
   communityFee: Agorot;
+  /** people living in the unit, the weights of a shared meter divided by head-count */
+  occupants?: number;
+  /** share of a shared meter in percent, per kind */
+  percent?: { electricity?: number; water?: number };
   /** property tax due this month (0 outside a property-tax month) */
   propertyTax?: Agorot;
   /** m3 of sewage entered for this month (only in a property-tax month) */
@@ -58,8 +62,25 @@ export interface BillCharge {
   amount: Agorot;
 }
 
+/**
+ * How one kind of meter (electricity or water) is connected:
+ * 'separate' each unit has its own meter; 'main_sub' a main meter plus sub-meters, the difference going to the landlord's
+ * household or shared by the units; 'shared' one meter divided by percentage or head-count; 'direct' the renter pays the supplier.
+ */
+export type MeterMode = 'separate' | 'main_sub' | 'shared' | 'direct';
+export interface KindLayout {
+  mode: MeterMode;
+  /** main_sub: who carries main minus sub-meters */
+  difference: 'landlord' | 'units';
+  /** shared: how the main meter is divided */
+  split: 'percent' | 'heads';
+}
+export const DEFAULT_LAYOUT: KindLayout = { mode: 'main_sub', difference: 'landlord', split: 'heads' };
+
 export interface BillInput {
   tariff: BillTariff;
+  /** per kind; a missing entry means main meter with sub-meters and the difference to the landlord */
+  layout?: { electricity?: Partial<KindLayout>; water?: Partial<KindLayout> };
   units: readonly BillUnit[];
   main: { electricity: MeterReadings; water: MeterReadings };
   charges: readonly BillCharge[];
@@ -88,7 +109,8 @@ export interface BillProblem {
   /** null = a main meter */
   unitId: string | null;
   kind: 'electricity' | 'water';
-  reason: 'missing' | 'backwards';
+  /** noShare: the unit has no percentage or head-count to divide a shared meter by */
+  reason: 'missing' | 'backwards' | 'noShare';
 }
 
 export interface BillResult {
@@ -124,41 +146,93 @@ export function computeBills(input: BillInput): BillResult {
   const waterFixed = share(tariff.waterFixed ?? 0, tariff.waterFixedScope ?? 'units');
   const chargeShares = charges.map((c) => (c.scope === 'unit' ? undefined : share(c.amount, c.scope)));
 
-  /** Usage in kWh / m3 for a unit, or null when it cannot be computed. */
-  const usage = (u: BillUnit, kind: Kind): number | null => {
-    const own = u[kind];
-    try {
-      if (!u.residual) {
-        if (!defined(own)) {
-          problems.push({ unitId: u.id, kind, reason: 'missing' });
-          return null;
-        }
-        return sum(own);
-      }
-      // residual unit: main meters minus everybody else's meters
-      const parent = main[kind];
-      if (parent.length === 0) return 0;
-      const others = units.filter((o) => o !== u).flatMap((o) => o[kind]);
-      if (!defined(parent) || !defined(others)) {
-        problems.push({ unitId: u.id, kind, reason: 'missing' });
-        return null;
-      }
-      const total = (parent as readonly Reading[]).reduce((s, p) => s + consumption(p), 0);
-      const used = (others as readonly Reading[]).reduce((s, o) => s + consumption(o), 0);
-      return Math.max(0, total - used);
-    } catch (e) {
-      if (!(e instanceof RangeError)) throw e;
-      problems.push({ unitId: u.id, kind, reason: 'backwards' });
+  const layoutOf = (kind: Kind): KindLayout => ({ ...DEFAULT_LAYOUT, ...input.layout?.[kind] });
+  /** The landlord's difference rule: the residual unit is billed main meter minus the other units. */
+  const byDifference = (u: BillUnit, kind: Kind) => u.residual && layoutOf(kind).mode === 'main_sub' && layoutOf(kind).difference === 'landlord';
+  const round3 = (x: number) => Math.round(x * 1000) / 1000;
+
+  /** Usage in kWh / m3 of every billed unit for one kind (null = cannot be computed; the reason is in `problems`). */
+  const usageOf = (kind: Kind): Map<string, number | null> => {
+    const layout = layoutOf(kind);
+    const result = new Map<string, number | null>();
+    const fail = (unitId: string | null, reason: BillProblem['reason']) => {
+      problems.push({ unitId, kind, reason });
       return null;
+    };
+    const total = (r: MeterReadings, unitId: string | null): number | null => {
+      if (!defined(r)) return fail(unitId, 'missing');
+      try {
+        return sum(r);
+      } catch (e) {
+        if (!(e instanceof RangeError)) throw e;
+        return fail(unitId, 'backwards');
+      }
+    };
+
+    // the renter pays the supplier directly: nothing is billed for this kind
+    if (layout.mode === 'direct') {
+      for (const u of billed) result.set(u.id, 0);
+      return result;
     }
+
+    // one main meter for the whole property, divided by percentage or by head-count
+    if (layout.mode === 'shared') {
+      const parent = main[kind];
+      const all = parent.length === 0 ? 0 : total(parent, null);
+      const weight = (u: BillUnit) => (layout.split === 'percent' ? u.percent?.[kind] : u.occupants);
+      const landlordWeight = layout.split === 'heads' ? units.filter((u) => u.residual && !u.billed).reduce((s, u) => s + (u.occupants ?? 0), 0) : 0;
+      const weightSum = billed.reduce((s, u) => s + (weight(u) ?? 0), 0) + landlordWeight;
+      for (const u of billed) {
+        const w = weight(u);
+        if (all === null) result.set(u.id, null);
+        else if (all === 0) result.set(u.id, 0);
+        else if (w === undefined || w <= 0 || weightSum <= 0) result.set(u.id, fail(u.id, 'noShare'));
+        else result.set(u.id, round3(layout.split === 'percent' ? (all * w) / 100 : (all * w) / weightSum));
+      }
+      return result;
+    }
+
+    // main meter with sub-meters: the difference goes to the landlord's household, or is shared by the units
+    let sharedDifference: number | null = 0;
+    if (layout.mode === 'main_sub' && layout.difference === 'units' && main[kind].length > 0) {
+      const parent = total(main[kind], null);
+      const used = total(units.flatMap((o) => o[kind]), null);
+      sharedDifference = parent === null || used === null ? null : billed.length > 0 ? round3(Math.max(0, parent - used) / billed.length) : 0;
+    }
+
+    for (const u of billed) {
+      if (byDifference(u, kind)) {
+        // main meters minus everybody else's meters
+        const parent = main[kind];
+        if (parent.length === 0) {
+          result.set(u.id, 0);
+          continue;
+        }
+        const others = units.filter((o) => o !== u).flatMap((o) => o[kind]);
+        if (!defined(parent) || !defined(others)) {
+          result.set(u.id, fail(u.id, 'missing'));
+          continue;
+        }
+        try {
+          result.set(u.id, Math.max(0, sum(parent) - sum(others)));
+        } catch (e) {
+          if (!(e instanceof RangeError)) throw e;
+          result.set(u.id, fail(u.id, 'backwards'));
+        }
+        continue;
+      }
+      const own = total(u[kind], u.id);
+      result.set(u.id, own === null || sharedDifference === null ? null : round3(own + sharedDifference));
+    }
+    return result;
   };
+  const usages = { electricity: usageOf('electricity'), water: usageOf('water') };
 
   const bills: UnitBill[] = [];
   billed.forEach((u, i) => {
-    const before = problems.length;
-    const kwh = usage(u, 'electricity');
-    const m3 = usage(u, 'water');
-    if (problems.length > before || kwh === null || m3 === null) return;
+    const kwh = usages.electricity.get(u.id) ?? null;
+    const m3 = usages.water.get(u.id) ?? null;
+    if (kwh === null || m3 === null) return;
 
     const lines: BillLine[] = [];
     if (kwh > 0) lines.push({ type: 'electricity', qty: kwh, rate: tariff.electricityRate, amount: flatCost(kwh, tariff.electricityRate) });
@@ -183,11 +257,11 @@ export function computeBills(input: BillInput): BillResult {
       const mine = c.scope === 'unit' ? (c.unitId === u.id ? c.amount : 0) : (chargeShares[k]?.[i] ?? 0);
       if (mine !== 0) lines.push({ type: 'charge', description: c.description, amount: mine });
     });
-    const own = (m: MeterReadings): Reading | undefined =>
-      !u.residual && m.length > 0 && defined(m) ? { prev: m.reduce((s, r) => s + r.prev, 0), cur: m.reduce((s, r) => s + r.cur, 0) } : undefined;
+    const own = (m: MeterReadings, kind: Kind): Reading | undefined =>
+      !byDifference(u, kind) && m.length > 0 && defined(m) ? { prev: m.reduce((s, r) => s + r.prev, 0), cur: m.reduce((s, r) => s + r.cur, 0) } : undefined;
     const readings: UnitBill['readings'] = {};
-    const e = own(u.electricity);
-    const w = own(u.water);
+    const e = own(u.electricity, 'electricity');
+    const w = own(u.water, 'water');
     if (e) readings.electricity = e;
     if (w) readings.water = w;
     bills.push({ unitId: u.id, readings, lines, total: lines.reduce((s, l) => s + l.amount, 0) });

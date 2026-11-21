@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { computeBills, isDueMonth, type BillCharge, type ChargeScope, type FixedScope, type BillInput, type BillLine, type BillResult, type BillTariff, type MeterReadings } from '@bills/engine';
+import { computeBills, isDueMonth, type BillCharge, type ChargeScope, type FixedScope, type KindLayout, type BillInput, type BillLine, type BillResult, type BillTariff, type MeterReadings } from '@bills/engine';
 import { supabase } from '../../lib/supabase';
 import { shiftMonth } from '../../lib/period';
 
@@ -10,6 +10,9 @@ export interface UnitInfo {
   water_quota: number;
   is_residual: boolean;
   property_tax_agorot: number;
+  occupants: number;
+  electricity_percent: number | null;
+  water_percent: number | null;
   contracts: { id: string; status: string }[];
 }
 export interface ChargeRow {
@@ -52,6 +55,12 @@ interface TariffRow {
   sewage_rate: number;
   property_tax_every: 1 | 2;
   property_tax_anchor: string | null;
+  electricity_layout: KindLayout['mode'];
+  electricity_difference: KindLayout['difference'];
+  electricity_split: KindLayout['split'];
+  water_layout: KindLayout['mode'];
+  water_difference: KindLayout['difference'];
+  water_split: KindLayout['split'];
 }
 interface MeterInfo {
   id: string;
@@ -69,7 +78,11 @@ export const tariffFromRow = (t: TariffRow): BillTariff => ({
   waterFixedScope: t.water_fixed_scope,
   sewageRate: Number(t.sewage_rate),
 });
-export const TARIFF_COLUMNS = 'electricity_rate,electricity_fixed,water_rate_a,water_rate_b,water_fixed,electricity_fixed_scope,water_fixed_scope,sewage_rate,property_tax_every,property_tax_anchor';
+export const TARIFF_COLUMNS = 'electricity_rate,electricity_fixed,water_rate_a,water_rate_b,water_fixed,electricity_fixed_scope,water_fixed_scope,sewage_rate,property_tax_every,property_tax_anchor,electricity_layout,electricity_difference,electricity_split,water_layout,water_difference,water_split';
+export const layoutFromRow = (t: TariffRow): { electricity: KindLayout; water: KindLayout } => ({
+  electricity: { mode: t.electricity_layout, difference: t.electricity_difference, split: t.electricity_split },
+  water: { mode: t.water_layout, difference: t.water_difference, split: t.water_split },
+});
 
 // Everything the landlord's billing page needs for one property and month, and the computed preview.
 export function useBilling(propertyId: string | undefined, period: string) {
@@ -90,7 +103,7 @@ export function useBilling(propertyId: string | undefined, period: string) {
     if (!propertyId) return;
     const [t, u, m, r, c, b, sb, sw] = await Promise.all([
       supabase.from('tariffs').select(TARIFF_COLUMNS).eq('property_id', propertyId).maybeSingle(),
-      supabase.from('units').select('id,name,community_fee_agorot,water_quota,is_residual,property_tax_agorot,contracts(id,status)').eq('property_id', propertyId).order('created_at'),
+      supabase.from('units').select('id,name,community_fee_agorot,water_quota,is_residual,property_tax_agorot,occupants,electricity_percent,water_percent,contracts(id,status)').eq('property_id', propertyId).order('created_at'),
       supabase.from('meters').select('id,unit_id,kind').eq('property_id', propertyId),
       supabase.from('readings').select('meter_id,period,value').in('period', [period, shiftMonth(period, -1)]),
       supabase.from('charges').select('id,unit_id,scope,recurring,description,amount').eq('property_id', propertyId).eq('period', period).order('created_at'),
@@ -147,12 +160,15 @@ export function useBilling(propertyId: string | undefined, period: string) {
     const billCharges: BillCharge[] = charges.map((x) => ({ id: x.id, scope: x.scope, unitId: x.unit_id, description: x.description, amount: x.amount }));
     const inp: BillInput = {
       tariff: tariffFromRow(tariff),
+      layout: layoutFromRow(tariff),
       main: { electricity: of(null, 'electricity'), water: of(null, 'water') },
       units: units.map((u) => ({
         id: u.id,
         billed: u.contracts.some((c) => c.status === 'active'),
         residual: u.is_residual,
         communityFee: Number(u.community_fee_agorot),
+        occupants: Number(u.occupants),
+        percent: { electricity: u.electricity_percent === null ? undefined : Number(u.electricity_percent), water: u.water_percent === null ? undefined : Number(u.water_percent) },
         propertyTax: taxDue ? Number(u.property_tax_agorot) : 0,
         sewageQty: taxDue ? (sewage[u.id] ?? 0) : 0,
         waterQuota: Number(u.water_quota),

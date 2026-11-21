@@ -59,6 +59,7 @@ export default function BillsPage({ orgId }: { orgId: string }) {
     const statements = b.result.bills.map((x) => ({ unit_id: x.unitId, total: x.total, lines: x.lines, readings: x.readings }));
     const snapshot = {
       ...b.input.tariff,
+      layout: b.input.layout,
       units: b.input.units.filter((u) => u.billed).map((u) => ({ id: u.id, communityFee: u.communityFee, waterQuota: u.waterQuota, residual: u.residual })),
     };
     await act(supabase.rpc('approve_month', { p_property: propertyId, p_period: period, p_statements: statements, p_tariff: snapshot }));

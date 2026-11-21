@@ -1,7 +1,7 @@
 -- Database security tests (pgTAP). Run with: supabase test db
 -- Everything runs in one transaction that is rolled back, so no data is left behind.
 begin;
-select plan(88);
+select plan(93);
 
 -- ── Fixtures (as the postgres superuser) ─────────────────────────────────
 insert into auth.users (id, email, email_confirmed_at, instance_id, aud, role) values
@@ -300,6 +300,15 @@ select throws_ok($q$select public.setup_property('10000000-0000-0000-0000-000000
   "tariff": {"electricity_rate": 64, "electricity_fixed": 9000, "water_layout": "shared", "water_split": "percent", "property_tax_every": 2, "property_tax_anchor": "2026-11-01"}
 }'::jsonb)$q$, null, 'landlord_cannot_be_renter', 'a mistake in the setup is refused');
 select is((select count(*)::int from public.properties where name = 'Broken house'), 0, 'and nothing of it is left behind');
+
+-- ── The legal disclaimer ─────────────────────────────────────────────────
+select pg_temp.act_as('00000000-0000-0000-0000-0000000000c2');
+select lives_ok($q$select public.accept_terms('v1-test')$q$, 'a user accepts the disclaimer');
+select lives_ok($q$select public.accept_terms('v1-test')$q$, 'accepting twice is harmless');
+select is((select count(*)::int from public.terms_acceptances), 1, 'the acceptance is stored once and the user sees it');
+select throws_ok($q$insert into public.terms_acceptances (user_id, version) values ('00000000-0000-0000-0000-0000000000c2', 'forged')$q$, '42501', null, 'a consent record cannot be written directly');
+select pg_temp.act_as('00000000-0000-0000-0000-0000000000b1');
+select is((select count(*)::int from public.terms_acceptances where version = 'v1-test'), 0, 'another user cannot see it');
 
 select * from finish();
 rollback;

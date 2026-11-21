@@ -1,4 +1,4 @@
-import type { ComponentType } from 'react';
+import { useEffect, useState, type ComponentType, type ReactNode } from 'react';
 import { BrowserRouter, Navigate, NavLink, Outlet, Route, Routes, useOutletContext } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { AuthProvider, useAuth } from './auth/AuthProvider';
@@ -16,6 +16,8 @@ import LoginPage from './pages/LoginPage';
 import HomePage from './pages/HomePage';
 import AdminPage from './pages/AdminPage';
 import AdminUnitsPage from './pages/AdminUnitsPage';
+import DisclaimerPage from './pages/DisclaimerPage';
+import { TERMS_VERSION } from './legal/terms';
 import AlertsPage from './pages/landlord/AlertsPage';
 import HistoryPage from './pages/landlord/HistoryPage';
 import PropertiesPage from './pages/landlord/PropertiesPage';
@@ -68,13 +70,36 @@ function Shell() {
   );
 }
 
+// Nobody gets past this until they have accepted the current version of the legal disclaimer (stored per user and version).
+function TermsGate({ children }: { children: ReactNode }) {
+  const { session } = useAuth();
+  const userId = session?.user.id;
+  const [state, setState] = useState<'loading' | 'needed' | 'ok'>('loading');
+  useEffect(() => {
+    if (!userId) return;
+    setState('loading');
+    void supabase
+      .from('terms_acceptances')
+      .select('id')
+      .eq('user_id', userId)
+      .eq('version', TERMS_VERSION)
+      .maybeSingle()
+      .then(({ data }) => setState(data ? 'ok' : 'needed'));
+  }, [userId]);
+  if (state === 'loading') return null;
+  if (state === 'needed') return <DisclaimerPage onAccepted={() => setState('ok')} />;
+  return <>{children}</>;
+}
+
 function RequireAuth() {
   const { session, loading } = useAuth();
   if (loading) return null;
   return session ? (
-    <RoleProvider>
-      <Shell />
-    </RoleProvider>
+    <TermsGate>
+      <RoleProvider>
+        <Shell />
+      </RoleProvider>
+    </TermsGate>
   ) : (
     <Navigate to="/login" replace />
   );

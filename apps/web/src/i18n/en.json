@@ -520,5 +520,19 @@
     "needTaxMonth": "Bimonthly property tax needs a property-tax month.",
     "finish": "Finish and create the property",
     "finishHint": "Renters get access when they sign up with the email you entered. You can send the invitation from the unit page."
+  },
+  "terms": {
+    "title": "Before you start – a legal notice",
+    "intro": "A few important things, because this is about money.",
+    "points": [
+      "BILLS-AI is a tool for recording and calculating. It does not replace accounting, legal or professional advice.",
+      "Some data is recognised automatically with AI and may contain mistakes.",
+      "It is your responsibility to check every reading, tariff and bill before you approve it or send it to a renter.",
+      "The platform and its owners are not responsible for errors in calculation, recognition or operation – subject to the full text below."
+    ],
+    "fullText": "Legal notice and limitation of liability – full text",
+    "scrollHint": "Scroll and read to the end to be able to accept.",
+    "agree": "I have read the full legal notice, understood it, and agree to it, to the terms of use and to the privacy policy.",
+    "accept": "I agree, continue"
   }
 }

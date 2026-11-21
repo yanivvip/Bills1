@@ -18,6 +18,7 @@ import AdminPage from './pages/AdminPage';
 import AdminUnitsPage from './pages/AdminUnitsPage';
 import AlertsPage from './pages/landlord/AlertsPage';
 import HistoryPage from './pages/landlord/HistoryPage';
+import PropertiesPage from './pages/landlord/PropertiesPage';
 import { useAlerts } from './pages/landlord/useAlerts';
 
 // The bell in the header: a link to the alerts centre with the number of alerts not read yet.
@@ -57,7 +58,7 @@ function Shell() {
         {role?.kind === 'landlord' && <NavLink to="/readings">{t('nav.readings')}</NavLink>}
         {role?.kind === 'landlord' && <NavLink to="/bills">{t('nav.bills')}</NavLink>}
         {role?.kind === 'landlord' && <NavLink to="/history">{t('nav.history')}</NavLink>}
-        {role?.kind === 'landlord' && <NavLink to="/reports">{t('nav.reports')}</NavLink>}
+        {role?.kind === 'landlord' && <NavLink to="/property">{t('nav.property')}</NavLink>}
         {role?.kind === 'renter' && <NavLink to="/report">{t('nav.report')}</NavLink>}
         {role?.kind === 'renter' && <NavLink to="/my-bill">{t('nav.myBill')}</NavLink>}
         {isPlatformAdmin && <NavLink to="/admin">{t('nav.admin')}</NavLink>}
@@ -116,6 +117,7 @@ export default function App() {
               <Route path="/units/:unitId" element={<LandlordRoute page={UnitPage} />} />
               <Route path="/readings" element={<ReadingsPage />} />
               <Route path="/bills" element={<LandlordRoute page={BillsPage} />} />
+              <Route path="/property" element={<LandlordRoute page={PropertiesPage} />} />
               <Route path="/reports" element={<ReportsPage />} />
               <Route path="/history" element={<HistoryPage />} />
               <Route path="/alerts" element={<AlertsPage />} />

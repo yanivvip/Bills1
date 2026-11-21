@@ -20,7 +20,8 @@ test('landlord sets up an organization, property, unit, contract and meters', as
   await page.getByRole('button', { name: he.home.createOrg }).click();
   await expect(page.getByRole('heading', { name: 'E2E Landlord' })).toBeVisible();
 
-  // property
+  // property (added in the Property tab)
+  await page.getByRole('link', { name: he.nav.property, exact: true }).click();
   await page.getByRole('button', { name: he.landlord.addProperty }).click();
   await page.getByPlaceholder(he.landlord.propertyName).fill('Dizengoff 10');
   await page.getByRole('button', { name: he.common.save }).click();
@@ -113,7 +114,7 @@ test('the landlord sets tariffs, approves the month and marks it paid', async ({
   await expect(meterForm.getByText(`✓ ${he.readings.submitted}`)).toBeVisible();
 
   // tariffs on the property page
-  await page.goto('/');
+  await page.getByRole('link', { name: he.nav.property, exact: true }).click();
   await page.getByRole('link', { name: /Dizengoff 10/ }).click();
   await page.getByLabel(he.tariff.electricityRate, { exact: true }).fill('0.64');
   await page.getByLabel(he.tariff.electricityFixed, { exact: true }).fill('90');
@@ -186,6 +187,7 @@ test('the landlord sets tariffs, approves the month and marks it paid', async ({
   await page.goBack();
 
   // the annual report shows the month and exports to CSV and Excel
+  await page.getByRole('link', { name: he.nav.property, exact: true }).click();
   await page.getByRole('link', { name: he.nav.reports }).click();
   await expect(page.getByText('₪425.50').first()).toBeVisible();
   await expect(page.getByRole('heading', { name: he.report.collections })).toBeVisible();
@@ -217,6 +219,10 @@ test('the renter sees the approved bill and that it is paid', async ({ page }) =
 test('the landlord sees the consumption history and the alerts centre', async ({ page }) => {
   await signIn(page, landlord);
 
+  // home: this month's readings and the latest bills
+  await expect(page.getByText(he.landlordHome.readings)).toBeVisible();
+  await expect(page.getByText(he.landlordHome.lastBills)).toBeVisible();
+
   // history: the unit used 250 kWh this month (1000 -> 1250) and paid 425.50
   await page.getByRole('link', { name: he.nav.history }).click();
   await expect(page.getByRole('heading', { name: he.history.title })).toBeVisible();
@@ -238,6 +244,7 @@ test('the landlord sees the consumption history and the alerts centre', async ({
 
 test('the landlord replaces the tenant; the old renter keeps the bills but cannot report', async ({ page }) => {
   await signIn(page, landlord);
+  await page.getByRole('link', { name: he.nav.property, exact: true }).click();
   await page.getByRole('link', { name: /Dizengoff 10/ }).click();
   await page.getByRole('link', { name: /Apt 1/ }).click();
   await page.getByRole('button', { name: he.replace.button }).click();

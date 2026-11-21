@@ -2,7 +2,7 @@ import { useState, type FormEvent } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useRole } from '../auth/RoleProvider';
 import { supabase } from '../lib/supabase';
-import PropertiesPage from './landlord/PropertiesPage';
+import LandlordHome from './landlord/LandlordHome';
 import RenterView from './RenterView';
 
 // Root page: what you see depends on your role (landlord, renter, or brand-new user).
@@ -22,7 +22,7 @@ export default function HomePage() {
   };
 
   if (!role) return <p className="p-4">{t('common.loading')}</p>;
-  if (role.kind === 'landlord') return <PropertiesPage orgId={role.orgId} />;
+  if (role.kind === 'landlord') return <LandlordHome orgId={role.orgId} />;
   if (role.kind === 'renter') return <RenterView />;
 
   return (

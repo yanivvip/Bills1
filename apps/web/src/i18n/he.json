@@ -32,7 +32,8 @@
     "bills": "חשבונות",
     "myBill": "החשבון שלי",
     "reports": "דוחות",
-    "history": "היסטוריה"
+    "history": "היסטוריה",
+    "property": "הנכס"
   },
   "meters": {
     "mainTitle": "מונים ראשיים (כל הנכס)",
@@ -476,5 +477,17 @@
     "copy": "העתקה",
     "copied": "הועתק",
     "reset": "שחזור הנוסח המקורי"
+  },
+  "landlordHome": {
+    "firstProperty": "מוסיפים את הנכס הראשון",
+    "firstPropertyBody": "שם, כתובת, יחידות ושוכרים – ובכל זמן אפשר לשנות.",
+    "readings": "קריאות החודש",
+    "readingsProgress": "{{done}} מתוך {{total}}",
+    "reported": "דווח",
+    "waiting": "עוד לא דווח",
+    "enterReading": "הזנת קריאה",
+    "lastBills": "חשבונות אחרונים",
+    "paidOf": "{{paid}} מתוך {{count}} שולמו ({{amount}} נגבו)",
+    "reportsHint": "דוח שנתי, גבייה וייצוא לאקסל"
   }
 }

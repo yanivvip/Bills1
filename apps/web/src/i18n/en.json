@@ -32,7 +32,8 @@
     "bills": "Bills",
     "myBill": "My bill",
     "reports": "Reports",
-    "history": "History"
+    "history": "History",
+    "property": "Property"
   },
   "meters": {
     "mainTitle": "Main meters (whole property)",
@@ -476,5 +477,17 @@
     "copy": "Copy",
     "copied": "Copied",
     "reset": "Restore the original text"
+  },
+  "landlordHome": {
+    "firstProperty": "Add your first property",
+    "firstPropertyBody": "Name, address, units and renters – you can change anything later.",
+    "readings": "This month’s readings",
+    "readingsProgress": "{{done}} of {{total}}",
+    "reported": "Reported",
+    "waiting": "Not reported yet",
+    "enterReading": "Enter a reading",
+    "lastBills": "Latest bills",
+    "paidOf": "{{paid}} of {{count}} paid ({{amount}} collected)",
+    "reportsHint": "Annual report, collections and Excel export"
   }
 }

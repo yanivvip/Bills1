@@ -2,7 +2,6 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { supabase } from '../../lib/supabase';
-import AttentionCard from './AttentionCard';
 import { AddToggle, card, input, useWriter } from './shared';
 
 interface PropertyRow {
@@ -12,7 +11,7 @@ interface PropertyRow {
   units: { id: string; contracts: { id: string; status: string }[] }[];
 }
 
-// Landlord root page: the organization and its properties. Properties are added here.
+// The "Property" tab: the organization and its properties (added here), and the reports. Settings live on each property.
 export default function PropertiesPage({ orgId }: { orgId: string }) {
   const { t } = useTranslation();
   const [orgName, setOrgName] = useState('');
@@ -43,7 +42,6 @@ export default function PropertiesPage({ orgId }: { orgId: string }) {
         <h1 className="text-2xl font-bold">{orgName}</h1>
         <h2 className="text-xl font-semibold text-slate-300">{t('landlord.properties')}</h2>
       </div>
-      <AttentionCard />
       {error && <p className="text-sm text-red-400">{error}</p>}
       {rows.length === 0 && <p className="text-slate-400">{t('landlord.noProperties')}</p>}
 
@@ -59,6 +57,11 @@ export default function PropertiesPage({ orgId }: { orgId: string }) {
           </Link>
         );
       })}
+
+      <Link to="/reports" className={card}>
+        <strong>{t('nav.reports')}</strong>
+        <span className="text-sm text-slate-400">{t('landlordHome.reportsHint')}</span>
+      </Link>
 
       <AddToggle
         label={t('landlord.addProperty')}

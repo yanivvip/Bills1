@@ -52,21 +52,21 @@ export default function BillDocument() {
   return (
     <section className="flex flex-col gap-4 p-4 print:p-0 print:text-black">
       <div className="flex flex-wrap gap-2 print:hidden">
-        <button className="rounded-lg bg-violet-600 px-4 py-2 font-semibold" onClick={() => window.print()}>
+        <button className="rounded-lg bg-primary text-white px-4 py-2 font-semibold" onClick={() => window.print()}>
           {t('bills.print')}
         </button>
-        <button className="px-2 py-2 text-slate-400 underline" onClick={() => history.back()}>
+        <button className="px-2 py-2 text-muted underline" onClick={() => history.back()}>
           {t('common.back')}
         </button>
       </div>
 
-      <div className="flex flex-col gap-3 rounded-2xl bg-white/5 p-5 print:rounded-none print:bg-white print:p-0">
+      <div className="flex flex-col gap-3 rounded-2xl border border-line bg-card p-5 print:rounded-none print:bg-white print:p-0">
         <div className="flex items-start justify-between gap-3">
           <div>
             <h1 className="text-2xl font-bold">{paid ? t('bills.receipt') : t('bills.bill')}</h1>
-            <p className="text-slate-300 print:text-black">{month}</p>
+            <p className="text-ink-2 print:text-black">{month}</p>
           </div>
-          <span className="text-end text-sm text-slate-300 print:text-black">
+          <span className="text-end text-sm text-ink-2 print:text-black">
             {property}
             {doc.units?.properties?.address && <><br />{doc.units.properties.address}</>}
             <br />
@@ -75,14 +75,14 @@ export default function BillDocument() {
         </div>
         <StatementView lines={doc.lines} total={doc.total_agorot} />
         {(reading('electricity') || reading('water')) && (
-          <div className="text-xs text-slate-400 print:text-black">
+          <div className="text-xs text-muted print:text-black">
             <strong>{t('bills.readingsUsed')}</strong>
             {reading('electricity') && <div>{reading('electricity')}</div>}
             {reading('water') && <div>{reading('water')}</div>}
           </div>
         )}
         {payments.length > 0 && (
-          <ul className="text-sm text-slate-300 print:text-black">
+          <ul className="text-sm text-ink-2 print:text-black">
             {payments.map((p) => (
               <li key={p.id}>
                 {money(p.amount_agorot)} · {p.paid_on} · {t(`bills.method.${p.method}`)}
@@ -90,7 +90,7 @@ export default function BillDocument() {
             ))}
           </ul>
         )}
-        <p className={`font-semibold ${paid ? 'text-emerald-400 print:text-black' : 'text-amber-400 print:text-black'}`}>
+        <p className={`font-semibold ${paid ? 'text-ok print:text-black' : 'text-warn print:text-black'}`}>
           {paid
             ? `✓ ${t('bills.paidOn', { date: doc.paid_on })} · ${t(`bills.method.${doc.paid_method}`)}`
             : doc.paid_agorot > 0
@@ -117,20 +117,20 @@ function MessageEditor({ initial }: { initial: string }) {
     }
   };
   return (
-    <div className="flex flex-col gap-2 rounded-2xl bg-white/5 p-4 print:hidden">
-      <label htmlFor="wa-text" className="text-sm font-semibold text-slate-300">
+    <div className="flex flex-col gap-2 rounded-2xl border border-line bg-card p-4 print:hidden">
+      <label htmlFor="wa-text" className="text-sm font-semibold text-ink-2">
         {t('whatsapp.title')}
       </label>
-      <textarea id="wa-text" value={text} onChange={(e) => { setText(e.target.value); setCopied(false); }} rows={Math.min(14, text.split('\n').length + 1)} className="rounded-lg bg-white/10 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-violet-500" />
+      <textarea id="wa-text" value={text} onChange={(e) => { setText(e.target.value); setCopied(false); }} rows={Math.min(14, text.split('\n').length + 1)} className="rounded-lg bg-field px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary" />
       <div className="flex flex-wrap items-center gap-2">
-        <a className="rounded-lg bg-violet-600 px-4 py-2 font-semibold" href={whatsappLink(text)} target="_blank" rel="noreferrer">
+        <a className="rounded-lg bg-primary text-white px-4 py-2 font-semibold" href={whatsappLink(text)} target="_blank" rel="noreferrer">
           {t('whatsapp.open')}
         </a>
-        <button className="rounded-lg bg-white/10 px-4 py-2 font-semibold" onClick={() => void copy()}>
+        <button className="rounded-lg bg-field px-4 py-2 font-semibold" onClick={() => void copy()}>
           {copied ? `✓ ${t('whatsapp.copied')}` : t('whatsapp.copy')}
         </button>
         {text !== initial && (
-          <button className="px-2 py-2 text-sm text-slate-400 underline" onClick={() => { setText(initial); setCopied(false); }}>
+          <button className="px-2 py-2 text-sm text-muted underline" onClick={() => { setText(initial); setCopied(false); }}>
             {t('whatsapp.reset')}
           </button>
         )}

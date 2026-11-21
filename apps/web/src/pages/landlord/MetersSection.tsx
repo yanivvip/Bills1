@@ -55,16 +55,16 @@ export default function MetersSection({ orgId, propertyId, units }: { orgId: str
 
   return (
     <div className="flex flex-col gap-2">
-      <h2 className="text-xl font-semibold text-slate-300">{t('meters.title')}</h2>
-      {error && <p className="text-sm text-red-400">{error}</p>}
-      {meters && meters.length === 0 && <p className="text-sm text-slate-400">{t('meters.none')}</p>}
+      <h2 className="text-xl font-semibold text-ink-2">{t('meters.title')}</h2>
+      {error && <p className="text-sm text-danger">{error}</p>}
+      {meters && meters.length === 0 && <p className="text-sm text-muted">{t('meters.none')}</p>}
       {meters?.map((m) => (
-        <div key={m.id} className="flex items-center justify-between rounded-xl bg-white/5 px-3 py-2">
+        <div key={m.id} className="flex items-center justify-between rounded-xl border border-line bg-card px-3 py-2">
           <span>
             {m.kind === 'electricity' ? '⚡' : '💧'} {m.name}
-            <span className="ms-2 text-sm text-slate-400">· {unitName(m.unit_id)}</span>
+            <span className="ms-2 text-sm text-muted">· {unitName(m.unit_id)}</span>
           </span>
-          <button className="text-sm text-red-400" onClick={() => void remove(m)}>
+          <button className="text-sm text-danger" onClick={() => void remove(m)}>
             {t('landlord.remove')}
           </button>
         </div>

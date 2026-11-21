@@ -31,15 +31,15 @@ export default function DisclaimerPage({ onAccepted }: { onAccepted: () => void 
     <div className="mx-auto flex min-h-dvh max-w-2xl flex-col gap-4 p-4">
       <header className="flex items-center justify-between">
         <strong>{t('app.name')}</strong>
-        <button className="text-sm text-slate-400" onClick={() => void supabase.auth.signOut()}>
+        <button className="text-sm text-muted" onClick={() => void supabase.auth.signOut()}>
           {t('auth.signOut')}
         </button>
       </header>
       <div>
         <h1 className="text-2xl font-bold">{t('terms.title')}</h1>
-        <p className="text-slate-300">{t('terms.intro')}</p>
+        <p className="text-ink-2">{t('terms.intro')}</p>
       </div>
-      <ul className="flex flex-col gap-2 rounded-2xl bg-white/5 p-4 text-sm">
+      <ul className="flex flex-col gap-2 rounded-2xl border border-line bg-card p-4 text-sm">
         {(t('terms.points', { returnObjects: true }) as string[]).map((p) => (
           <li key={p} className="flex gap-2">
             <span aria-hidden>•</span>
@@ -48,24 +48,24 @@ export default function DisclaimerPage({ onAccepted }: { onAccepted: () => void 
         ))}
       </ul>
 
-      <h2 className="font-semibold text-slate-300">{t('terms.fullText')}</h2>
-      <div ref={box} data-testid="terms-scroll" onScroll={check} tabIndex={0} role="region" aria-label={t('terms.fullText')} className="h-72 overflow-y-auto rounded-2xl bg-white/5 p-4 text-sm leading-relaxed">
+      <h2 className="font-semibold text-ink-2">{t('terms.fullText')}</h2>
+      <div ref={box} data-testid="terms-scroll" onScroll={check} tabIndex={0} role="region" aria-label={t('terms.fullText')} className="h-72 overflow-y-auto rounded-2xl border border-line bg-card p-4 text-sm leading-relaxed">
         {TERMS_SECTIONS.map((s) => (
           <section key={s.title} className="mb-3">
             <h3 className="font-semibold">{s.title}</h3>
-            <p className="text-slate-300">{s.body}</p>
+            <p className="text-ink-2">{s.body}</p>
           </section>
         ))}
-        <p className="text-xs text-slate-400">{TERMS_FOOTER}</p>
+        <p className="text-xs text-muted">{TERMS_FOOTER}</p>
       </div>
-      {!atEnd && <p className="text-xs text-amber-300">{t('terms.scrollHint')}</p>}
+      {!atEnd && <p className="text-xs text-warn">{t('terms.scrollHint')}</p>}
 
       <label className={`flex items-start gap-2 text-sm ${atEnd ? '' : 'opacity-50'}`}>
         <input type="checkbox" disabled={!atEnd} checked={agree} onChange={(e) => setAgree(e.target.checked)} className="mt-1" />
         {t('terms.agree')}
       </label>
-      {error && <p className="text-sm text-red-400">{error}</p>}
-      <button disabled={!agree || busy} onClick={() => void accept()} className="rounded-lg bg-violet-600 px-4 py-3 font-semibold disabled:opacity-50">
+      {error && <p className="text-sm text-danger">{error}</p>}
+      <button disabled={!agree || busy} onClick={() => void accept()} className="rounded-lg bg-primary text-white px-4 py-3 font-semibold disabled:opacity-50">
         {t('terms.accept')}
       </button>
     </div>

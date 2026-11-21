@@ -96,7 +96,7 @@ export default function ReportsPage() {
 
   const line = (label: string, value: string) => (
     <div className="flex justify-between gap-3 text-sm">
-      <span className="text-slate-300">{label}</span>
+      <span className="text-ink-2">{label}</span>
       <span dir="ltr">{value}</span>
     </div>
   );
@@ -114,17 +114,17 @@ export default function ReportsPage() {
         </select>
       )}
       <div className="flex items-center justify-between gap-2">
-        <button className="rounded-lg bg-white/10 px-3 py-1.5" onClick={() => setYear(year - 1)} aria-label="previous year">
+        <button className="rounded-lg bg-field px-3 py-1.5" onClick={() => setYear(year - 1)} aria-label="previous year">
           <span className="inline-block rtl:rotate-180">←</span>
         </button>
         <strong className="text-lg">{year}</strong>
-        <button className="rounded-lg bg-white/10 px-3 py-1.5 disabled:opacity-40" disabled={year >= new Date().getFullYear()} onClick={() => setYear(year + 1)} aria-label="next year">
+        <button className="rounded-lg bg-field px-3 py-1.5 disabled:opacity-40" disabled={year >= new Date().getFullYear()} onClick={() => setYear(year + 1)} aria-label="next year">
           <span className="inline-block rtl:rotate-180">→</span>
         </button>
       </div>
-      {error && <p className="text-sm text-red-400">{error}</p>}
+      {error && <p className="text-sm text-danger">{error}</p>}
       {!rows && propertyId && <p>{t('common.loading')}</p>}
-      {rows && reportUnits.length === 0 && <p className="text-slate-400">{t('report.empty')}</p>}
+      {rows && reportUnits.length === 0 && <p className="text-muted">{t('report.empty')}</p>}
 
       {reportUnits.map((u) => {
         const y = data.years.find((x) => x.unitId === u.id)!;
@@ -133,13 +133,13 @@ export default function ReportsPage() {
           <div key={u.id} className={card}>
             <div className="flex items-center justify-between gap-2">
               <strong className="text-lg">{u.name}</strong>
-              <span className="text-sm text-slate-400">{t('report.months', { count: y.months.filter(Boolean).length })}</span>
+              <span className="text-sm text-muted">{t('report.months', { count: y.months.filter(Boolean).length })}</span>
             </div>
             {line(`${t('report.electricityTotal')} (${t12.kwh} ${t('bills.kwh')})`, money(t12.electricityTotal))}
             {line(`${t('report.waterTotal')} (${t12.waterM3} ${t('bills.m3')})`, money(t12.waterTotal))}
             {line(t('report.community'), money(t12.community))}
             {line(t('report.oneOff'), money(t12.charges))}
-            <div className="flex justify-between border-t border-white/10 pt-1 font-bold">
+            <div className="flex justify-between border-t border-line pt-1 font-bold">
               <span>{t('report.total')}</span>
               <span dir="ltr">{money(t12.total)}</span>
             </div>
@@ -148,12 +148,12 @@ export default function ReportsPage() {
       })}
       {reportUnits.length > 0 && (
         <div className={card}>
-          <h2 className="text-xl font-semibold text-slate-300">{t('report.collections')}</h2>
+          <h2 className="text-xl font-semibold text-ink-2">{t('report.collections')}</h2>
           {line(t('report.billed'), money(data.coll.billed))}
           {line(t('report.collected'), money(data.coll.paid))}
           {line(t('report.open'), money(data.coll.open))}
           {data.coll.debts.map((d, i) => (
-            <div key={i} className="flex justify-between gap-3 text-sm text-amber-300">
+            <div key={i} className="flex justify-between gap-3 text-sm text-warn">
               <span>
                 {units.find((u) => u.id === d.unitId)?.name} · {monthLabel(d.period, i18n.language)} · {t('report.ageMonths', { count: d.ageMonths })}
               </span>
@@ -172,11 +172,11 @@ export default function ReportsPage() {
             <button disabled={busy} onClick={() => void exportXlsx()} className={`${primary} disabled:opacity-60`}>
               {t('report.exportExcel')}
             </button>
-            <button disabled={busy} onClick={() => downloadCsv(sheets(), `${file}.csv`)} className="rounded-lg bg-white/10 px-4 py-2 font-semibold disabled:opacity-60">
+            <button disabled={busy} onClick={() => downloadCsv(sheets(), `${file}.csv`)} className="rounded-lg bg-field px-4 py-2 font-semibold disabled:opacity-60">
               {t('report.exportCsv')}
             </button>
           </div>
-          <p className="text-xs text-slate-400">{t('report.hint')}</p>
+          <p className="text-xs text-muted">{t('report.hint')}</p>
         </>
       )}
     </section>

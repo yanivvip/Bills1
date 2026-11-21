@@ -68,31 +68,31 @@ export default function LandlordHome({ orgId }: { orgId: string }) {
     <section className="flex flex-col gap-4 p-4">
       <div>
         <h1 className="text-2xl font-bold">{data.orgName}</h1>
-        <p className="text-slate-400">{monthLabel(period, i18n.language)}</p>
+        <p className="text-muted">{monthLabel(period, i18n.language)}</p>
       </div>
 
       {data.properties === 0 && (
-        <Link to="/property/new" className="flex flex-col gap-1 rounded-2xl bg-violet-700 p-4">
+        <Link to="/property/new" className="flex flex-col gap-1 rounded-2xl bg-primary p-4 text-white">
           <strong className="text-lg">{t('landlordHome.firstProperty')}</strong>
-          <span className="text-sm text-violet-100">{t('landlordHome.firstPropertyBody')}</span>
+          <span className="text-sm text-white/85">{t('landlordHome.firstPropertyBody')}</span>
         </Link>
       )}
 
       {data.meters.length > 0 && (
         <div className={card}>
           <div className="flex items-center justify-between gap-2">
-            <h2 className="text-lg font-semibold text-slate-300">{t('landlordHome.readings')}</h2>
-            <span className="text-sm text-slate-400">{t('landlordHome.readingsProgress', { done, total: data.meters.length })}</span>
+            <h2 className="text-lg font-semibold text-ink-2">{t('landlordHome.readings')}</h2>
+            <span className="text-sm text-muted">{t('landlordHome.readingsProgress', { done, total: data.meters.length })}</span>
           </div>
           <ul className="flex flex-col gap-1 text-sm">
             {data.meters.map((m) => (
               <li key={m.id} className="flex justify-between gap-2">
                 <span>{m.label}</span>
-                <span className={m.done ? 'text-emerald-400' : 'text-amber-300'}>{m.done ? `✓ ${t('landlordHome.reported')}` : t('landlordHome.waiting')}</span>
+                <span className={m.done ? 'text-ok' : 'text-warn'}>{m.done ? `✓ ${t('landlordHome.reported')}` : t('landlordHome.waiting')}</span>
               </li>
             ))}
           </ul>
-          <Link to="/readings" className="self-start rounded-lg bg-white/10 px-3 py-1.5 text-sm font-semibold">
+          <Link to="/readings" className="self-start rounded-lg bg-field px-3 py-1.5 text-sm font-semibold">
             {t('landlordHome.enterReading')}
           </Link>
         </div>
@@ -100,13 +100,13 @@ export default function LandlordHome({ orgId }: { orgId: string }) {
 
       {data.bill && (
         <Link to="/bills" className={card}>
-          <span className="text-sm text-slate-400">
+          <span className="text-sm text-muted">
             {t('landlordHome.lastBills')} · {monthLabel(data.bill.period, i18n.language)}
           </span>
           <strong className="text-3xl" dir="ltr">
             {money(data.bill.total)}
           </strong>
-          <span className="text-sm text-slate-400">{t('landlordHome.paidOf', { paid: data.bill.paidCount, count: data.bill.count, amount: money(data.bill.paid) })}</span>
+          <span className="text-sm text-muted">{t('landlordHome.paidOf', { paid: data.bill.paidCount, count: data.bill.count, amount: money(data.bill.paid) })}</span>
         </Link>
       )}
 

@@ -5,7 +5,7 @@ import { useTranslation } from 'react-i18next';
 export default function AdminTabs() {
   const { t } = useTranslation();
   const tab = ({ isActive }: { isActive: boolean }) =>
-    `rounded-lg px-4 py-1.5 text-sm font-semibold ${isActive ? 'bg-violet-600' : 'bg-white/10'}`;
+    `rounded-lg px-4 py-1.5 text-sm font-semibold ${isActive ? 'bg-primary text-white' : 'bg-field'}`;
   return (
     <div className="flex gap-2">
       <NavLink to="/admin" end className={tab}>

@@ -76,36 +76,36 @@ export default function AdminPage() {
       <AdminTabs />
       <div>
         <h1 className="text-2xl font-bold">{t('admin.users')}</h1>
-        <p className="text-sm text-slate-400">{t('admin.usersCount', { count: users.length })}</p>
+        <p className="text-sm text-muted">{t('admin.usersCount', { count: users.length })}</p>
       </div>
       <input
         value={filter}
         onChange={(e) => setFilter(e.target.value)}
         placeholder={t('admin.search')}
-        className="rounded-lg bg-white/10 px-3 py-2 outline-none focus:ring-2 focus:ring-violet-500"
+        className="rounded-lg bg-field px-3 py-2 outline-none focus:ring-2 focus:ring-primary"
       />
-      {error && <p className="text-sm text-red-400">{error}</p>}
+      {error && <p className="text-sm text-danger">{error}</p>}
 
       {shown.map((u) => (
-        <div key={u.user_id} className="flex flex-col gap-2 rounded-2xl bg-white/5 p-4">
+        <div key={u.user_id} className="flex flex-col gap-2 rounded-2xl border border-line bg-card p-4">
           <div className="flex flex-wrap items-center gap-2">
             <strong dir="ltr">{u.email}</strong>
-            {u.user_id === me && <span className={`${badge} bg-white/10`}>{t('admin.you')}</span>}
+            {u.user_id === me && <span className={`${badge} bg-field`}>{t('admin.you')}</span>}
           </div>
           <div className="flex flex-wrap gap-2">
-            {u.is_super_user && <span className={`${badge} bg-violet-600`}>Super_User</span>}
-            {u.org_name && <span className={`${badge} bg-emerald-700`}>{t('admin.landlord')}: {u.org_name}</span>}
-            {u.renter_contracts > 0 && <span className={`${badge} bg-sky-700`}>{t('admin.renter')}</span>}
-            {!u.email_confirmed && <span className={`${badge} bg-amber-700`}>{t('admin.unconfirmed')}</span>}
+            {u.is_super_user && <span className={`${badge} bg-primary text-white`}>Super_User</span>}
+            {u.org_name && <span className={`${badge} bg-ok-soft text-ok`}>{t('admin.landlord')}: {u.org_name}</span>}
+            {u.renter_contracts > 0 && <span className={`${badge} bg-info-soft text-info`}>{t('admin.renter')}</span>}
+            {!u.email_confirmed && <span className={`${badge} bg-warn-soft text-warn`}>{t('admin.unconfirmed')}</span>}
           </div>
-          <div className="text-xs text-slate-400">
+          <div className="text-xs text-muted">
             {t('admin.created')}: {fmt(u.created_at)} · {t('admin.lastSignIn')}: {fmt(u.last_sign_in_at)}
           </div>
           <div className="flex flex-wrap gap-2">
             <button
               disabled={busyId === u.user_id}
               onClick={() => void toggle(u)}
-              className={`rounded-lg px-3 py-1.5 text-sm font-semibold disabled:opacity-60 ${u.is_super_user ? 'bg-white/10' : 'bg-violet-600'}`}
+              className={`rounded-lg px-3 py-1.5 text-sm font-semibold disabled:opacity-60 ${u.is_super_user ? 'bg-field' : 'bg-primary text-white'}`}
             >
               {u.is_super_user ? t('admin.removeSuper') : t('admin.makeSuper')}
             </button>
@@ -114,7 +114,7 @@ export default function AdminPage() {
                 key={r.id}
                 disabled={busyId === u.user_id}
                 onClick={() => void removeRenter(u, r)}
-                className="rounded-lg bg-red-900/60 px-3 py-1.5 text-sm font-semibold disabled:opacity-60"
+                className="rounded-lg bg-danger-soft px-3 py-1.5 text-sm font-semibold disabled:opacity-60"
               >
                 {t('admin.removeRenter', { unit: r.unit, property: r.property })}
               </button>
@@ -122,7 +122,7 @@ export default function AdminPage() {
           </div>
         </div>
       ))}
-      {shown.length === 0 && <p className="text-slate-400">{t('admin.noUsers')}</p>}
+      {shown.length === 0 && <p className="text-muted">{t('admin.noUsers')}</p>}
     </section>
   );
 }

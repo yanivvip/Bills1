@@ -34,12 +34,12 @@ export default function AlertsPage() {
     const { title, body } = text(a);
     return (
       <li key={a.key}>
-        <Link to={a.to} className={`flex flex-col gap-0.5 rounded-xl px-3 py-2 ${isNew ? 'bg-amber-900/30' : 'bg-white/5'}`}>
+        <Link to={a.to} className={`flex flex-col gap-0.5 rounded-xl px-3 py-2 ${isNew ? 'bg-warn-soft' : 'border border-line bg-card'}`}>
           <span className="flex items-center gap-2 font-semibold">
-            {isNew && <span aria-hidden className="h-2 w-2 rounded-full bg-amber-400" />}
+            {isNew && <span aria-hidden className="h-2 w-2 rounded-full bg-warn-strong" />}
             {title}
           </span>
-          <span className="text-sm text-slate-300">{body}</span>
+          <span className="text-sm text-ink-2">{body}</span>
         </Link>
       </li>
     );
@@ -53,21 +53,21 @@ export default function AlertsPage() {
       <div className="flex items-center justify-between gap-2">
         <h1 className="text-2xl font-bold">{t('alerts.title')}</h1>
         {unread.length > 0 && (
-          <button className="text-sm text-slate-300 underline" onClick={markAllRead}>
+          <button className="text-sm text-ink-2 underline" onClick={markAllRead}>
             {t('alerts.markAllRead')}
           </button>
         )}
       </div>
-      {alerts.length === 0 && <p className="rounded-2xl bg-emerald-900/30 p-3 text-sm text-emerald-300">✓ {t('alerts.none')}</p>}
+      {alerts.length === 0 && <p className="rounded-2xl bg-ok-soft p-3 text-sm text-ok">✓ {t('alerts.none')}</p>}
       {fresh.length > 0 && (
         <>
-          <h2 className="text-sm font-semibold text-slate-400">{t('alerts.new')}</h2>
+          <h2 className="text-sm font-semibold text-muted">{t('alerts.new')}</h2>
           <ul className="flex flex-col gap-2">{fresh.map((a) => row(a, true))}</ul>
         </>
       )}
       {old.length > 0 && (
         <>
-          <h2 className="text-sm font-semibold text-slate-400">{t('alerts.earlier')}</h2>
+          <h2 className="text-sm font-semibold text-muted">{t('alerts.earlier')}</h2>
           <ul className="flex flex-col gap-2">{old.map((a) => row(a, false))}</ul>
         </>
       )}

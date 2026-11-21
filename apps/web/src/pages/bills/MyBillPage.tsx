@@ -41,40 +41,40 @@ export default function MyBillPage() {
     <section className="flex flex-col gap-4 p-4">
       <h1 className="text-2xl font-bold">{t('bills.myBill')}</h1>
       {balance > 0 && (
-        <div className="rounded-2xl bg-amber-900/30 p-3 text-amber-200">
+        <div className="rounded-2xl bg-warn-soft p-3 text-warn">
           {t('bills.balanceDue')}: <strong dir="ltr">{formatMoney(balance, i18n.language)}</strong>
         </div>
       )}
       <MonthNav period={period} onChange={setPeriod} />
-      {!s && <p className="text-slate-400">{t('bills.notPublished')}</p>}
+      {!s && <p className="text-muted">{t('bills.notPublished')}</p>}
       {s && (
         <div className={card}>
           <div className="flex items-center justify-between gap-2">
             <span className="text-3xl font-bold" dir="ltr">{formatMoney(s.total_agorot, i18n.language)}</span>
             {s.paid_on ? (
-              <span className="rounded-full bg-emerald-700 px-2 py-0.5 text-xs">✓ {t('bills.paid')}</span>
+              <span className="rounded-full bg-ok-soft text-ok px-2 py-0.5 text-xs">✓ {t('bills.paid')}</span>
             ) : s.paid_agorot > 0 ? (
-              <span className="rounded-full bg-sky-700 px-2 py-0.5 text-xs">{t('bills.partlyPaid')}</span>
+              <span className="rounded-full bg-info-soft text-info px-2 py-0.5 text-xs">{t('bills.partlyPaid')}</span>
             ) : (
-              <span className="rounded-full bg-amber-700 px-2 py-0.5 text-xs">{t('bills.unpaid')}</span>
+              <span className="rounded-full bg-warn-soft text-warn px-2 py-0.5 text-xs">{t('bills.unpaid')}</span>
             )}
           </div>
-          {s.paid_on && <p className="text-sm text-slate-300">{t('bills.paidOn', { date: s.paid_on })} · {t(`bills.method.${s.paid_method}`)}</p>}
+          {s.paid_on && <p className="text-sm text-ink-2">{t('bills.paidOn', { date: s.paid_on })} · {t(`bills.method.${s.paid_method}`)}</p>}
           <StatementView lines={s.lines} total={s.total_agorot} />
           <details className="text-sm">
             <summary className="cursor-pointer underline">{t('bills.howCalculated')}</summary>
-            <ul className="mt-2 flex list-disc flex-col gap-1 ps-5 text-slate-300">
+            <ul className="mt-2 flex list-disc flex-col gap-1 ps-5 text-ink-2">
               {s.lines.map((l, i) => (
                 <li key={i}>{explainLine(t, l, s.readings)}</li>
               ))}
             </ul>
           </details>
-          {error && <p className="text-sm text-red-400">{error}</p>}
+          {error && <p className="text-sm text-danger">{error}</p>}
           {!s.paid_on &&
             (s.renter_paid_notice_at ? (
-              <p className="text-sm text-sky-300">✓ {t('bills.noticeSent', { date: s.renter_paid_notice_at.slice(0, 10) })}</p>
+              <p className="text-sm text-info">✓ {t('bills.noticeSent', { date: s.renter_paid_notice_at.slice(0, 10) })}</p>
             ) : (
-              <button className="self-start rounded-lg bg-violet-600 px-4 py-2 font-semibold" onClick={() => void notifyPaid(s.id)}>
+              <button className="self-start rounded-lg bg-primary text-white px-4 py-2 font-semibold" onClick={() => void notifyPaid(s.id)}>
                 {t('bills.iPaid')}
               </button>
             ))}

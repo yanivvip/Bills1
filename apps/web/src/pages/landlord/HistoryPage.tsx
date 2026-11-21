@@ -100,12 +100,12 @@ export default function HistoryPage() {
   const lastMonth = view ? view.months[5]! : '';
 
   const chip = (key: string, label: string) => (
-    <button key={key} onClick={() => setScopeKey(key)} aria-pressed={scopeKey === key} className={`whitespace-nowrap rounded-full px-3 py-1.5 text-sm ${scopeKey === key ? 'bg-violet-600 font-semibold' : 'bg-white/10'}`}>
+    <button key={key} onClick={() => setScopeKey(key)} aria-pressed={scopeKey === key} className={`whitespace-nowrap rounded-full px-3 py-1.5 text-sm ${scopeKey === key ? 'bg-primary text-white font-semibold' : 'bg-field'}`}>
       {label}
     </button>
   );
   const tab = (k: Kind, label: string) => (
-    <button key={k} onClick={() => setKind(k)} aria-pressed={kind === k} className={`flex-1 rounded-lg px-3 py-2 text-sm ${kind === k ? 'bg-violet-600 font-semibold' : 'bg-white/10'}`}>
+    <button key={k} onClick={() => setKind(k)} aria-pressed={kind === k} className={`flex-1 rounded-lg px-3 py-2 text-sm ${kind === k ? 'bg-primary text-white font-semibold' : 'bg-field'}`}>
       {label}
     </button>
   );
@@ -122,7 +122,7 @@ export default function HistoryPage() {
           ))}
         </select>
       )}
-      {properties.length === 0 && <p className="text-slate-400">{t('bills.noProperty')}</p>}
+      {properties.length === 0 && <p className="text-muted">{t('bills.noProperty')}</p>}
       {propertyId && !data && <p>{t('common.loading')}</p>}
 
       {data && view && (
@@ -139,7 +139,7 @@ export default function HistoryPage() {
           </div>
 
           <div className={card}>
-            <h2 className="font-semibold text-slate-300">
+            <h2 className="font-semibold text-ink-2">
               {t('history.last6')} · {kind === 'cost' ? '₪' : unitLabel}
             </h2>
             <div className="flex h-40 items-end gap-2" role="img" aria-label={t('history.last6')}>
@@ -147,22 +147,22 @@ export default function HistoryPage() {
                 const v = view.series[i];
                 return (
                   <div key={p} className="flex h-full flex-1 flex-col items-center justify-end gap-1 text-xs">
-                    <span dir="ltr" className={v === undefined ? 'text-slate-500' : 'text-slate-200'}>
+                    <span dir="ltr" className={v === undefined ? 'text-faint' : 'text-ink'}>
                       {v === undefined ? '—' : show(v)}
                     </span>
-                    <div className={`w-full rounded-t-md ${i === 5 ? 'bg-violet-400' : 'bg-violet-700'}`} style={{ height: `${v === undefined ? 2 : Math.max(3, (v / max) * 100)}%` }} />
-                    <span className="text-slate-400">{monthShort(p)}</span>
+                    <div className={`w-full rounded-t-md ${i === 5 ? 'bg-primary' : 'bg-primary-mid'}`} style={{ height: `${v === undefined ? 2 : Math.max(3, (v / max) * 100)}%` }} />
+                    <span className="text-muted">{monthShort(p)}</span>
                   </div>
                 );
               })}
             </div>
-            {known === 0 && <p className="text-sm text-slate-400">{t('history.noData')}</p>}
+            {known === 0 && <p className="text-sm text-muted">{t('history.noData')}</p>}
           </div>
 
           {known > 0 && view.summary.average !== undefined && (
             <div className="grid grid-cols-2 gap-3">
               <div className={card}>
-                <span className="text-sm text-slate-400">{t('history.average')}</span>
+                <span className="text-sm text-muted">{t('history.average')}</span>
                 <strong className="text-xl" dir="ltr">
                   {show(view.summary.average)} {kind === 'cost' ? '' : unitLabel}
                 </strong>
@@ -173,7 +173,7 @@ export default function HistoryPage() {
 
           {view.summary.changePct !== undefined && Math.abs(view.summary.changePct) >= 10 && (
             <div className={card}>
-              <h2 className="font-semibold text-slate-300">{t('history.insights')}</h2>
+              <h2 className="font-semibold text-ink-2">{t('history.insights')}</h2>
               <p className="text-sm">
                 {t(view.summary.changePct > 0 ? 'history.higher' : 'history.lower', {
                   what: kind === 'cost' ? t('history.cost') : t(`meters.${kind}`),
@@ -200,7 +200,7 @@ function AverageCost({ data, scope, months }: { data: Data; scope: HistoryScope;
   if (totals.length === 0) return null;
   return (
     <div className={card}>
-      <span className="text-sm text-slate-400">{t('history.avgCost')}</span>
+      <span className="text-sm text-muted">{t('history.avgCost')}</span>
       <strong className="text-xl" dir="ltr">
         {formatMoney(Math.round(totals.reduce((a, b) => a + b, 0) / totals.length), i18n.language)}
       </strong>

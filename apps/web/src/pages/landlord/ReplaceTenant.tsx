@@ -73,14 +73,14 @@ export default function ReplaceTenant({ unitId, propertyId, contractId, onDone }
 
   if (!open) {
     return (
-      <button className="self-start rounded-lg bg-white/10 px-4 py-2 text-sm font-semibold" onClick={() => setOpen(true)}>
+      <button className="self-start rounded-lg bg-field px-4 py-2 text-sm font-semibold" onClick={() => setOpen(true)}>
         {t('replace.button')}
       </button>
     );
   }
 
   const row = (ok: boolean, text: string, to?: string) => (
-    <li className={ok ? 'text-emerald-400' : 'text-amber-400'}>
+    <li className={ok ? 'text-ok' : 'text-warn'}>
       {ok ? '✓' : '○'} {text}
       {!ok && to && (
         <>
@@ -95,8 +95,8 @@ export default function ReplaceTenant({ unitId, propertyId, contractId, onDone }
 
   return (
     <form onSubmit={submit} className={card}>
-      <h2 className="text-xl font-semibold text-slate-300">{t('replace.title')}</h2>
-      <p className="text-sm text-slate-400">{t('replace.intro')}</p>
+      <h2 className="text-xl font-semibold text-ink-2">{t('replace.title')}</h2>
+      <p className="text-sm text-muted">{t('replace.intro')}</p>
       {checks && (
         <ul className="flex flex-col gap-1 text-sm">
           {row(checks.closingReadings, t('replace.closingReadings'), '/readings')}
@@ -105,24 +105,24 @@ export default function ReplaceTenant({ unitId, propertyId, contractId, onDone }
         </ul>
       )}
       <div className="grid grid-cols-2 gap-3">
-        <label className="flex flex-col gap-1 text-sm text-slate-300">
+        <label className="flex flex-col gap-1 text-sm text-ink-2">
           {t('replace.endDate')}
           <input type="date" required value={endDate} onChange={(e) => { setEndDate(e.target.value); if (startDate < e.target.value) setStartDate(nextDay(e.target.value)); }} className={input} />
         </label>
-        <label className="flex flex-col gap-1 text-sm text-slate-300">
+        <label className="flex flex-col gap-1 text-sm text-ink-2">
           {t('replace.startDate')}
           <input type="date" required min={endDate} value={startDate} onChange={(e) => setStartDate(e.target.value)} className={input} />
         </label>
       </div>
       <textarea value={emails} onChange={(e) => setEmails(e.target.value)} rows={2} placeholder={t('landlord.renterEmails')} aria-label={t('replace.newRenters')} className={input} />
       <input type="number" min="0" step="0.01" value={rent} onChange={(e) => setRent(e.target.value)} placeholder={t('landlord.rent')} className={`${input} w-40`} />
-      <p className="text-xs text-slate-400">{t('replace.note')}</p>
-      {error && <p className="text-sm text-red-400">{error}</p>}
+      <p className="text-xs text-muted">{t('replace.note')}</p>
+      {error && <p className="text-sm text-danger">{error}</p>}
       <div className="flex gap-3">
         <button disabled={!valid || busy} className={`${primary} disabled:opacity-50`}>
           {t('replace.submit')}
         </button>
-        <button type="button" className="text-slate-400 underline" onClick={() => setOpen(false)}>
+        <button type="button" className="text-muted underline" onClick={() => setOpen(false)}>
           {t('common.cancel')}
         </button>
       </div>

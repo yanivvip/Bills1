@@ -21,9 +21,9 @@ export interface Contract {
   contract_renters: Renter[];
 }
 
-export const input = 'rounded-lg bg-white/10 px-3 py-2 outline-none focus:ring-2 focus:ring-violet-500';
-export const primary = 'rounded-lg bg-violet-600 px-4 py-2 font-semibold';
-export const card = 'flex flex-col gap-3 rounded-2xl bg-white/5 p-4';
+export const input = 'rounded-lg border border-line bg-white px-3 py-2 outline-none focus:ring-2 focus:ring-primary';
+export const primary = 'rounded-lg bg-primary text-white px-4 py-2 font-semibold';
+export const card = 'flex flex-col gap-3 rounded-2xl border border-line bg-card p-4';
 
 const shekels = (agorot: number) => (agorot / 100).toLocaleString(undefined, { minimumFractionDigits: 2 });
 const parseEmails = (s: string) => [...new Set(s.split(/[\s,;]+/).map((x) => x.trim().toLowerCase()).filter(Boolean))];
@@ -46,7 +46,7 @@ export function useWriter(reload: () => Promise<void>) {
 
 export function BackLink({ to, children }: { to: string; children: ReactNode }) {
   return (
-    <Link to={to} className="text-sm text-slate-400">
+    <Link to={to} className="text-sm text-muted">
       <span className="inline-block rtl:rotate-180">←</span> {children}
     </Link>
   );
@@ -58,7 +58,7 @@ export function AddToggle({ label, title, onSubmit, children }: { label: string;
   const [open, setOpen] = useState(false);
   if (!open)
     return (
-      <button onClick={() => setOpen(true)} className="rounded-2xl border border-dashed border-white/20 py-3 text-slate-300">
+      <button onClick={() => setOpen(true)} className="rounded-2xl border border-dashed border-line-strong py-3 text-ink-2">
         + {label}
       </button>
     );
@@ -72,7 +72,7 @@ export function AddToggle({ label, title, onSubmit, children }: { label: string;
       {children}
       <div className="flex gap-2">
         <button className={`${primary} flex-1`}>{t('common.save')}</button>
-        <button type="button" onClick={() => setOpen(false)} className="rounded-lg bg-white/10 px-4 py-2">
+        <button type="button" onClick={() => setOpen(false)} className="rounded-lg bg-field px-4 py-2">
           {t('common.cancel')}
         </button>
       </div>
@@ -120,7 +120,7 @@ function InviteActions({ renter, invite, run }: { renter: Renter; invite: Invite
     }
   };
 
-  const btn = 'rounded-md bg-white/10 px-2 py-1 transition active:scale-95 active:bg-violet-600';
+  const btn = 'rounded-md bg-field px-2 py-1 transition active:scale-95 active:bg-primary text-white';
   return (
     <div className="flex flex-col gap-1">
       <div className="flex flex-wrap gap-2 text-xs">
@@ -131,9 +131,9 @@ function InviteActions({ renter, invite, run }: { renter: Renter; invite: Invite
           📋 {t('landlord.inviteCopy')}
         </button>
       </div>
-      {done && <p className="text-xs text-emerald-400">✓ {t(`landlord.invited.${done}`)}</p>}
+      {done && <p className="text-xs text-ok">✓ {t(`landlord.invited.${done}`)}</p>}
       {!done && renter.invited_at && (
-        <p className="text-xs text-slate-400">
+        <p className="text-xs text-muted">
           {t('landlord.lastInvite', {
             channel: t(`landlord.channel.${renter.invite_channel ?? 'email'}`),
             when: new Date(renter.invited_at).toLocaleString(i18n.language),
@@ -160,18 +160,18 @@ export function ContractCard({ orgId, contract, run, invite }: { orgId: string; 
         <strong>{t('landlord.status.active')}</strong> · {contract.start_date} → {contract.end_date ?? '…'}
         {contract.rent_agorot != null && ` · ₪${shekels(contract.rent_agorot)}`}
       </div>
-      <h3 className="text-sm font-semibold uppercase tracking-wide text-slate-400">{t('landlord.renters')}</h3>
+      <h3 className="text-sm font-semibold uppercase tracking-wide text-muted">{t('landlord.renters')}</h3>
       <ul className="flex flex-col gap-1 text-sm">
         {contract.contract_renters.map((r) => {
           return (
             <li key={r.id} className="flex flex-col gap-1">
               <div className="flex items-center justify-between gap-2">
                 <span>
-                  {r.full_name || r.email} {r.full_name && <span className="text-slate-400">({r.email})</span>}
-                  <span className="ms-2 text-xs text-slate-400">{r.user_id ? t('landlord.registered') : t('landlord.pending')}</span>
+                  {r.full_name || r.email} {r.full_name && <span className="text-muted">({r.email})</span>}
+                  <span className="ms-2 text-xs text-muted">{r.user_id ? t('landlord.registered') : t('landlord.pending')}</span>
                 </span>
                 {contract.contract_renters.length > 1 && (
-                  <button className="text-red-400" onClick={() => void run(supabase.from('contract_renters').delete().eq('id', r.id))}>
+                  <button className="text-danger" onClick={() => void run(supabase.from('contract_renters').delete().eq('id', r.id))}>
                     {t('landlord.remove')}
                   </button>
                 )}
@@ -185,7 +185,7 @@ export function ContractCard({ orgId, contract, run, invite }: { orgId: string; 
         <input type="email" required value={email} onChange={(e) => setEmail(e.target.value)} placeholder={t('landlord.renterEmail')} className={`${input} flex-1`} />
         <button className={primary}>{t('landlord.addRenter')}</button>
       </form>
-      <button className="self-start text-sm text-slate-400 underline" onClick={end}>
+      <button className="self-start text-sm text-muted underline" onClick={end}>
         {t('landlord.endContract')}
       </button>
     </div>
@@ -222,13 +222,13 @@ export function ContractForm({ orgId, unitId, run }: { orgId: string; unitId: st
 
   return (
     <form onSubmit={submit} className={card}>
-      <span className="text-slate-400">{t('landlord.noContract')}</span>
+      <span className="text-muted">{t('landlord.noContract')}</span>
       <div className="flex gap-2">
         <input type="date" required value={start} onChange={(e) => setStart(e.target.value)} className={`${input} flex-1`} />
         <input type="number" min="0" step="0.01" value={rent} onChange={(e) => setRent(e.target.value)} placeholder={t('landlord.rent')} className={`${input} w-32`} />
       </div>
       <textarea value={emails} onChange={(e) => setEmails(e.target.value)} rows={2} placeholder={t('landlord.renterEmails')} className={input} />
-      {localError && <p className="text-sm text-red-400">{localError}</p>}
+      {localError && <p className="text-sm text-danger">{localError}</p>}
       <button className={primary}>{t('landlord.newContract')}</button>
     </form>
   );

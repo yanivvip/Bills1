@@ -4,7 +4,7 @@ import { supabase } from '../../lib/supabase';
 
 type State = 'none' | 'open' | 'partial' | 'paid';
 const SYMBOL: Record<State, string> = { none: '—', open: '●', partial: '½', paid: '✓' };
-const COLOR: Record<State, string> = { none: 'bg-white/5 text-slate-400', open: 'bg-amber-700', partial: 'bg-sky-700', paid: 'bg-emerald-700' };
+const COLOR: Record<State, string> = { none: 'border border-line bg-card text-muted', open: 'bg-warn-soft text-warn', partial: 'bg-info-soft text-info', paid: 'bg-ok-soft text-ok' };
 
 // Twelve months of the selected year with a text symbol (not only a colour) for each month's payment state.
 export default function MonthStrip({ propertyId, period, onChange, version }: { propertyId: string; period: string; onChange: (p: string) => void; version: unknown }) {
@@ -40,14 +40,14 @@ export default function MonthStrip({ propertyId, period, onChange, version }: { 
           const p = `${year}-${String(m + 1).padStart(2, '0')}-01`;
           const selected = p === period;
           return (
-            <button key={p} onClick={() => onChange(p)} aria-current={selected ? 'date' : undefined} className={`rounded-lg px-1 py-1.5 ${COLOR[s]} ${selected ? 'ring-2 ring-violet-400' : ''}`}>
+            <button key={p} onClick={() => onChange(p)} aria-current={selected ? 'date' : undefined} className={`rounded-lg px-1 py-1.5 ${COLOR[s]} ${selected ? 'ring-2 ring-primary' : ''}`}>
               <div>{new Date(year, m, 1).toLocaleDateString(i18n.language, { month: 'short' })}</div>
               <div className="font-bold">{SYMBOL[s]}</div>
             </button>
           );
         })}
       </div>
-      <p className="text-xs text-slate-400">{t('bills.legend')}</p>
+      <p className="text-xs text-muted">{t('bills.legend')}</p>
     </div>
   );
 }

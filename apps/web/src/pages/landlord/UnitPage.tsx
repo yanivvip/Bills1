@@ -45,8 +45,8 @@ export default function UnitPage({ orgId }: { orgId: string }) {
     <section className="flex flex-col gap-4 p-4">
       <BackLink to={`/properties/${unit.property_id}`}>{unit.properties?.name}</BackLink>
       <h1 className="text-2xl font-bold">{unit.name}</h1>
-      <h2 className="text-xl font-semibold text-slate-300">{t('landlord.contract')}</h2>
-      {error && <p className="text-sm text-red-400">{error}</p>}
+      <h2 className="text-xl font-semibold text-ink-2">{t('landlord.contract')}</h2>
+      {error && <p className="text-sm text-danger">{error}</p>}
 
       {active ? <ContractCard orgId={orgId} contract={active} run={run} invite={{ property: unit.properties?.name ?? '', unit: unit.name }} /> : <ContractForm orgId={orgId} unitId={unit.id} run={run} />}
 
@@ -56,9 +56,9 @@ export default function UnitPage({ orgId }: { orgId: string }) {
 
       {past.length > 0 && (
         <>
-          <h2 className="text-xl font-semibold text-slate-300">{t('landlord.history')}</h2>
+          <h2 className="text-xl font-semibold text-ink-2">{t('landlord.history')}</h2>
           {past.map((c) => (
-            <div key={c.id} className="rounded-xl bg-white/5 p-3 text-sm text-slate-400">
+            <div key={c.id} className="rounded-xl border border-line bg-card p-3 text-sm text-muted">
               {c.start_date} → {c.end_date ?? '…'} · {c.contract_renters.map((r) => r.full_name || r.email).join(', ')}
             </div>
           ))}

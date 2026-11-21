@@ -51,47 +51,47 @@ export default function AdminUnitsPage() {
       <AdminTabs />
       <div>
         <h1 className="text-2xl font-bold">{t('admin.units')}</h1>
-        <p className="text-sm text-slate-400">{t('admin.unitsCount', { count: units.length })}</p>
+        <p className="text-sm text-muted">{t('admin.unitsCount', { count: units.length })}</p>
       </div>
       <input
         value={filter}
         onChange={(e) => setFilter(e.target.value)}
         placeholder={t('admin.searchUnits')}
-        className="rounded-lg bg-white/10 px-3 py-2 outline-none focus:ring-2 focus:ring-violet-500"
+        className="rounded-lg bg-field px-3 py-2 outline-none focus:ring-2 focus:ring-primary"
       />
-      {error && <p className="text-sm text-red-400">{error}</p>}
+      {error && <p className="text-sm text-danger">{error}</p>}
 
       {shown.map((u) => (
-        <div key={u.unit_id} className="flex flex-col gap-2 rounded-2xl bg-white/5 p-4">
+        <div key={u.unit_id} className="flex flex-col gap-2 rounded-2xl border border-line bg-card p-4">
           <div className="flex flex-wrap items-center gap-2">
             <strong>{u.unit_name}</strong>
-            <span className="text-sm text-slate-400">
+            <span className="text-sm text-muted">
               {u.property_name} · {u.org_name}
             </span>
           </div>
           {u.contract_start ? (
             <>
-              <span className="w-fit rounded-full bg-emerald-700 px-2 py-0.5 text-xs">
+              <span className="w-fit rounded-full bg-ok-soft text-ok px-2 py-0.5 text-xs">
                 {t('admin.rented')} {u.contract_start}
               </span>
               {u.renters.map((r) => (
                 <div key={r.id} className="flex flex-wrap items-center justify-between gap-2 text-sm">
                   <span dir="ltr">
                     {r.email}
-                    {!r.linked && <span className="ms-2 text-xs text-slate-400">({t('landlord.pending')})</span>}
+                    {!r.linked && <span className="ms-2 text-xs text-muted">({t('landlord.pending')})</span>}
                   </span>
-                  <button disabled={busy === r.id} onClick={() => void removeRenter(u, r)} className="rounded-lg bg-red-900/60 px-3 py-1 text-xs font-semibold disabled:opacity-60">
+                  <button disabled={busy === r.id} onClick={() => void removeRenter(u, r)} className="rounded-lg bg-danger-soft px-3 py-1 text-xs font-semibold disabled:opacity-60">
                     {t('admin.removeRenterShort')}
                   </button>
                 </div>
               ))}
             </>
           ) : (
-            <span className="w-fit rounded-full bg-white/10 px-2 py-0.5 text-xs">{t('landlord.vacant')}</span>
+            <span className="w-fit rounded-full bg-field px-2 py-0.5 text-xs">{t('landlord.vacant')}</span>
           )}
         </div>
       ))}
-      {shown.length === 0 && <p className="text-slate-400">{t('admin.noUnits')}</p>}
+      {shown.length === 0 && <p className="text-muted">{t('admin.noUnits')}</p>}
     </section>
   );
 }

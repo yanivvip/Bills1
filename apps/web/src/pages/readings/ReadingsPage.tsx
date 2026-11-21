@@ -40,21 +40,21 @@ export default function ReadingsPage() {
       <h1 className="text-2xl font-bold">{t('readings.title')}</h1>
       <MonthNav period={period} onChange={setPeriod} />
       {meters.length > 0 && (
-        <p className={`text-sm ${done === meters.length ? 'text-emerald-400' : 'text-amber-400'}`}>
+        <p className={`text-sm ${done === meters.length ? 'text-ok' : 'text-warn'}`}>
           {t('readings.progress', { done, total: meters.length })}
         </p>
       )}
-      {error && <p className="text-sm text-red-400">{error}</p>}
+      {error && <p className="text-sm text-danger">{error}</p>}
 
       {meters.length === 0 && (
-        <p className="text-slate-400">
+        <p className="text-muted">
           {t('readings.noMeters')} <Link to="/" className="underline">{t('nav.home')}</Link>
         </p>
       )}
 
       {groups.map((g) => (
         <div key={g.key} className="flex flex-col gap-2">
-          <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-400">{g.title}</h2>
+          <h2 className="text-sm font-semibold uppercase tracking-wide text-muted">{g.title}</h2>
           {g.meters.map((m) => (
             <ReadingInput key={m.id} meter={m} period={period} current={current(m.id)} previous={previous(m.id)} onSave={(v, d) => save(m, v, d)} />
           ))}

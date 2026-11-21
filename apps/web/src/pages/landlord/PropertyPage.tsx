@@ -48,18 +48,18 @@ export default function PropertyPage({ orgId }: { orgId: string }) {
       <BackLink to="/">{t('landlord.properties')}</BackLink>
       <div>
         <h1 className="text-2xl font-bold">{property.name}</h1>
-        {property.address && <div className="text-slate-400">{property.address}</div>}
+        {property.address && <div className="text-muted">{property.address}</div>}
       </div>
-      <h2 className="text-xl font-semibold text-slate-300">{t('landlord.units')}</h2>
-      {error && <p className="text-sm text-red-400">{error}</p>}
-      {units.length === 0 && <p className="text-slate-400">{t('landlord.noUnits')}</p>}
+      <h2 className="text-xl font-semibold text-ink-2">{t('landlord.units')}</h2>
+      {error && <p className="text-sm text-danger">{error}</p>}
+      {units.length === 0 && <p className="text-muted">{t('landlord.noUnits')}</p>}
 
       {units.map((u) => {
         const active = u.contracts.find((c) => c.status === 'active');
         return (
           <Link key={u.id} to={`/units/${u.id}`} className={card}>
             <strong className="text-lg">{u.name}</strong>
-            <span className="text-sm text-slate-400">
+            <span className="text-sm text-muted">
               {active
                 ? `${t('landlord.rentedBy')}: ${active.contract_renters.map((r) => r.full_name || r.email).join(', ')}`
                 : t('landlord.vacant')}

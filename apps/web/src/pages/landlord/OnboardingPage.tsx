@@ -134,21 +134,21 @@ export default function OnboardingPage({ orgId }: { orgId: string }) {
 
   const section = (n: number, title: string, children: ReactNode) => (
     <div className={card}>
-      <h2 className="flex items-center gap-2 text-xl font-semibold text-slate-300">
-        <span className="flex h-7 w-7 items-center justify-center rounded-full bg-violet-700 text-sm text-white">{n}</span>
+      <h2 className="flex items-center gap-2 text-xl font-semibold text-ink-2">
+        <span className="flex h-7 w-7 items-center justify-center rounded-full bg-primary text-sm text-white">{n}</span>
         {title}
       </h2>
       {children}
     </div>
   );
   const field = (label: string, value: string, onChange: (v: string) => void, opts: { placeholder?: string; type?: string; numeric?: boolean } = {}) => (
-    <label className="flex flex-col gap-1 text-sm text-slate-300">
+    <label className="flex flex-col gap-1 text-sm text-ink-2">
       {label}
       <input type={opts.type ?? 'text'} inputMode={opts.numeric ? 'decimal' : undefined} dir={opts.numeric ? 'ltr' : undefined} value={value} placeholder={opts.placeholder} onChange={(e) => onChange(e.target.value)} className={input} />
     </label>
   );
   const select = <V extends string>(label: string, value: V, options: { v: V; text: string }[], onChange: (v: V) => void) => (
-    <label className="flex flex-col gap-1 text-sm text-slate-300">
+    <label className="flex flex-col gap-1 text-sm text-ink-2">
       {label}
       <select value={value} onChange={(e) => onChange(e.target.value as V)} className={input}>
         {options.map((o) => (
@@ -169,7 +169,7 @@ export default function OnboardingPage({ orgId }: { orgId: string }) {
       <BackLink to="/property">{t('landlord.properties')}</BackLink>
       <div>
         <h1 className="text-2xl font-bold">{t('onboarding.title')}</h1>
-        <p className="text-sm text-slate-400">{t('onboarding.intro')}</p>
+        <p className="text-sm text-muted">{t('onboarding.intro')}</p>
       </div>
 
       {section(1, t('onboarding.property'), (
@@ -183,11 +183,11 @@ export default function OnboardingPage({ orgId }: { orgId: string }) {
           {livesHere && field(t('onboarding.homeOccupants'), homeOccupants, setHomeOccupants, { numeric: true })}
           <div className="flex items-center gap-3 text-sm">
             <span>{t('onboarding.unitCount')}</span>
-            <button type="button" aria-label="−" className="h-9 w-9 rounded-lg bg-white/10 text-lg" onClick={() => setCount(Math.max(1, units.length - 1))}>
+            <button type="button" aria-label="−" className="h-9 w-9 rounded-lg bg-field text-lg" onClick={() => setCount(Math.max(1, units.length - 1))}>
               −
             </button>
             <strong dir="ltr" aria-live="polite">{units.length}</strong>
-            <button type="button" aria-label="+" className="h-9 w-9 rounded-lg bg-white/10 text-lg" onClick={() => setCount(Math.min(20, units.length + 1))}>
+            <button type="button" aria-label="+" className="h-9 w-9 rounded-lg bg-field text-lg" onClick={() => setCount(Math.min(20, units.length + 1))}>
               +
             </button>
           </div>
@@ -197,10 +197,10 @@ export default function OnboardingPage({ orgId }: { orgId: string }) {
       {section(2, t('onboarding.unitsAndRenters'), (
         <div className="flex flex-col gap-4">
           {units.map((u, i) => (
-            <fieldset key={i} className="flex flex-col gap-2 rounded-xl bg-white/5 p-3">
-              <legend className="px-1 text-sm font-semibold text-slate-300">{t('onboarding.unitN', { n: i + 1 })}</legend>
+            <fieldset key={i} className="flex flex-col gap-2 rounded-xl border border-line bg-card p-3">
+              <legend className="px-1 text-sm font-semibold text-ink-2">{t('onboarding.unitN', { n: i + 1 })}</legend>
               {field(t('onboarding.unitName'), u.name, (v) => patchUnit(i, { name: v }))}
-              <label className="flex flex-col gap-1 text-sm text-slate-300">
+              <label className="flex flex-col gap-1 text-sm text-ink-2">
                 {t('landlord.renterEmails')}
                 <textarea rows={2} value={u.emails} onChange={(e) => patchUnit(i, { emails: e.target.value })} className={input} />
               </label>
@@ -218,13 +218,13 @@ export default function OnboardingPage({ orgId }: { orgId: string }) {
       {section(3, t('onboarding.meters'), (
         <>
           {KINDS.map((k) => (
-            <div key={k} className="flex flex-col gap-2 rounded-xl bg-white/5 p-3">
+            <div key={k} className="flex flex-col gap-2 rounded-xl border border-line bg-card p-3">
               {select(t(`layout.${k}`), layout[k].mode, MODES.map((m) => ({ v: m, text: t(`layout.mode.${m}`) })), (v) => setKind(k, { mode: v }))}
               {layout[k].mode === 'main_sub' &&
                 select(t('layout.differenceLabel'), layout[k].difference, [{ v: 'landlord', text: t('layout.difference.landlord') }, { v: 'units', text: t('layout.difference.units') }], (v) => setKind(k, { difference: v }))}
               {layout[k].mode === 'shared' &&
                 select(t('layout.splitLabel'), layout[k].split, [{ v: 'heads', text: t('layout.split.heads') }, { v: 'percent', text: t('layout.split.percent') }], (v) => setKind(k, { split: v }))}
-              <p className="text-xs text-slate-400">{t(`layout.hint.${layout[k].mode}`)}</p>
+              <p className="text-xs text-muted">{t(`layout.hint.${layout[k].mode}`)}</p>
               {usesMain(k) && field(`${t('onboarding.openingMain')} (${t(`meters.${k}`)})`, mainOpen[k], (v) => setMainOpen({ ...mainOpen, [k]: v }), { numeric: true })}
               {usesUnitMeters(k) &&
                 units.map((u, i) => (
@@ -232,7 +232,7 @@ export default function OnboardingPage({ orgId }: { orgId: string }) {
                 ))}
             </div>
           ))}
-          <p className="text-xs text-slate-400">{t('onboarding.openingHint')}</p>
+          <p className="text-xs text-muted">{t('onboarding.openingHint')}</p>
         </>
       ))}
 
@@ -252,7 +252,7 @@ export default function OnboardingPage({ orgId }: { orgId: string }) {
           <div className="flex flex-col gap-2">
             {units.map((u, i) => (
               <div key={i} className="grid grid-cols-[1fr_8rem] items-end gap-2">
-                <span className="text-sm text-slate-300">{u.name || t('onboarding.unitN', { n: i + 1 })}</span>
+                <span className="text-sm text-ink-2">{u.name || t('onboarding.unitN', { n: i + 1 })}</span>
                 {field(t('unitBilling.waterQuota'), u.quota, (v) => patchUnit(i, { quota: v }), { numeric: true })}
               </div>
             ))}
@@ -272,7 +272,7 @@ export default function OnboardingPage({ orgId }: { orgId: string }) {
               {field(`${t('unitBilling.communityFee')} – ${u.name || t('onboarding.unitN', { n: i + 1 })}`, u.fee, (v) => patchUnit(i, { fee: v }), { numeric: true })}
             </div>
           ))}
-          <p className="text-xs text-slate-400">{t('onboarding.chargesHint')}</p>
+          <p className="text-xs text-muted">{t('onboarding.chargesHint')}</p>
         </>
       ))}
 
@@ -293,17 +293,17 @@ export default function OnboardingPage({ orgId }: { orgId: string }) {
             ))}
           </ul>
           {problems.length > 0 && (
-            <ul className="list-disc rounded-xl bg-amber-900/30 p-3 ps-8 text-sm text-amber-200">
+            <ul className="list-disc rounded-xl bg-warn-soft p-3 ps-8 text-sm text-warn">
               {problems.map((p) => (
                 <li key={p}>{p}</li>
               ))}
             </ul>
           )}
-          {error && <p className="text-sm text-red-400">{error}</p>}
+          {error && <p className="text-sm text-danger">{error}</p>}
           <button disabled={busy || problems.length > 0} onClick={() => void finish()} className={`${primary} disabled:opacity-50`}>
             {t('onboarding.finish')}
           </button>
-          <p className="text-xs text-slate-400">{t('onboarding.finishHint')}</p>
+          <p className="text-xs text-muted">{t('onboarding.finishHint')}</p>
         </>
       ))}
     </section>

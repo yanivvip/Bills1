@@ -74,22 +74,22 @@ export function Charges({
 
   return (
     <div className="flex flex-col gap-2">
-      <h2 className="text-xl font-semibold text-slate-300">{t('bills.charges')}</h2>
+      <h2 className="text-xl font-semibold text-ink-2">{t('bills.charges')}</h2>
       {b.charges.map((c) => (
-        <div key={c.id} className="flex items-center justify-between gap-2 rounded-xl bg-white/5 px-3 py-2 text-sm">
+        <div key={c.id} className="flex items-center justify-between gap-2 rounded-xl border border-line bg-card px-3 py-2 text-sm">
           <span>
             {c.recurring && '↻ '}
             {c.description} · {scopeText(c)}
           </span>
           <span className="flex items-center gap-3">
             <span dir="ltr">{money(c.amount)}</span>
-            <button disabled={busy} className="text-red-400" onClick={() => void act(supabase.from('charges').delete().eq('id', c.id))}>
+            <button disabled={busy} className="text-danger" onClick={() => void act(supabase.from('charges').delete().eq('id', c.id))}>
               {t('landlord.remove')}
             </button>
           </span>
         </div>
       ))}
-      <button disabled={busy} className="self-start text-sm text-slate-300 underline" onClick={() => void copyRecurring()}>
+      <button disabled={busy} className="self-start text-sm text-ink-2 underline" onClick={() => void copyRecurring()}>
         {t('bills.copyRecurring')}
       </button>
       <form onSubmit={add} className={`${card} flex-row flex-wrap items-center`}>
@@ -112,7 +112,7 @@ export function Charges({
           {t('bills.addCharge')}
         </button>
       </form>
-      <p className="text-xs text-slate-400">{t('bills.chargeSplitHint')}</p>
+      <p className="text-xs text-muted">{t('bills.chargeSplitHint')}</p>
     </div>
   );
 }
@@ -139,8 +139,8 @@ export function SewageEntries({ orgId, propertyId, period, b, act, busy }: { org
 
   return (
     <div className={card}>
-      <h2 className="text-xl font-semibold text-slate-300">{t('bills.sewageTitle')}</h2>
-      <p className="text-xs text-slate-400">{t('bills.sewageHint')}</p>
+      <h2 className="text-xl font-semibold text-ink-2">{t('bills.sewageTitle')}</h2>
+      <p className="text-xs text-muted">{t('bills.sewageHint')}</p>
       {rented.map((u) => (
         <label key={u.id} className="flex items-center justify-between gap-3 text-sm">
           {u.name}

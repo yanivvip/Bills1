@@ -40,18 +40,18 @@ export default function PropertiesPage({ orgId }: { orgId: string }) {
     <section className="flex flex-col gap-4 p-4">
       <div>
         <h1 className="text-2xl font-bold">{orgName}</h1>
-        <h2 className="text-xl font-semibold text-slate-300">{t('landlord.properties')}</h2>
+        <h2 className="text-xl font-semibold text-ink-2">{t('landlord.properties')}</h2>
       </div>
-      {error && <p className="text-sm text-red-400">{error}</p>}
-      {rows.length === 0 && <p className="text-slate-400">{t('landlord.noProperties')}</p>}
+      {error && <p className="text-sm text-danger">{error}</p>}
+      {rows.length === 0 && <p className="text-muted">{t('landlord.noProperties')}</p>}
 
       {rows.map((p) => {
         const rented = p.units.filter((u) => u.contracts.some((c) => c.status === 'active')).length;
         return (
           <Link key={p.id} to={`/properties/${p.id}`} className={card}>
             <strong className="text-lg">{p.name}</strong>
-            {p.address && <span className="text-sm text-slate-400">{p.address}</span>}
-            <span className="text-sm text-slate-400">
+            {p.address && <span className="text-sm text-muted">{p.address}</span>}
+            <span className="text-sm text-muted">
               {t('landlord.unitsCount', { count: p.units.length })} · {t('landlord.rentedCount', { count: rented })}
             </span>
           </Link>
@@ -60,7 +60,7 @@ export default function PropertiesPage({ orgId }: { orgId: string }) {
 
       <Link to="/reports" className={card}>
         <strong>{t('nav.reports')}</strong>
-        <span className="text-sm text-slate-400">{t('landlordHome.reportsHint')}</span>
+        <span className="text-sm text-muted">{t('landlordHome.reportsHint')}</span>
       </Link>
 
       <Link to="/property/new" className={`${primary} text-center`}>

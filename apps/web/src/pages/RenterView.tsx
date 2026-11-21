@@ -80,15 +80,15 @@ export default function RenterView() {
     if (last === undefined) return null;
     const pct = summarizeUsage(series).changePct;
     return (
-      <div key={kind} className="flex flex-1 flex-col gap-1 rounded-2xl bg-white/5 p-3">
-        <span className="text-sm text-slate-400">
+      <div key={kind} className="flex flex-1 flex-col gap-1 rounded-2xl border border-line bg-card p-3">
+        <span className="text-sm text-muted">
           {t(`meters.${kind}`)} · {new Date(`${end[5]}T00:00:00`).toLocaleDateString(i18n.language, { month: 'long' })}
         </span>
         <strong className="text-xl" dir="ltr">
           {Math.round(last * 10) / 10} {kind === 'water' ? t('bills.m3') : t('bills.kwh')}
         </strong>
         {pct !== undefined && Math.abs(pct) >= 5 && (
-          <span className={`text-xs ${pct > 0 ? 'text-amber-300' : 'text-emerald-300'}`}>
+          <span className={`text-xs ${pct > 0 ? 'text-warn' : 'text-ok'}`}>
             {pct > 0 ? '↑' : '↓'} {t('renterHome.vsBefore', { pct: Math.round(Math.abs(pct)) })}
           </span>
         )}
@@ -105,28 +105,28 @@ export default function RenterView() {
           <h1 className="text-2xl font-bold">
             {active.units?.name} · {active.units?.properties?.name}
           </h1>
-          {active.units?.properties?.address && <p className="text-sm text-slate-400">{active.units.properties.address}</p>}
+          {active.units?.properties?.address && <p className="text-sm text-muted">{active.units.properties.address}</p>}
         </div>
       ) : (
         <h1 className="text-2xl font-bold">{t('renter.title')}</h1>
       )}
-      {contracts.length === 0 && <p className="text-slate-400">{t('renter.none')}</p>}
+      {contracts.length === 0 && <p className="text-muted">{t('renter.none')}</p>}
 
       {active && meters.length > 0 &&
         (missing.length > 0 ? (
-          <Link to="/report" className="flex flex-col gap-1 rounded-2xl bg-violet-700 p-4">
+          <Link to="/report" className="flex flex-col gap-1 rounded-2xl bg-primary p-4 text-white">
             <strong className="text-lg">{t('renterHome.timeToReport')}</strong>
-            <span className="text-sm text-violet-100">{t('renterHome.timeToReportBody', { count: missing.length })}</span>
+            <span className="text-sm text-white/85">{t('renterHome.timeToReportBody', { count: missing.length })}</span>
             <span className="mt-1 self-start rounded-lg bg-white/20 px-3 py-1.5 font-semibold">{t('renterHome.reportNow')}</span>
           </Link>
         ) : (
-          <p className="rounded-2xl bg-emerald-900/30 p-3 text-sm text-emerald-300">✓ {t('renterHome.reported', { month: monthLabel(period, i18n.language) })}</p>
+          <p className="rounded-2xl bg-ok-soft p-3 text-sm text-ok">✓ {t('renterHome.reported', { month: monthLabel(period, i18n.language) })}</p>
         ))}
 
       {bill && (
-        <Link to="/my-bill" className="flex items-center justify-between gap-3 rounded-2xl bg-white/5 p-4">
+        <Link to="/my-bill" className="flex items-center justify-between gap-3 rounded-2xl border border-line bg-card p-4">
           <span className="flex flex-col">
-            <span className="text-sm text-slate-400">
+            <span className="text-sm text-muted">
               {t('renterHome.lastBill')} · {monthLabel(bill.period, i18n.language)}
             </span>
             <strong className="text-3xl" dir="ltr">
@@ -134,11 +134,11 @@ export default function RenterView() {
             </strong>
           </span>
           {owed <= 0 ? (
-            <span className="rounded-full bg-emerald-700 px-2 py-0.5 text-xs">✓ {t('bills.paid')}</span>
+            <span className="rounded-full bg-ok-soft text-ok px-2 py-0.5 text-xs">✓ {t('bills.paid')}</span>
           ) : bill.paid_agorot > 0 ? (
-            <span className="rounded-full bg-sky-700 px-2 py-0.5 text-xs">{t('bills.partlyPaid')}</span>
+            <span className="rounded-full bg-info-soft text-info px-2 py-0.5 text-xs">{t('bills.partlyPaid')}</span>
           ) : (
-            <span className="rounded-full bg-amber-700 px-2 py-0.5 text-xs">{t('bills.unpaid')}</span>
+            <span className="rounded-full bg-warn-soft text-warn px-2 py-0.5 text-xs">{t('bills.unpaid')}</span>
           )}
         </Link>
       )}
@@ -151,7 +151,7 @@ export default function RenterView() {
       )}
 
       {active && (
-        <p className="text-sm text-slate-400">
+        <p className="text-sm text-muted">
           {active.end_date ? t('renterHome.contractUntil', { date: active.end_date }) : t('renterHome.contractOpen', { date: active.start_date })}
           {' · '}
           {t('landlord.renters')}: {active.contract_renters.map((r) => r.full_name || r.email).join(', ')}
@@ -159,7 +159,7 @@ export default function RenterView() {
       )}
 
       {contracts.filter((c) => c.status === 'ended').length > 0 && (
-        <details className="text-sm text-slate-400">
+        <details className="text-sm text-muted">
           <summary>{t('renterHome.earlierContracts')}</summary>
           <ul className="mt-1 flex flex-col gap-1">
             {contracts

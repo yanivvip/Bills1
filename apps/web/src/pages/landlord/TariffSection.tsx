@@ -112,13 +112,13 @@ export default function TariffSection({ orgId, propertyId }: { orgId: string; pr
   };
 
   const field = (k: keyof typeof f, label: string) => (
-    <label className="flex flex-col gap-1 text-sm text-slate-300">
+    <label className="flex flex-col gap-1 text-sm text-ink-2">
       {label}
       <input type="text" inputMode="decimal" dir="ltr" value={f[k]} onChange={set(k)} placeholder="0.00" className={input} />
     </label>
   );
   const scopeSelect = (label: string, value: FixedScope, onChange: (s: FixedScope) => void) => (
-    <label className="flex flex-col gap-1 text-sm text-slate-300">
+    <label className="flex flex-col gap-1 text-sm text-ink-2">
       {label}
       <select value={value} onChange={(e) => { onChange(e.target.value as FixedScope); touch(); }} className={input}>
         {SCOPES.map((s) => (
@@ -138,8 +138,8 @@ export default function TariffSection({ orgId, propertyId }: { orgId: string; pr
       touch();
     };
     return (
-      <div className="flex flex-col gap-2 rounded-xl bg-white/5 p-3">
-        <label className="flex flex-col gap-1 text-sm text-slate-300">
+      <div className="flex flex-col gap-2 rounded-xl border border-line bg-card p-3">
+        <label className="flex flex-col gap-1 text-sm text-ink-2">
           {t(`layout.${kind}`)}
           <select value={l.mode} onChange={(e) => change({ mode: e.target.value as KindLayout['mode'] })} className={input}>
             {MODES.map((m) => (
@@ -150,7 +150,7 @@ export default function TariffSection({ orgId, propertyId }: { orgId: string; pr
           </select>
         </label>
         {l.mode === 'main_sub' && (
-          <label className="flex flex-col gap-1 text-sm text-slate-300">
+          <label className="flex flex-col gap-1 text-sm text-ink-2">
             {t('layout.differenceLabel')}
             <select value={l.difference} onChange={(e) => change({ difference: e.target.value as KindLayout['difference'] })} className={input}>
               <option value="landlord">{t('layout.difference.landlord')}</option>
@@ -159,7 +159,7 @@ export default function TariffSection({ orgId, propertyId }: { orgId: string; pr
           </label>
         )}
         {l.mode === 'shared' && (
-          <label className="flex flex-col gap-1 text-sm text-slate-300">
+          <label className="flex flex-col gap-1 text-sm text-ink-2">
             {t('layout.splitLabel')}
             <select value={l.split} onChange={(e) => change({ split: e.target.value as KindLayout['split'] })} className={input}>
               <option value="heads">{t('layout.split.heads')}</option>
@@ -167,7 +167,7 @@ export default function TariffSection({ orgId, propertyId }: { orgId: string; pr
             </select>
           </label>
         )}
-        <p className="text-xs text-slate-400">{t(`layout.hint.${l.mode}`)}</p>
+        <p className="text-xs text-muted">{t(`layout.hint.${l.mode}`)}</p>
       </div>
     );
   };
@@ -177,10 +177,10 @@ export default function TariffSection({ orgId, propertyId }: { orgId: string; pr
 
   return (
     <form onSubmit={save} className={card}>
-      <h2 className="text-xl font-semibold text-slate-300">{t('layout.title')}</h2>
+      <h2 className="text-xl font-semibold text-ink-2">{t('layout.title')}</h2>
       {layoutBlock('electricity')}
       {layoutBlock('water')}
-      <h2 className="text-xl font-semibold text-slate-300">{t('tariff.title')}</h2>
+      <h2 className="text-xl font-semibold text-ink-2">{t('tariff.title')}</h2>
       <div className="grid grid-cols-2 gap-3">
         {field('rate', t('tariff.electricityRate'))}
         {field('fixed', t('tariff.electricityFixed'))}
@@ -192,7 +192,7 @@ export default function TariffSection({ orgId, propertyId }: { orgId: string; pr
         {scopeSelect(t('tariff.waterFixedScope'), waterScope, setWaterScope)}
         {field('sewage', t('tariff.sewageRate'))}
         <span />
-        <label className="flex flex-col gap-1 text-sm text-slate-300">
+        <label className="flex flex-col gap-1 text-sm text-ink-2">
           {t('tariff.propertyTaxEvery')}
           <select value={taxEvery} onChange={(e) => { setTaxEvery(e.target.value === '2' ? 2 : 1); touch(); }} className={input}>
             <option value={1}>{t('tariff.monthly')}</option>
@@ -200,15 +200,15 @@ export default function TariffSection({ orgId, propertyId }: { orgId: string; pr
           </select>
         </label>
         {taxEvery === 2 && (
-          <label className="flex flex-col gap-1 text-sm text-slate-300">
+          <label className="flex flex-col gap-1 text-sm text-ink-2">
             {t('tariff.propertyTaxAnchor')}
             <input type="month" dir="ltr" value={taxAnchor} onChange={(e) => { setTaxAnchor(e.target.value); touch(); }} className={input} />
           </label>
         )}
       </div>
-      <p className="text-xs text-slate-400">{t('tariff.hint')}</p>
-      {error && <p className="text-sm text-red-400">{error}</p>}
-      {state === 'saved' && <p className="text-sm text-emerald-400">✓ {t('tariff.saved')}</p>}
+      <p className="text-xs text-muted">{t('tariff.hint')}</p>
+      {error && <p className="text-sm text-danger">{error}</p>}
+      {state === 'saved' && <p className="text-sm text-ok">✓ {t('tariff.saved')}</p>}
       <button disabled={!valid} className={`${primary} self-start disabled:opacity-50`}>
         {t('common.save')}
       </button>

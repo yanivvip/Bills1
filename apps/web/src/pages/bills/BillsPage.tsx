@@ -84,13 +84,13 @@ export default function BillsPage({ orgId }: { orgId: string }) {
       )}
       <MonthNav period={period} onChange={setPeriod} />
       {propertyId && <MonthStrip propertyId={propertyId} period={period} onChange={setPeriod} version={b.statements} />}
-      {b.error && <p className="text-sm text-red-400">{b.error}</p>}
+      {b.error && <p className="text-sm text-danger">{b.error}</p>}
 
-      {properties.length === 0 && <p className="text-slate-400">{t('bills.noProperty')}</p>}
+      {properties.length === 0 && <p className="text-muted">{t('bills.noProperty')}</p>}
       {propertyId && !b.loaded && <p>{t('common.loading')}</p>}
 
       {b.loaded && !b.tariff && (
-        <p className="text-amber-400">
+        <p className="text-warn">
           {t('bills.noTariff')} <Link to={`/properties/${propertyId}`} className="underline">{t('bills.toProperty')}</Link>
         </p>
       )}
@@ -98,12 +98,12 @@ export default function BillsPage({ orgId }: { orgId: string }) {
       {/* ── approved month ── */}
       {b.loaded && b.billing && (
         <>
-          <p className="text-sm text-emerald-400">✓ {t('bills.approved')}</p>
+          <p className="text-sm text-ok">✓ {t('bills.approved')}</p>
           {b.statements.map((s) => (
             <StatementCard key={s.id} s={s} unit={unitName(s.unit_id)} payments={b.payments.filter((p) => p.statement_id === s.id)} busy={busy} act={act} />
           ))}
           <SupplierCard orgId={orgId} propertyId={propertyId!} period={period} supplier={b.supplier} lines={b.statements.map((s) => s.lines)} act={act} busy={busy} />
-          <button className="self-start text-sm text-slate-400 underline" onClick={() => void reopen()}>
+          <button className="self-start text-sm text-muted underline" onClick={() => void reopen()}>
             {t('bills.reopen')}
           </button>
         </>
@@ -113,7 +113,7 @@ export default function BillsPage({ orgId }: { orgId: string }) {
       {b.loaded && b.tariff && !b.billing && b.result && (
         <>
           {b.result.problems.length > 0 && (
-            <div className="rounded-xl bg-amber-900/30 p-3 text-sm">
+            <div className="rounded-xl bg-warn-soft p-3 text-sm">
               <strong>{t('bills.missingTitle')}</strong>
               <ul className="mt-1 list-disc ps-5">
                 {b.result.problems.map((p, i) => (
@@ -131,7 +131,7 @@ export default function BillsPage({ orgId }: { orgId: string }) {
               <StatementView lines={x.lines} total={x.total} />
             </div>
           ))}
-          {b.result.bills.length === 0 && b.result.problems.length === 0 && <p className="text-slate-400">{t('bills.nothingToBill')}</p>}
+          {b.result.bills.length === 0 && b.result.problems.length === 0 && <p className="text-muted">{t('bills.nothingToBill')}</p>}
 
           <SewageEntries orgId={orgId} propertyId={propertyId!} period={period} b={b} act={act} busy={busy} />
           <Charges orgId={orgId} propertyId={propertyId!} period={period} b={b} unitName={unitName} act={act} busy={busy} money={money} />
@@ -143,7 +143,7 @@ export default function BillsPage({ orgId }: { orgId: string }) {
           >
             {t('bills.approve')}
           </button>
-          {b.result.problems.length > 0 && <p className="text-xs text-slate-400">{t('bills.approveBlocked')}</p>}
+          {b.result.problems.length > 0 && <p className="text-xs text-muted">{t('bills.approveBlocked')}</p>}
         </>
       )}
     </section>
@@ -165,11 +165,11 @@ function StatementCard({ s, unit, payments, busy, act }: { s: StatementRow; unit
       <div className="flex items-center justify-between gap-2">
         <strong className="text-lg">{unit}</strong>
         {full ? (
-          <span className="rounded-full bg-emerald-700 px-2 py-0.5 text-xs">{t('bills.paid')}</span>
+          <span className="rounded-full bg-ok-soft text-ok px-2 py-0.5 text-xs">{t('bills.paid')}</span>
         ) : s.paid_agorot > 0 ? (
-          <span className="rounded-full bg-sky-700 px-2 py-0.5 text-xs">{t('bills.partlyPaid')}</span>
+          <span className="rounded-full bg-info-soft text-info px-2 py-0.5 text-xs">{t('bills.partlyPaid')}</span>
         ) : (
-          <span className="rounded-full bg-amber-700 px-2 py-0.5 text-xs">{t('bills.unpaid')}</span>
+          <span className="rounded-full bg-warn-soft text-warn px-2 py-0.5 text-xs">{t('bills.unpaid')}</span>
         )}
       </div>
       <StatementView lines={s.lines} total={s.total_agorot} />
@@ -177,18 +177,18 @@ function StatementCard({ s, unit, payments, busy, act }: { s: StatementRow; unit
         {t('bills.viewBill')}
       </Link>
       {full && s.paid_on && (
-        <p className="text-sm text-slate-300">
+        <p className="text-sm text-ink-2">
           {t('bills.paidOn', { date: s.paid_on })} · {t(`bills.method.${s.paid_method}`)}
         </p>
       )}
       {payments.length > 0 && (
-        <ul className="flex flex-col gap-1 text-sm text-slate-300">
+        <ul className="flex flex-col gap-1 text-sm text-ink-2">
           {payments.map((p) => (
             <li key={p.id} className="flex items-center justify-between gap-2">
               <span>
                 <span dir="ltr">{money(p.amount_agorot)}</span> · {p.paid_on} · {t(`bills.method.${p.method}`)}
               </span>
-              <button disabled={busy} className="text-slate-400 underline" onClick={() => void act(supabase.rpc('delete_payment', { p_payment: p.id }))}>
+              <button disabled={busy} className="text-muted underline" onClick={() => void act(supabase.rpc('delete_payment', { p_payment: p.id }))}>
                 {t('bills.removePayment')}
               </button>
             </li>
@@ -196,11 +196,11 @@ function StatementCard({ s, unit, payments, busy, act }: { s: StatementRow; unit
         </ul>
       )}
       {!full && s.renter_paid_notice_at && (
-        <p className="rounded-lg bg-sky-900/40 px-3 py-2 text-sm text-sky-200">{t('bills.renterSaysPaid', { date: s.renter_paid_notice_at.slice(0, 10) })}</p>
+        <p className="rounded-lg bg-info-soft px-3 py-2 text-sm text-info">{t('bills.renterSaysPaid', { date: s.renter_paid_notice_at.slice(0, 10) })}</p>
       )}
       {!full && (
         <>
-          {s.paid_agorot > 0 && <p className="text-sm text-amber-300">{t('bills.remaining', { amount: money(remaining) })}</p>}
+          {s.paid_agorot > 0 && <p className="text-sm text-warn">{t('bills.remaining', { amount: money(remaining) })}</p>}
           <div className="flex flex-wrap items-center gap-2">
             <input type="text" inputMode="decimal" dir="ltr" value={amount} onChange={(e) => setAmount(e.target.value)} placeholder={`${t('bills.paymentAmount')} (${money(remaining)})`} className={`${input} w-40`} aria-label={t('bills.paymentAmount')} />
             <input type="date" value={date} max={today()} onChange={(e) => setDate(e.target.value)} className={input} aria-label={t('bills.paymentDate')} />
@@ -244,21 +244,21 @@ function SupplierCard({ orgId, propertyId, period, supplier, lines, act, busy }:
   };
   return (
     <div className={card}>
-      <h2 className="text-xl font-semibold text-slate-300">{t('bills.supplierTitle')}</h2>
-      <p className="text-xs text-slate-400">{t('bills.supplierHint')}</p>
+      <h2 className="text-xl font-semibold text-ink-2">{t('bills.supplierTitle')}</h2>
+      <p className="text-xs text-muted">{t('bills.supplierHint')}</p>
       {(['electricity', 'water'] as const).map((k) => (
         <div key={k} className="flex flex-col gap-1">
           <div className="flex flex-wrap items-center gap-2">
             <span className="w-16 text-sm">{t(`meters.${k}`)}</span>
             <input type="text" inputMode="decimal" dir="ltr" value={text[k]} onChange={(e) => setText({ ...text, [k]: e.target.value })} placeholder={t('bills.supplierAmount')} className={`${input} w-32`} aria-label={`${t('bills.supplierAmount')} ${t(`meters.${k}`)}`} />
-            <button disabled={busy || parseAgorot(text[k]) === null} className="rounded-lg bg-white/10 px-3 py-2 text-sm font-semibold disabled:opacity-50" onClick={() => void save(k)}>
+            <button disabled={busy || parseAgorot(text[k]) === null} className="rounded-lg bg-field px-3 py-2 text-sm font-semibold disabled:opacity-50" onClick={() => void save(k)}>
               {t('common.save')}
             </button>
           </div>
-          <div className="flex flex-wrap justify-between gap-2 text-sm text-slate-300">
+          <div className="flex flex-wrap justify-between gap-2 text-sm text-ink-2">
             <span>{t('bills.collectedFromRenters', { amount: money(r[k].collected) })}</span>
             {r[k].difference !== null && (
-              <span className={r[k].difference > 0 ? 'text-amber-300' : 'text-emerald-300'}>
+              <span className={r[k].difference > 0 ? 'text-warn' : 'text-ok'}>
                 {r[k].difference > 0 ? t('bills.landlordCovered', { amount: money(r[k].difference) }) : r[k].difference < 0 ? t('bills.collectedExtra', { amount: money(-r[k].difference) }) : t('bills.balanced')}
               </span>
             )}

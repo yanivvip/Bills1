@@ -28,17 +28,17 @@ export default function HomePage() {
   return (
     <section className="flex flex-col gap-4 p-4">
       <h2 className="text-xl font-semibold">{t('home.welcome')}</h2>
-      <form onSubmit={create} className="flex flex-col gap-3 rounded-2xl bg-white/5 p-4">
-        <p className="text-slate-400">{t('home.noOrg')}</p>
+      <form onSubmit={create} className="flex flex-col gap-3 rounded-2xl border border-line bg-card p-4">
+        <p className="text-muted">{t('home.noOrg')}</p>
         <input
           required
           value={name}
           onChange={(e) => setName(e.target.value)}
           placeholder={t('home.orgName')}
-          className="rounded-lg bg-white/10 px-3 py-2 outline-none focus:ring-2 focus:ring-violet-500"
+          className="rounded-lg bg-field px-3 py-2 outline-none focus:ring-2 focus:ring-primary"
         />
-        <button className="rounded-lg bg-violet-600 py-2 font-semibold">{t('home.createOrg')}</button>
-        {error && <p className="text-sm text-red-400">{error}</p>}
+        <button className="rounded-lg bg-primary text-white py-2 font-semibold">{t('home.createOrg')}</button>
+        {error && <p className="text-sm text-danger">{error}</p>}
       </form>
     </section>
   );

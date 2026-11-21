@@ -32,11 +32,13 @@ function AlertsBell() {
     <NavLink to="/alerts" aria-label={t('alerts.title')} className="relative px-1 text-lg">
       🔔
       {unread.length > 0 && (
-        <span className="absolute -end-1 -top-1 min-w-4 rounded-full bg-amber-500 px-1 text-center text-[10px] font-bold leading-4 text-black">{unread.length}</span>
+        <span className="absolute -end-1 -top-1 min-w-4 rounded-full bg-warn-strong px-1 text-center text-[10px] font-bold leading-4 text-black">{unread.length}</span>
       )}
     </NavLink>
   );
 }
+
+const navClass = ({ isActive }: { isActive: boolean }) => `rounded-xl px-3 py-1.5 text-sm ${isActive ? 'bg-primary-soft font-semibold text-primary-dark' : 'text-muted'}`;
 
 function Shell() {
   const { t } = useTranslation();
@@ -44,8 +46,8 @@ function Shell() {
   const { role } = useRole();
   return (
     <div className="mx-auto flex min-h-dvh max-w-2xl flex-col">
-      <header className="flex items-center justify-between border-b border-white/10 p-3 print:hidden">
-        <strong>{t('app.name')}</strong>
+      <header className="flex items-center justify-between border-b border-line bg-card p-3 print:hidden">
+        <img src="/brand/logo.svg" alt={t('app.name')} className="h-8 w-auto" />
         <div className="flex items-center gap-3 text-sm">
           {role?.kind === 'landlord' && <AlertsBell />}
           <button onClick={() => void supabase.auth.signOut()}>{t('auth.signOut')}</button>
@@ -54,17 +56,17 @@ function Shell() {
       <main className="flex-1">
         <Outlet />
       </main>
-      <nav className="flex justify-around border-t print:hidden border-white/10 p-3 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
-        <NavLink to="/" end>
+      <nav className="flex justify-around border-t border-line bg-card p-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] print:hidden">
+        <NavLink to="/" end className={navClass}>
           {t('nav.home')}
         </NavLink>
-        {role?.kind === 'landlord' && <NavLink to="/readings">{t('nav.readings')}</NavLink>}
-        {role?.kind === 'landlord' && <NavLink to="/bills">{t('nav.bills')}</NavLink>}
-        {role?.kind === 'landlord' && <NavLink to="/history">{t('nav.history')}</NavLink>}
-        {role?.kind === 'landlord' && <NavLink to="/property">{t('nav.property')}</NavLink>}
-        {role?.kind === 'renter' && <NavLink to="/report">{t('nav.report')}</NavLink>}
-        {role?.kind === 'renter' && <NavLink to="/my-bill">{t('nav.myBill')}</NavLink>}
-        {isPlatformAdmin && <NavLink to="/admin">{t('nav.admin')}</NavLink>}
+        {role?.kind === 'landlord' && <NavLink to="/readings" className={navClass}>{t('nav.readings')}</NavLink>}
+        {role?.kind === 'landlord' && <NavLink to="/bills" className={navClass}>{t('nav.bills')}</NavLink>}
+        {role?.kind === 'landlord' && <NavLink to="/history" className={navClass}>{t('nav.history')}</NavLink>}
+        {role?.kind === 'landlord' && <NavLink to="/property" className={navClass}>{t('nav.property')}</NavLink>}
+        {role?.kind === 'renter' && <NavLink to="/report" className={navClass}>{t('nav.report')}</NavLink>}
+        {role?.kind === 'renter' && <NavLink to="/my-bill" className={navClass}>{t('nav.myBill')}</NavLink>}
+        {isPlatformAdmin && <NavLink to="/admin" className={navClass}>{t('nav.admin')}</NavLink>}
       </nav>
     </div>
   );

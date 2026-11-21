@@ -70,17 +70,17 @@ export default function UnitBillingSettings({ unitId }: { unitId: string }) {
 
   return (
     <form onSubmit={save} className={card}>
-      <h2 className="text-xl font-semibold text-slate-300">{t('unitBilling.title')}</h2>
+      <h2 className="text-xl font-semibold text-ink-2">{t('unitBilling.title')}</h2>
       <div className="grid grid-cols-2 gap-3">
-        <label className="flex flex-col gap-1 text-sm text-slate-300">
+        <label className="flex flex-col gap-1 text-sm text-ink-2">
           {t('unitBilling.communityFee')}
           <input type="text" inputMode="decimal" dir="ltr" value={fee} onChange={(e) => { setFee(e.target.value); touch(); }} placeholder="0.00" className={input} />
         </label>
-        <label className="flex flex-col gap-1 text-sm text-slate-300">
+        <label className="flex flex-col gap-1 text-sm text-ink-2">
           {t('unitBilling.waterQuota')}
           <input type="text" inputMode="decimal" dir="ltr" value={quota} onChange={(e) => { setQuota(e.target.value); touch(); }} placeholder="0" className={input} />
         </label>
-        <label className="flex flex-col gap-1 text-sm text-slate-300">
+        <label className="flex flex-col gap-1 text-sm text-ink-2">
           {t('unitBilling.propertyTax')}
           <input type="text" inputMode="decimal" dir="ltr" value={tax} onChange={(e) => { setTax(e.target.value); touch(); }} placeholder="0.00" className={input} />
         </label>
@@ -88,19 +88,19 @@ export default function UnitBillingSettings({ unitId }: { unitId: string }) {
       {(needs.heads || needs.electricityPercent || needs.waterPercent) && (
         <div className="grid grid-cols-2 gap-3">
           {needs.heads && (
-            <label className="flex flex-col gap-1 text-sm text-slate-300">
+            <label className="flex flex-col gap-1 text-sm text-ink-2">
               {t('unitBilling.occupants')}
               <input type="text" inputMode="numeric" dir="ltr" value={occupants} onChange={(e) => { setOccupants(e.target.value); touch(); }} className={input} />
             </label>
           )}
           {needs.electricityPercent && (
-            <label className="flex flex-col gap-1 text-sm text-slate-300">
+            <label className="flex flex-col gap-1 text-sm text-ink-2">
               {t('unitBilling.electricityPercent')}
               <input type="text" inputMode="decimal" dir="ltr" value={percent.electricity} onChange={(e) => { setPercent({ ...percent, electricity: e.target.value }); touch(); }} className={input} />
             </label>
           )}
           {needs.waterPercent && (
-            <label className="flex flex-col gap-1 text-sm text-slate-300">
+            <label className="flex flex-col gap-1 text-sm text-ink-2">
               {t('unitBilling.waterPercent')}
               <input type="text" inputMode="decimal" dir="ltr" value={percent.water} onChange={(e) => { setPercent({ ...percent, water: e.target.value }); touch(); }} className={input} />
             </label>
@@ -111,9 +111,9 @@ export default function UnitBillingSettings({ unitId }: { unitId: string }) {
         <input type="checkbox" checked={residual} onChange={(e) => { setResidual(e.target.checked); touch(); }} />
         {t('unitBilling.residual')}
       </label>
-      <p className="text-xs text-slate-400">{t('unitBilling.residualHint')}</p>
-      {error && <p className="text-sm text-red-400">{error}</p>}
-      {state === 'saved' && <p className="text-sm text-emerald-400">✓ {t('tariff.saved')}</p>}
+      <p className="text-xs text-muted">{t('unitBilling.residualHint')}</p>
+      {error && <p className="text-sm text-danger">{error}</p>}
+      {state === 'saved' && <p className="text-sm text-ok">✓ {t('tariff.saved')}</p>}
       <button disabled={!valid} className={`${primary} self-start disabled:opacity-50`}>
         {t('common.save')}
       </button>

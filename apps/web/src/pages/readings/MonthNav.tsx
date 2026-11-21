@@ -4,7 +4,7 @@ import { monthLabel, monthStart, shiftMonth } from '../../lib/period';
 export default function MonthNav({ period, onChange }: { period: string; onChange: (p: string) => void }) {
   const { i18n } = useTranslation();
   const isCurrent = period >= monthStart();
-  const btn = 'rounded-lg bg-white/10 px-3 py-1.5';
+  const btn = 'rounded-lg bg-field px-3 py-1.5';
   return (
     <div className="flex items-center justify-between gap-2">
       <button className={btn} onClick={() => onChange(shiftMonth(period, -1))} aria-label="previous month">

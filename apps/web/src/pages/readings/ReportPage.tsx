@@ -20,11 +20,11 @@ export default function ReportPage() {
     <section className="flex flex-col gap-4 p-4">
       <div>
         <h1 className="text-2xl font-bold">{t('readings.report')}</h1>
-        {property && <p className="text-slate-400">{property} · {unit}</p>}
+        {property && <p className="text-muted">{property} · {unit}</p>}
       </div>
       <MonthNav period={period} onChange={setPeriod} />
-      {error && <p className="text-sm text-red-400">{error}</p>}
-      {meters.length === 0 && <p className="text-slate-400">{t('readings.renterNoMeters')}</p>}
+      {error && <p className="text-sm text-danger">{error}</p>}
+      {meters.length === 0 && <p className="text-muted">{t('readings.renterNoMeters')}</p>}
       {meters.map((m) => (
         <ReadingInput key={m.id} meter={m} period={period} current={current(m.id)} previous={previous(m.id)} onSave={(v, d) => save(m, v, d)} />
       ))}

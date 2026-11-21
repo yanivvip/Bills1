@@ -1,7 +1,44 @@
 @import 'tailwindcss';
 
+/*
+ * BILLS-AI visual identity (from the product manager's design): teal on cream, dark ink text,
+ * purple reserved for the logo and for AI features, amber for alerts. Light only.
+ */
+@theme {
+  --font-sans: 'Rubik', system-ui, sans-serif;
+
+  --color-page: #f4f3ef;
+  --color-card: #ffffff;
+  --color-field: #ebe9e2;
+  --color-line: #e6e3dc;
+  --color-line-strong: #cfcbc1;
+
+  --color-ink: #1d2422;
+  --color-ink-2: #3e4643;
+  --color-muted: #5b6461;
+  --color-faint: #7a8481;
+
+  --color-primary: #0e6b5e;
+  --color-primary-dark: #0b5a4f;
+  --color-primary-soft: #e4f0ec;
+  --color-primary-mid: #8cbdb4;
+
+  --color-ai: #5b3fb8;
+  --color-ai-soft: #ece8f8;
+
+  --color-ok: #0b5a4f;
+  --color-ok-soft: #e4f0ec;
+  --color-warn: #8a5300;
+  --color-warn-soft: #fdf1dc;
+  --color-warn-strong: #f2b13c;
+  --color-info: #1e4e79;
+  --color-info-soft: #e3eef8;
+  --color-danger: #b3261e;
+  --color-danger-soft: #fbe9e7;
+}
+
 :root {
-  color-scheme: dark;
+  color-scheme: light;
 }
 button:not(:disabled),
 [role='button']:not([aria-disabled='true']),
@@ -15,12 +52,16 @@ button:disabled {
 }
 body {
   margin: 0;
-  font-family: 'Heebo', system-ui, sans-serif;
-  background: #0f0f1a;
-  color: #e8e8f0;
+  font-family: var(--font-sans);
+  background: var(--color-page);
+  color: var(--color-ink);
+}
+:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
 }
 
-/* "Save as PDF" prints the bill/receipt page: light background, dark text */
+/* "Save as PDF" prints the bill/receipt page: white background, black text */
 @media print {
   body {
     background: #fff;

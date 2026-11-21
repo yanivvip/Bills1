@@ -55,9 +55,6 @@ export default function BillDocument() {
         <button className="rounded-lg bg-violet-600 px-4 py-2 font-semibold" onClick={() => window.print()}>
           {t('bills.print')}
         </button>
-        <a className="rounded-lg bg-white/10 px-4 py-2 font-semibold" href={whatsappLink(text)} target="_blank" rel="noreferrer">
-          {t('bills.shareWhatsapp')}
-        </a>
         <button className="px-2 py-2 text-slate-400 underline" onClick={() => history.back()}>
           {t('common.back')}
         </button>
@@ -101,6 +98,43 @@ export default function BillDocument() {
               : t('bills.unpaid')}
         </p>
       </div>
+      <MessageEditor initial={text} />
     </section>
+  );
+}
+
+// The WhatsApp message for the renter: edit it before it is sent, or copy it.
+function MessageEditor({ initial }: { initial: string }) {
+  const { t } = useTranslation();
+  const [text, setText] = useState(initial);
+  const [copied, setCopied] = useState(false);
+  const copy = async () => {
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopied(true);
+    } catch {
+      // clipboard blocked: the text can still be selected by hand
+    }
+  };
+  return (
+    <div className="flex flex-col gap-2 rounded-2xl bg-white/5 p-4 print:hidden">
+      <label htmlFor="wa-text" className="text-sm font-semibold text-slate-300">
+        {t('whatsapp.title')}
+      </label>
+      <textarea id="wa-text" value={text} onChange={(e) => { setText(e.target.value); setCopied(false); }} rows={Math.min(14, text.split('\n').length + 1)} className="rounded-lg bg-white/10 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-violet-500" />
+      <div className="flex flex-wrap items-center gap-2">
+        <a className="rounded-lg bg-violet-600 px-4 py-2 font-semibold" href={whatsappLink(text)} target="_blank" rel="noreferrer">
+          {t('whatsapp.open')}
+        </a>
+        <button className="rounded-lg bg-white/10 px-4 py-2 font-semibold" onClick={() => void copy()}>
+          {copied ? `✓ ${t('whatsapp.copied')}` : t('whatsapp.copy')}
+        </button>
+        {text !== initial && (
+          <button className="px-2 py-2 text-sm text-slate-400 underline" onClick={() => { setText(initial); setCopied(false); }}>
+            {t('whatsapp.reset')}
+          </button>
+        )}
+      </div>
+    </div>
   );
 }

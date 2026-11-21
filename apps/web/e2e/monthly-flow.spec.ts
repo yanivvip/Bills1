@@ -61,8 +61,9 @@ test('landlord sets up an organization, property, unit, contract and meters', as
 
 test('the renter signs up, sees their rental and reports a reading', async ({ page }) => {
   await signUp(page, renter);
-  await expect(page.getByRole('heading', { name: he.renter.title })).toBeVisible();
-  await expect(page.getByText(/Dizengoff 10/)).toBeVisible();
+  await expect(page.getByRole('heading', { name: /Apt 1/ })).toBeVisible();
+  await expect(page.getByText(/Dizengoff 10/).first()).toBeVisible();
+  await expect(page.getByText(he.renterHome.timeToReport)).toBeVisible(); // nothing reported yet this month
 
   await page.getByRole('link', { name: he.nav.report }).click();
   // the renter only gets the meter of their own unit, not the building water meter
@@ -180,7 +181,8 @@ test('the landlord sets tariffs, approves the month and marks it paid', async ({
   await expect(page.locator('button[aria-current="date"]')).toContainText('✓');
   await page.getByRole('link', { name: he.bills.viewBill }).click();
   await expect(page.getByRole('heading', { name: he.bills.receipt })).toBeVisible();
-  await expect(page.getByRole('link', { name: he.bills.shareWhatsapp })).toHaveAttribute('href', /wa.me/);
+  await page.getByLabel(he.whatsapp.title).fill('Hello Dana, edited');
+  await expect(page.getByRole('link', { name: he.whatsapp.open })).toHaveAttribute('href', /wa.me.*Hello%20Dana%2C%20edited/);
   await page.goBack();
 
   // the annual report shows the month and exports to CSV and Excel
@@ -204,7 +206,10 @@ test('the renter sees the approved bill and that it is paid', async ({ page }) =
   await signIn(page, renter);
   await page.getByRole('link', { name: he.nav.myBill }).click();
   await expect(page.getByText('₪425.50').first()).toBeVisible();
-  await expect(page.getByText(`✓ ${he.bills.paid}`)).toBeVisible();
+  await expect(page.getByText(`✓ ${he.bills.paid}`).first()).toBeVisible();
+  await expect(page.getByRole('button', { name: he.bills.iPaid })).toHaveCount(0); // already paid
+  await page.getByText(he.bills.howCalculated).click();
+  await expect(page.getByText(/250/).first()).toBeVisible(); // the explanation names the 250 kWh
   await page.getByRole('link', { name: he.bills.viewBill }).click();
   await expect(page.getByRole('heading', { name: he.bills.receipt })).toBeVisible();
 });

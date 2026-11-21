@@ -195,6 +195,9 @@ function StatementCard({ s, unit, payments, busy, act }: { s: StatementRow; unit
           ))}
         </ul>
       )}
+      {!full && s.renter_paid_notice_at && (
+        <p className="rounded-lg bg-sky-900/40 px-3 py-2 text-sm text-sky-200">{t('bills.renterSaysPaid', { date: s.renter_paid_notice_at.slice(0, 10) })}</p>
+      )}
       {!full && (
         <>
           {s.paid_agorot > 0 && <p className="text-sm text-amber-300">{t('bills.remaining', { amount: money(remaining) })}</p>}

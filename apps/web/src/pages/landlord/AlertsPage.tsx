@@ -21,6 +21,8 @@ export default function AlertsPage() {
         return { title: t('alerts.noReport.title'), body: t('alerts.noReport.body', { unit: p.unit, kind: t(`meters.${p.kind}`) }) };
       case 'unpaid':
         return { title: t('alerts.unpaid.title'), body: t('alerts.unpaid.body', { unit: p.unit, month: monthLabel(String(p.period), i18n.language), amount: formatMoney(Number(p.total), i18n.language) }) };
+      case 'renterPaid':
+        return { title: t('alerts.renterPaid.title'), body: t('alerts.renterPaid.body', { unit: p.unit, month: monthLabel(String(p.period), i18n.language) }) };
       case 'reported':
         return { title: t('alerts.reported.title'), body: t('alerts.reported.body', { unit: p.unit }) };
       case 'contractEnding':

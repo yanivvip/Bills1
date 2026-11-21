@@ -1,7 +1,7 @@
 -- Database security tests (pgTAP). Run with: supabase test db
 -- Everything runs in one transaction that is rolled back, so no data is left behind.
 begin;
-select plan(75);
+select plan(80);
 
 -- ── Fixtures (as the postgres superuser) ─────────────────────────────────
 insert into auth.users (id, email, email_confirmed_at, instance_id, aud, role) values
@@ -208,6 +208,21 @@ select throws_ok($q$insert into public.supplier_bills (org_id, property_id, peri
   '42501', null, 'another landlord cannot enter supplier bills for this property');
 select pg_temp.act_as('00000000-0000-0000-0000-0000000000a1');
 select lives_ok($q$insert into public.supplier_bills (org_id, property_id, period, kind, amount_agorot) values ('10000000-0000-0000-0000-00000000000a', '20000000-0000-0000-0000-00000000000a', '2026-07-01', 'water', 1000)$q$, 'a landlord enters a supplier bill');
+
+-- ── The renter says "I paid" ─────────────────────────────────────────────
+insert into public.contract_renters (org_id, contract_id, email, user_id) values
+  ('10000000-0000-0000-0000-00000000000a', '40000000-0000-0000-0000-000000000001', 'renter-1b@test.dev', '00000000-0000-0000-0000-0000000000c1');
+select pg_temp.act_as('00000000-0000-0000-0000-0000000000c2');
+select throws_ok($q$select public.notify_paid((select id from public.statements where unit_id = '30000000-0000-0000-0000-000000000001' and period = '2026-07-01'))$q$, null, 'forbidden', 'a renter of another unit cannot say a bill was paid');
+select pg_temp.act_as('00000000-0000-0000-0000-0000000000a1');
+select throws_ok($q$select public.notify_paid((select id from public.statements where unit_id = '30000000-0000-0000-0000-000000000001' and period = '2026-07-01'))$q$, null, 'forbidden', 'the landlord is not a renter of the bill');
+select pg_temp.act_as('00000000-0000-0000-0000-0000000000c1');
+select lives_ok($q$select public.notify_paid((select id from public.statements where unit_id = '30000000-0000-0000-0000-000000000001' and period = '2026-07-01'))$q$, 'the renter of the unit says they paid');
+select pg_temp.act_as('00000000-0000-0000-0000-0000000000a1');
+select isnt((select renter_paid_notice_at from public.statements where id = (select id from public.statements where unit_id = '30000000-0000-0000-0000-000000000001' and period = '2026-07-01')), null, 'the landlord sees the notice');
+select public.set_statement_paid((select id from public.statements where unit_id = '30000000-0000-0000-0000-000000000001' and period = '2026-07-01'), '2026-07-08', 'cash');
+select pg_temp.act_as('00000000-0000-0000-0000-0000000000c1');
+select throws_ok($q$select public.notify_paid((select id from public.statements where unit_id = '30000000-0000-0000-0000-000000000001' and period = '2026-07-01'))$q$, null, 'already paid', 'a paid bill needs no notice');
 
 -- ── Replacing a tenant ───────────────────────────────────────────────────
 select pg_temp.act_as('00000000-0000-0000-0000-0000000000b1');

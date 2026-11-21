@@ -34,6 +34,8 @@ export interface StatementRow {
   paid_agorot: number;
   paid_on: string | null;
   paid_method: 'bit' | 'transfer' | 'cash' | 'other' | null;
+  /** when the renter said they paid; the landlord still records the payment */
+  renter_paid_notice_at?: string | null;
 }
 export interface PaymentRow {
   id: string;
@@ -126,7 +128,7 @@ export function useBilling(propertyId: string | undefined, period: string) {
     if (b.data) {
       const s = await supabase
         .from('statements')
-        .select('id,unit_id,contract_id,period,total_agorot,lines,paid_agorot,paid_on,paid_method')
+        .select('id,unit_id,contract_id,period,total_agorot,lines,paid_agorot,paid_on,paid_method,renter_paid_notice_at')
         .eq('billing_id', (b.data as { id: string }).id);
       const rows = ((s.data ?? []) as StatementRow[]).map((x) => ({ ...x, total_agorot: Number(x.total_agorot), paid_agorot: Number(x.paid_agorot) }));
       setStatements(rows);

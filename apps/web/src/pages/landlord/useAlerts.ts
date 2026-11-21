@@ -4,7 +4,7 @@ import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../auth/AuthProvider';
 import { monthStart, shiftMonth, today } from '../../lib/period';
 
-export type AlertType = 'highUsage' | 'noReport' | 'unpaid' | 'contractEnding' | 'reported';
+export type AlertType = 'highUsage' | 'noReport' | 'unpaid' | 'contractEnding' | 'reported' | 'renterPaid';
 export interface Alert {
   /** stable id used to remember that the alert was read */
   key: string;
@@ -26,7 +26,7 @@ const readSeen = (userId: string): Set<string> => {
 type UnitRow = { id: string; name: string; contracts: { status: string; end_date: string | null }[] };
 type MeterRow = { id: string; unit_id: string | null; kind: 'electricity' | 'water'; name: string };
 type ReadingRow = { meter_id: string; period: string; value: number; submitted_by: string | null; submitted_at: string };
-type StatementRow = { unit_id: string; period: string; total_agorot: number; paid_agorot: number };
+type StatementRow = { unit_id: string; period: string; total_agorot: number; paid_agorot: number; renter_paid_notice_at: string | null };
 
 // Everything the landlord should know about, worked out from the data (nothing is stored except which alerts were read).
 // "Read" is remembered on this device only.
@@ -45,7 +45,7 @@ export function useAlerts() {
         supabase.from('units').select('id,name,contracts(status,end_date)'),
         supabase.from('meters').select('id,unit_id,kind,name'),
         supabase.from('readings').select('meter_id,period,value,submitted_by,submitted_at').gte('period', shiftMonth(period, -4)),
-        supabase.from('statements').select('unit_id,period,total_agorot,paid_agorot').is('paid_on', null),
+        supabase.from('statements').select('unit_id,period,total_agorot,paid_agorot,renter_paid_notice_at').is('paid_on', null),
       ]);
       const units = (u.data ?? []) as unknown as UnitRow[];
       const meters = (m.data ?? []) as MeterRow[];
@@ -67,6 +67,12 @@ export function useAlerts() {
         if (it.type === 'highUsage') out.push({ key: `high:${it.meterId}:${period}`, type: 'highUsage', to: '/history', params: { name: name(it.unitId), kind: it.kind, pct: Math.round((it.usage / it.average - 1) * 100) } });
         if (it.type === 'noReport') out.push({ key: `noreport:${it.meterId}:${period}`, type: 'noReport', to: '/readings', params: { unit: name(it.unitId), kind: it.kind } });
         if (it.type === 'unpaid') out.push({ key: `unpaid:${it.unitId}:${it.period}`, type: 'unpaid', to: '/bills', params: { unit: name(it.unitId), period: it.period, total: it.total } });
+      }
+
+      for (const x of statements) {
+        if (x.renter_paid_notice_at && Number(x.total_agorot) > Number(x.paid_agorot)) {
+          out.push({ key: `renterpaid:${x.unit_id}:${x.period}:${x.renter_paid_notice_at}`, type: 'renterPaid', to: '/bills', params: { unit: name(x.unit_id), period: x.period } });
+        }
       }
 
       // a renter (anybody but the landlord) reported this month's readings in the last two weeks

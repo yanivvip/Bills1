@@ -291,7 +291,22 @@
     "chargeSplitHint": "The amount is the total, split evenly.",
     "sewageTitle": "Sewage – water quantity on the property-tax voucher (m³)",
     "sewageHint": "Property-tax month: enter each unit’s sewage quantity from the voucher.",
-    "sewageQty": "Sewage quantity"
+    "sewageQty": "Sewage quantity",
+    "renterSaysPaid": "The renter says they paid on {{date}}. Check it and record the payment.",
+    "iPaid": "I paid – tell the landlord",
+    "noticeSent": "The landlord was told on {{date}}. They will confirm when the payment arrives.",
+    "howCalculated": "How is the bill calculated?",
+    "explain": {
+      "electricity": "Electricity: {{qty}} kWh (the difference between the readings {{from}}) × ₪{{rate}} per kWh.",
+      "electricityFixed": "Fixed electricity: your share of the property’s fixed monthly charge, split evenly.",
+      "waterA": "Water at tariff A: the first {{qty}} m³, up to your monthly quota, × ₪{{rate}}.",
+      "waterB": "Water at tariff B: {{qty}} m³ above the quota × ₪{{rate}}.",
+      "waterFixed": "Fixed water: your share of the property’s fixed monthly charge, split evenly.",
+      "sewage": "Sewage: {{qty}} m³ from the property-tax voucher × ₪{{rate}}.",
+      "propertyTax": "Property tax: the amount set for your unit for this bill.",
+      "community": "Community fee: the fixed monthly amount for your unit.",
+      "charge": "An extra charge added by the landlord: {{description}}."
+    }
   },
   "report": {
     "title": "Annual report",
@@ -424,6 +439,10 @@
     "contractEnding": {
       "title": "Contract ending soon",
       "body": "{{unit}}: the contract ends on {{date}} (in {{count}} days)."
+    },
+    "renterPaid": {
+      "title": "The renter says they paid",
+      "body": "{{unit}}: a payment was reported for {{month}}. Check it and record the payment."
     }
   },
   "history": {
@@ -438,5 +457,24 @@
     "noData": "Not enough readings to show yet.",
     "higher": "{{what}} in {{month}} is {{pct}}% above the average of the 3 months before.",
     "lower": "{{what}} in {{month}} is {{pct}}% below the average of the 3 months before."
+  },
+  "renterHome": {
+    "timeToReport": "Time to report your meters",
+    "timeToReportBody_one": "One meter is waiting for a reading. It takes less than a minute.",
+    "timeToReportBody_other": "{{count}} meters are waiting for a reading. It takes less than a minute.",
+    "reportNow": "Report now",
+    "reported": "You reported the meters for {{month}}. Thank you!",
+    "lastBill": "Latest bill",
+    "vsBefore": "{{pct}}% compared with the 3 months before",
+    "contractUntil": "The contract is valid until {{date}}",
+    "contractOpen": "The contract is valid from {{date}}",
+    "earlierContracts": "Earlier contracts"
+  },
+  "whatsapp": {
+    "title": "The message that will be sent (you can edit it first)",
+    "open": "Open in WhatsApp and send",
+    "copy": "Copy",
+    "copied": "Copied",
+    "reset": "Restore the original text"
   }
 }

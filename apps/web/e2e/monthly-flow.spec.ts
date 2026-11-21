@@ -10,6 +10,8 @@ const landlord = uniqueEmail('landlord');
 const renter = uniqueEmail('renter');
 const stranger = uniqueEmail('stranger');
 const newRenter = uniqueEmail('newrenter');
+const wizardLandlord = uniqueEmail('wizard');
+const wizardRenter = uniqueEmail('wizardrenter');
 const progress = (done: number, total: number) => he.readings.progress.replace('{{done}}', String(done)).replace('{{total}}', String(total));
 
 test('landlord sets up an organization, property, unit, contract and meters', async ({ page }) => {
@@ -274,4 +276,36 @@ test('another user cannot see this landlord data', async ({ page }) => {
   await expect(page.getByText('Dizengoff 10')).toHaveCount(0);
   await expect(page.getByPlaceholder(he.home.orgName)).toBeVisible(); // just a new user with no organization
   await signOut(page);
+});
+
+test('a new landlord sets up a whole property in one scroll', async ({ page }) => {
+  await signUp(page, wizardLandlord);
+  await page.getByPlaceholder(he.home.orgName).fill('Wizard Landlord');
+  await page.getByRole('button', { name: he.home.createOrg }).click();
+  await expect(page.getByRole('heading', { name: 'Wizard Landlord' })).toBeVisible();
+
+  // the home page invites to set up the first property
+  await page.getByRole('link', { name: he.landlordHome.firstProperty }).click();
+  await expect(page.getByRole('heading', { name: he.onboarding.title })).toBeVisible();
+
+  // nothing is allowed until the property and the unit have names
+  const finish = page.getByRole('button', { name: he.onboarding.finish });
+  await expect(finish).toBeDisabled();
+  await page.getByLabel(he.onboarding.propertyName).fill('Wizard 5');
+  await page.getByLabel(he.onboarding.unitName).fill('Apt W');
+  await expect(finish).toBeEnabled();
+
+  // the owner lives in the main house; the unit has a renter
+  await page.getByLabel(he.onboarding.livesHere).check();
+  await page.getByLabel(he.landlord.renterEmails).fill(wizardRenter);
+  await page.getByLabel(he.tariff.electricityRate, { exact: true }).fill('0.64');
+  await page.getByLabel(he.tariff.electricityFixed, { exact: true }).fill('90');
+  await finish.click();
+
+  // we land on the new property with its units and tariffs saved
+  await expect(page.getByRole('heading', { name: 'Wizard 5' })).toBeVisible();
+  await expect(page.getByRole('link', { name: /Apt W/ })).toBeVisible();
+  await expect(page.getByRole('link', { name: new RegExp(he.onboarding.mainHouse) })).toBeVisible();
+  await expect(page.getByLabel(he.tariff.electricityRate, { exact: true })).toHaveValue('0.64');
+  await expect(page.getByLabel(he.tariff.electricityFixed, { exact: true })).toHaveValue('90');
 });

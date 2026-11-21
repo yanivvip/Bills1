@@ -19,6 +19,7 @@ import AdminUnitsPage from './pages/AdminUnitsPage';
 import AlertsPage from './pages/landlord/AlertsPage';
 import HistoryPage from './pages/landlord/HistoryPage';
 import PropertiesPage from './pages/landlord/PropertiesPage';
+import OnboardingPage from './pages/landlord/OnboardingPage';
 import { useAlerts } from './pages/landlord/useAlerts';
 
 // The bell in the header: a link to the alerts centre with the number of alerts not read yet.
@@ -118,6 +119,7 @@ export default function App() {
               <Route path="/readings" element={<ReadingsPage />} />
               <Route path="/bills" element={<LandlordRoute page={BillsPage} />} />
               <Route path="/property" element={<LandlordRoute page={PropertiesPage} />} />
+              <Route path="/property/new" element={<LandlordRoute page={OnboardingPage} />} />
               <Route path="/reports" element={<ReportsPage />} />
               <Route path="/history" element={<HistoryPage />} />
               <Route path="/alerts" element={<AlertsPage />} />

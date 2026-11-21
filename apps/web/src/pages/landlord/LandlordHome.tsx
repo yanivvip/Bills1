@@ -72,7 +72,7 @@ export default function LandlordHome({ orgId }: { orgId: string }) {
       </div>
 
       {data.properties === 0 && (
-        <Link to="/property" className="flex flex-col gap-1 rounded-2xl bg-violet-700 p-4">
+        <Link to="/property/new" className="flex flex-col gap-1 rounded-2xl bg-violet-700 p-4">
           <strong className="text-lg">{t('landlordHome.firstProperty')}</strong>
           <span className="text-sm text-violet-100">{t('landlordHome.firstPropertyBody')}</span>
         </Link>

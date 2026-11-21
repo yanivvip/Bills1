@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { supabase } from '../../lib/supabase';
-import { AddToggle, card, input, useWriter } from './shared';
+import { AddToggle, card, input, primary, useWriter } from './shared';
 
 interface PropertyRow {
   id: string;
@@ -61,6 +61,10 @@ export default function PropertiesPage({ orgId }: { orgId: string }) {
       <Link to="/reports" className={card}>
         <strong>{t('nav.reports')}</strong>
         <span className="text-sm text-slate-400">{t('landlordHome.reportsHint')}</span>
+      </Link>
+
+      <Link to="/property/new" className={`${primary} text-center`}>
+        {t('onboarding.start')}
       </Link>
 
       <AddToggle

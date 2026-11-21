@@ -1,7 +1,7 @@
 -- Database security tests (pgTAP). Run with: supabase test db
 -- Everything runs in one transaction that is rolled back, so no data is left behind.
 begin;
-select plan(80);
+select plan(88);
 
 -- ── Fixtures (as the postgres superuser) ─────────────────────────────────
 insert into auth.users (id, email, email_confirmed_at, instance_id, aud, role) values
@@ -255,6 +255,51 @@ select lives_ok($q$update public.tariffs set electricity_layout = 'shared', elec
 select throws_ok($q$update public.tariffs set water_layout = 'bogus' where property_id = '20000000-0000-0000-0000-00000000000a'$q$, '23514', null, 'only the known meter layouts are accepted');
 select lives_ok($q$update public.units set occupants = 3, electricity_percent = 40.5 where id = '30000000-0000-0000-0000-000000000001'$q$, 'a landlord sets the people and the percentage of a unit');
 select throws_ok($q$update public.units set water_percent = 120 where id = '30000000-0000-0000-0000-000000000001'$q$, '23514', null, 'a share cannot be more than 100 percent');
+
+-- ── One-step property setup (the wizard) ─────────────────────────────────
+select pg_temp.act_as('00000000-0000-0000-0000-0000000000b1');
+select throws_ok($q$select public.setup_property('10000000-0000-0000-0000-00000000000a', '{
+  "property": {"name": "Wizard house", "address": "Main St 1"},
+  "units": [
+    {"name": "Main house", "is_residual": true, "occupants": 3},
+    {"name": "Flat A", "community_fee": 15000, "property_tax": 27200, "water_quota": 7, "contract": {"start": "2026-11-01", "end": "2027-10-31", "rent": 450000, "emails": ["first@wizard.dev", "second@wizard.dev"]}}
+  ],
+  "meters": [
+    {"kind": "electricity", "name": "Main electricity", "unit_index": null, "opening": 1000},
+    {"kind": "electricity", "name": "Flat A electricity", "unit_index": 1, "opening": null}
+  ],
+  "tariff": {"electricity_rate": 64, "electricity_fixed": 9000, "water_layout": "shared", "water_split": "percent", "property_tax_every": 2, "property_tax_anchor": "2026-11-01"}
+}'::jsonb)$q$, null, 'forbidden', 'another landlord cannot set up a property here');
+select pg_temp.act_as('00000000-0000-0000-0000-0000000000a1');
+select lives_ok($q$select public.setup_property('10000000-0000-0000-0000-00000000000a', '{
+  "property": {"name": "Wizard house", "address": "Main St 1"},
+  "units": [
+    {"name": "Main house", "is_residual": true, "occupants": 3},
+    {"name": "Flat A", "community_fee": 15000, "property_tax": 27200, "water_quota": 7, "contract": {"start": "2026-11-01", "end": "2027-10-31", "rent": 450000, "emails": ["first@wizard.dev", "second@wizard.dev"]}}
+  ],
+  "meters": [
+    {"kind": "electricity", "name": "Main electricity", "unit_index": null, "opening": 1000},
+    {"kind": "electricity", "name": "Flat A electricity", "unit_index": 1, "opening": null}
+  ],
+  "tariff": {"electricity_rate": 64, "electricity_fixed": 9000, "water_layout": "shared", "water_split": "percent", "property_tax_every": 2, "property_tax_anchor": "2026-11-01"}
+}'::jsonb)$q$, 'a landlord sets up a whole property in one step');
+select is((select count(*)::int from public.units where property_id = (select id from public.properties where name = 'Wizard house')), 2, 'the units were created');
+select is((select count(*)::int from public.contract_renters where contract_id in (select c.id from public.contracts c join public.units u on u.id = c.unit_id where u.property_id = (select id from public.properties where name = 'Wizard house'))), 2, 'the renters were added to the contract');
+select is((select count(*)::int from public.readings where meter_id in (select id from public.meters where property_id = (select id from public.properties where name = 'Wizard house'))), 1, 'the opening reading was recorded for the meter that had one');
+select is((select water_layout || ',' || property_tax_every::text from public.tariffs where property_id = (select id from public.properties where name = 'Wizard house')), 'shared,2', 'the tariffs and layout were saved');
+select throws_ok($q$select public.setup_property('10000000-0000-0000-0000-00000000000a', '{
+  "property": {"name": "Broken house", "address": "Main St 1"},
+  "units": [
+    {"name": "Main house", "is_residual": true, "occupants": 3},
+    {"name": "Flat A", "community_fee": 15000, "property_tax": 27200, "water_quota": 7, "contract": {"start": "2026-11-01", "end": "2027-10-31", "rent": 450000, "emails": ["landlord-a@test.dev", "second@wizard.dev"]}}
+  ],
+  "meters": [
+    {"kind": "electricity", "name": "Main electricity", "unit_index": null, "opening": 1000},
+    {"kind": "electricity", "name": "Flat A electricity", "unit_index": 1, "opening": null}
+  ],
+  "tariff": {"electricity_rate": 64, "electricity_fixed": 9000, "water_layout": "shared", "water_split": "percent", "property_tax_every": 2, "property_tax_anchor": "2026-11-01"}
+}'::jsonb)$q$, null, 'landlord_cannot_be_renter', 'a mistake in the setup is refused');
+select is((select count(*)::int from public.properties where name = 'Broken house'), 0, 'and nothing of it is left behind');
 
 select * from finish();
 rollback;

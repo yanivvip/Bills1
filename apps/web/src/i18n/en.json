@@ -79,6 +79,7 @@
     "orgName": "Organization name"
   },
   "landlord": {
+    "phone": "Phone",
     "connected": "Connected",
     "inviteSent": "Invite sent",
     "settingsTitle": "Property settings",

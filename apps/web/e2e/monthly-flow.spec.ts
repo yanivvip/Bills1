@@ -313,3 +313,16 @@ test('a new landlord sets up a whole property in one scroll', async ({ page }) =
   await expect(page.getByLabel(he.tariff.electricityRate, { exact: true })).toHaveValue('0.64');
   await expect(page.getByLabel(he.tariff.electricityFixed, { exact: true })).toHaveValue('90');
 });
+
+test('a renter phone entered in the wizard shows on the unit page and can be changed', async ({ page }) => {
+  await signIn(page, wizardLandlord);
+  await page.getByRole('link', { name: he.nav.property, exact: true }).click();
+  await page.getByRole('link', { name: he.landlord.tariffsAndMeters }).click();
+  await page.getByRole('link', { name: /Apt W/ }).click();
+  const phone = page.getByLabel(he.landlord.phone);
+  await expect(phone).toHaveValue('050-1234567');
+  await phone.fill('052-7654321');
+  await phone.blur();
+  await page.reload();
+  await expect(page.getByLabel(he.landlord.phone)).toHaveValue('052-7654321');
+});

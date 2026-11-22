@@ -79,6 +79,7 @@
     "orgName": "שם הארגון"
   },
   "landlord": {
+    "phone": "טלפון",
     "connected": "מחובר",
     "inviteSent": "הזמנה נשלחה",
     "settingsTitle": "הגדרות הנכס",

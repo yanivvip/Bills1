@@ -23,7 +23,7 @@ export default function UnitPage({ orgId }: { orgId: string }) {
   const load = async () => {
     const { data } = await supabase
       .from('units')
-      .select('id,name,property_id,properties(name),contracts(id,start_date,end_date,status,rent_agorot,contract_renters(id,email,full_name,user_id,invited_at,invite_channel))')
+      .select('id,name,property_id,properties(name),contracts(id,start_date,end_date,status,rent_agorot,contract_renters(id,email,full_name,phone,user_id,invited_at,invite_channel))')
       .eq('id', unitId!)
       .maybeSingle();
     setUnit(data as unknown as UnitInfo | null);

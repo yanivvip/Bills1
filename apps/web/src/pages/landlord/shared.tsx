@@ -8,6 +8,7 @@ export interface Renter {
   id: string;
   email: string;
   full_name: string | null;
+  phone?: string | null;
   user_id: string | null;
   invited_at: string | null;
   invite_channel: 'email' | 'whatsapp' | 'copy' | null;
@@ -144,6 +145,22 @@ function InviteActions({ renter, invite, run }: { renter: Renter; invite: Invite
   );
 }
 
+// The renter's phone number: saved when the field is left, used to open WhatsApp on the right number.
+function PhoneField({ renter, run }: { renter: Renter; run: Run }) {
+  const { t } = useTranslation();
+  const [phone, setPhone] = useState(renter.phone ?? '');
+  const save = () => {
+    const v = phone.trim();
+    if (v !== (renter.phone ?? '')) void run(supabase.from('contract_renters').update({ phone: v || null }).eq('id', renter.id));
+  };
+  return (
+    <label className="flex items-center gap-2 text-xs text-muted">
+      {t('landlord.phone')}
+      <input type="tel" inputMode="tel" dir="ltr" value={phone} onChange={(e) => setPhone(e.target.value)} onBlur={save} placeholder="050-0000000" className={`${input} h-10 w-40 text-sm text-ink`} />
+    </label>
+  );
+}
+
 export function ContractCard({ orgId, contract, run, invite }: { orgId: string; contract: Contract; run: Run; invite: InviteContext }) {
   const { t } = useTranslation();
   const [email, setEmail] = useState('');
@@ -176,6 +193,7 @@ export function ContractCard({ orgId, contract, run, invite }: { orgId: string; 
                   </button>
                 )}
               </div>
+              <PhoneField renter={r} run={run} />
               {!r.user_id && <InviteActions renter={r} invite={invite} run={run} />}
             </li>
           );

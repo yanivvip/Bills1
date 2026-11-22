@@ -11,6 +11,7 @@ interface Data {
   items: AttentionItem[];
   unitName: (id: string | null) => string;
   hasMeters: boolean;
+  phoneOf: (id: string | null) => string | null;
 }
 
 // Landlord home: what needs attention this month (missing reports, unpaid bills, unusual usage).
@@ -22,12 +23,12 @@ export default function AttentionCard() {
   useEffect(() => {
     void (async () => {
       const [u, m, r, s] = await Promise.all([
-        supabase.from('units').select('id,name,properties(name),contracts(status)'),
+        supabase.from('units').select('id,name,properties(name),contracts(status,contract_renters(phone))'),
         supabase.from('meters').select('id,unit_id,kind,name'),
         supabase.from('readings').select('meter_id,period,value').gte('period', shiftMonth(period, -4)),
         supabase.from('statements').select('unit_id,period,total_agorot,paid_agorot').is('paid_on', null),
       ]);
-      type U = { id: string; name: string; properties: { name: string } | null; contracts: { status: string }[] };
+      type U = { id: string; name: string; properties: { name: string } | null; contracts: { status: string; contract_renters: { phone: string | null }[] }[] };
       const units = (u.data ?? []) as unknown as U[];
       const items = attentionItems({
         period,
@@ -42,24 +43,25 @@ export default function AttentionCard() {
         items,
         unitName: (id) => (id ? (units.find((x) => x.id === id)?.name ?? '') : t('bills.mainMeters')),
         hasMeters: (m.data ?? []).length > 0,
+        phoneOf: (id) => units.find((x) => x.id === id)?.contracts.find((c) => c.status === 'active')?.contract_renters.find((r) => r.phone)?.phone ?? null,
       });
     })();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   if (!data || !data.hasMeters) return null;
-  const { items, unitName } = data;
+  const { items, unitName, phoneOf } = data;
 
   if (items.length === 0) {
     return <p className="rounded-2xl bg-ok-soft p-3 text-sm text-ok">✓ {t('attention.allClear')}</p>;
   }
 
   // a line that links to the right page, with an optional ready-made WhatsApp reminder for the renter
-  const row = (key: string, to: string, text: string, reminder?: string) => (
+  const row = (key: string, to: string, text: string, reminder?: string, phone?: string | null) => (
     <div key={key} className="flex items-center justify-between gap-2 rounded-lg border border-line bg-card px-3 py-2 text-sm">
       <Link to={to}>{text}</Link>
       {reminder && (
-        <a href={whatsappLink(reminder)} target="_blank" rel="noreferrer" className="whitespace-nowrap rounded-md bg-field px-2 py-1 text-xs">
+        <a href={whatsappLink(reminder, phone)} target="_blank" rel="noreferrer" className="whitespace-nowrap rounded-md bg-field px-2 py-1 text-xs">
           💬 {t('attention.remind')}
         </a>
       )}
@@ -71,9 +73,9 @@ export default function AttentionCard() {
     <div className="flex flex-col gap-2 rounded-2xl bg-warn-soft p-4" role="region" aria-label={t('attention.title')}>
       <h2 className="text-lg font-semibold text-warn">⚠ {t('attention.title')}</h2>
       {items.map((it, i) => {
-        if (it.type === 'noReport') return row(`n${i}`, '/readings', t('attention.noReport', { unit: unitName(it.unitId), kind: kind(it.kind) }), t('attention.remindReport', { unit: unitName(it.unitId), kind: kind(it.kind) }));
+        if (it.type === 'noReport') return row(`n${i}`, '/readings', t('attention.noReport', { unit: unitName(it.unitId), kind: kind(it.kind) }), t('attention.remindReport', { unit: unitName(it.unitId), kind: kind(it.kind) }), phoneOf(it.unitId));
         if (it.type === 'unpaid')
-          return row(`p${i}`, '/bills', t('attention.unpaid', { unit: unitName(it.unitId), month: monthLabel(it.period, i18n.language), amount: formatMoney(it.total, i18n.language) }), t('attention.remindPay', { unit: unitName(it.unitId), month: monthLabel(it.period, i18n.language), amount: formatMoney(it.total, i18n.language) }));
+          return row(`p${i}`, '/bills', t('attention.unpaid', { unit: unitName(it.unitId), month: monthLabel(it.period, i18n.language), amount: formatMoney(it.total, i18n.language) }), t('attention.remindPay', { unit: unitName(it.unitId), month: monthLabel(it.period, i18n.language), amount: formatMoney(it.total, i18n.language) }), phoneOf(it.unitId));
         return row(`h${i}`, '/readings', t('attention.highUsage', { name: unitName(it.unitId), kind: kind(it.kind), usage: Math.round(it.usage * 10) / 10, average: Math.round(it.average * 10) / 10 }));
       })}
     </div>

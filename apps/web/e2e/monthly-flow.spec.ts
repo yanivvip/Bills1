@@ -158,6 +158,7 @@ test('the landlord sets tariffs, approves the month and marks it paid', async ({
   await expect(page.getByText('₪400.00')).toBeVisible();
 
   // a one-off charge changes the total
+  await page.getByRole('button', { name: he.bills.newCharge }).click();
   await page.getByPlaceholder(he.bills.chargeDescription).fill('Repair');
   await page.getByLabel(he.bills.chargeAmount).fill('25.5');
   await page.getByRole('button', { name: he.bills.chargeRecurring }).click();
@@ -187,10 +188,13 @@ test('the landlord sets tariffs, approves the month and marks it paid', async ({
   // the month strip marks the month as paid with a symbol, and the printable page is now a receipt
   await expect(page.locator('button[aria-current="date"]')).toContainText('✓');
   await page.getByRole('link', { name: he.bills.sendToRenter }).click();
-  await expect(page.getByRole('heading', { name: he.bills.receipt })).toBeVisible();
+  await expect(page.getByRole('heading', { name: he.bills.sendToRenter })).toBeVisible();
+  await page.getByRole('button', { name: he.whatsapp.edit }).click();
   await page.getByLabel(he.whatsapp.title).fill('Hello Dana, edited');
   await expect(page.getByRole('link', { name: he.whatsapp.open })).toHaveAttribute('href', /wa.me.*Hello%20Dana%2C%20edited/);
-  await page.goBack();
+  // the printable page is a receipt now that the bill is paid
+  await page.getByRole('link', { name: he.bills.viewBill }).click();
+  await expect(page.getByRole('heading', { name: he.bills.receipt })).toBeVisible();
 
   // the annual report shows the month and exports to CSV and Excel
   await page.getByRole('link', { name: he.nav.property, exact: true }).click();

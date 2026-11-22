@@ -2,7 +2,7 @@ import { useState, type FormEvent } from 'react';
 import { useTranslation } from 'react-i18next';
 import { supabase } from '../../lib/supabase';
 import { parseAgorot } from '../../lib/money';
-import { shiftMonth } from '../../lib/period';
+import { monthLabel, shiftMonth } from '../../lib/period';
 import { card, input } from '../landlord/shared';
 import type { useBilling } from './useBilling';
 
@@ -30,15 +30,19 @@ export function Charges({
   busy: boolean;
   money: (a: number) => string;
 }) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   // 'units' / 'all' split the total; anything else is the id of the one unit that pays it all
   const [who, setWho] = useState('units');
   const [description, setDescription] = useState('');
   const [amount, setAmount] = useState('');
   const [recurring, setRecurring] = useState(false);
+  const [open, setOpen] = useState(false);
   const agorot = parseAgorot(amount);
   // the landlord's own household exists when a unit is billed by subtraction and nobody rents it
   const landlordHome = b.units.some((u) => u.is_residual && !u.contracts.some((c) => c.status === 'active'));
+  // who the amount is split between, for the preview
+  const rented = b.units.filter((u) => !u.is_residual && u.contracts.some((c) => c.status === 'active')).map((u) => u.name);
+  const recipients = who === 'units' ? rented : who === 'all' ? [...rented, ...b.units.filter((u) => u.is_residual).map((u) => u.name)] : [b.units.find((u) => u.id === who)?.name ?? ''];
   const scopeText = (c: { scope: string; unit_id: string | null }) => (c.scope === 'unit' ? unitName(c.unit_id) : c.scope === 'all' ? t('bills.chargeAll') : t('bills.chargeUnits'));
 
   const add = async (e: FormEvent) => {
@@ -51,6 +55,7 @@ export function Charges({
     if (ok) {
       setDescription('');
       setAmount('');
+      setOpen(false);
     }
   };
 
@@ -92,7 +97,22 @@ export function Charges({
       <button disabled={busy} className="self-start text-sm text-ink-2 underline" onClick={() => void copyRecurring()}>
         {t('bills.copyRecurring')}
       </button>
-      <form onSubmit={add} className="flex flex-col gap-4 rounded-[18px] border border-line bg-card p-4">
+      <button type="button" onClick={() => setOpen(true)} className="flex h-12 items-center justify-center gap-2 rounded-xl border border-dashed border-[#a7c9c1] text-[15px] font-medium text-primary-dark">
+        + {t('bills.newCharge')}
+      </button>
+      {open && (
+        <div className="fixed inset-0 z-50 flex flex-col justify-end bg-black/40" role="dialog" aria-modal="true" aria-label={t('bills.newCharge')}>
+          <div className="mx-auto flex max-h-[92dvh] min-h-[70dvh] w-full max-w-2xl flex-col overflow-y-auto rounded-t-[28px] bg-page px-[18px] pb-6 pt-3">
+            <div className="mx-auto mb-4 h-1 w-11 rounded-full bg-[#d0cdc4]" aria-hidden="true" />
+            <div className="mb-4 flex items-center justify-between">
+              <h2 className="text-2xl font-semibold">{t('bills.newCharge')}</h2>
+              <button type="button" aria-label={t('common.close')} onClick={() => setOpen(false)} className="flex h-11 w-11 items-center justify-center text-[#3e4643]">
+                <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
+                  <path d="M6 6l12 12M18 6 6 18" />
+                </svg>
+              </button>
+            </div>
+      <form onSubmit={add} className="flex flex-1 flex-col gap-4">
         <label className="block text-sm text-muted">
           {t('bills.chargeName')}
           <input value={description} onChange={(e) => setDescription(e.target.value)} placeholder={t('bills.chargeDescription')} className={`${input} mt-1.5 h-[50px] w-full text-base text-ink`} />
@@ -125,10 +145,25 @@ export function Charges({
             ))}
           </div>
         </div>
+        {agorot !== null && agorot > 0 && recipients.length > 0 && (
+          <div className="rounded-[18px] border border-line bg-card p-4">
+            <div className="mb-1.5 text-[15px] text-muted">{t('bills.willBeAdded', { month: monthLabel(period, i18n.language) })}</div>
+            {recipients.map((name, i) => (
+              <div key={name + i} className="flex items-center justify-between border-t border-line-soft py-2 first:border-t-0">
+                <span>{name}</span>
+                <strong dir="ltr">{money(Math.floor(agorot / recipients.length) + (i < agorot % recipients.length ? 1 : 0))}</strong>
+              </div>
+            ))}
+          </div>
+        )}
+        <div className="flex-1" />
         <button disabled={busy || !agorot || !description.trim()} className="h-14 rounded-2xl bg-primary text-[17px] font-medium text-white disabled:opacity-50">
           {t('bills.addCharge')}
         </button>
       </form>
+          </div>
+        </div>
+      )}
       <p className="text-xs text-muted">{t('bills.chargeSplitHint')}</p>
     </div>
   );

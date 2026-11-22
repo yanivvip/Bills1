@@ -4,7 +4,6 @@ import { useTranslation } from 'react-i18next';
 import { supabase } from '../../lib/supabase';
 import { formatMoney } from '../../lib/money';
 import { monthLabel } from '../../lib/period';
-import { billMessage, whatsappLink } from '../../lib/billLabels';
 import StatementView from './StatementView';
 import type { PaymentRow, StatementRow } from './useBilling';
 
@@ -19,7 +18,6 @@ export default function BillDocument() {
   const { id } = useParams();
   const [doc, setDoc] = useState<Doc | null | undefined>(undefined);
   const [payments, setPayments] = useState<PaymentRow[]>([]);
-  const [phone, setPhone] = useState<string | null>(null);
 
   useEffect(() => {
     void supabase
@@ -28,8 +26,6 @@ export default function BillDocument() {
       .eq('id', id!)
       .maybeSingle()
       .then(({ data }) => {
-        const cid = (data as { contract_id?: string } | null)?.contract_id;
-        if (cid) void supabase.from('contract_renters').select('phone').eq('contract_id', cid).not('phone', 'is', null).limit(1).then(({ data: r }) => setPhone(((r ?? []) as { phone: string }[])[0]?.phone ?? null));
         setDoc(data ? ({ ...(data as unknown as Doc), total_agorot: Number((data as { total_agorot: number }).total_agorot), paid_agorot: Number((data as { paid_agorot: number }).paid_agorot) }) : null);
       });
     void supabase
@@ -48,7 +44,6 @@ export default function BillDocument() {
   const property = doc.units?.properties?.name ?? '';
   const unit = doc.units?.name ?? '';
   const paid = !!doc.paid_on;
-  const text = billMessage(t, { property, unit, month, lines: doc.lines, total: money(doc.total_agorot), money, paidOn: doc.paid_on });
   const reading = (kind: 'electricity' | 'water') => {
     const r = doc.readings?.[kind];
     return r ? `${t(`meters.${kind}`)}: ${r.prev} → ${r.cur} ${kind === 'electricity' ? t('bills.kwh') : t('bills.m3')}` : null;
@@ -103,43 +98,6 @@ export default function BillDocument() {
               : t('bills.unpaid')}
         </p>
       </div>
-      <MessageEditor initial={text} phone={phone} />
     </section>
-  );
-}
-
-// The WhatsApp message for the renter: edit it before it is sent, or copy it.
-function MessageEditor({ initial, phone }: { initial: string; phone: string | null }) {
-  const { t } = useTranslation();
-  const [text, setText] = useState(initial);
-  const [copied, setCopied] = useState(false);
-  const copy = async () => {
-    try {
-      await navigator.clipboard.writeText(text);
-      setCopied(true);
-    } catch {
-      // clipboard blocked: the text can still be selected by hand
-    }
-  };
-  return (
-    <div className="flex flex-col gap-3 rounded-[18px] border border-line bg-card p-4 print:hidden">
-      <label htmlFor="wa-text" className="text-sm font-semibold text-ink-2">
-        {t('whatsapp.title')}
-      </label>
-      <textarea id="wa-text" value={text} onChange={(e) => { setText(e.target.value); setCopied(false); }} rows={Math.min(14, text.split('\n').length + 1)} className="rounded-2xl bg-[#e7f5df] px-3.5 py-3 text-[15px] leading-relaxed outline-none focus:ring-2 focus:ring-primary" />
-      <div className="flex flex-wrap items-center gap-2">
-        <a className="flex h-[54px] w-full items-center justify-center rounded-2xl bg-primary text-base font-medium text-white" href={whatsappLink(text, phone)} target="_blank" rel="noreferrer">
-          {t('whatsapp.open')}
-        </a>
-        <button className="h-[54px] flex-1 rounded-2xl border border-line-strong bg-white text-base font-medium text-primary-dark" onClick={() => void copy()}>
-          {copied ? `✓ ${t('whatsapp.copied')}` : t('whatsapp.copy')}
-        </button>
-        {text !== initial && (
-          <button className="px-2 py-2 text-sm text-muted underline" onClick={() => { setText(initial); setCopied(false); }}>
-            {t('whatsapp.reset')}
-          </button>
-        )}
-      </div>
-    </div>
   );
 }

@@ -84,3 +84,8 @@ export const TrendIcon = ({ up = false }: { up?: boolean }) => (
     <path d={up ? 'M3 17l6-6 4 4 8-8M15 7h6v6' : 'M3 7l6 6 4-4 8 8M15 17h6v-6'} />
   </Svg>
 );
+export const LinesIcon = () => (
+  <Svg>
+    <path d="M6 8h12M6 12h12M6 16h8" />
+  </Svg>
+);

@@ -221,7 +221,7 @@ function StatementCard({ s, unit, renters, payments, busy, act }: { s: Statement
       )}
       {!full && s.paid_agorot > 0 && <p className="text-sm text-warn">{t('bills.remaining', { amount: money(remaining) })}</p>}
       <div className="flex gap-2.5">
-        <Link to={`/bill/${s.id}`} className="flex h-12 flex-1 items-center justify-center gap-1.5 rounded-xl bg-primary text-[15px] font-medium text-white">
+        <Link to={`/bill/${s.id}/send`} className="flex h-12 flex-1 items-center justify-center gap-1.5 rounded-xl bg-primary text-[15px] font-medium text-white">
           {t('bills.sendToRenter')}
         </Link>
         {!full && (

@@ -88,6 +88,17 @@
     "orgName": "שם הארגון"
   },
   "landlord": {
+    "unitsAndRenters": "יחידות ושוכרים",
+    "tariffs": "תעריפים",
+    "updatedOn": "עודכן",
+    "byWater": "לפי צריכת המים",
+    "propertyTax": "ארנונה",
+    "communityFee": "מיסי קהילה",
+    "bimonthly": "דו-חודשי",
+    "monthly": "חודשי",
+    "allUnits": "כל היחידות",
+    "addCharge": "הוספת חיוב – קבוע או חד-פעמי",
+    "addChargeHint": "ובוחרים על אילו יחידות",
     "perKwh": "לקוט״ש",
     "perM3": "למ״ק",
     "fixedPerMonth": "חיוב קבוע {{amount}} לחודש",
@@ -95,7 +106,7 @@
     "connected": "מחובר",
     "inviteSent": "הזמנה נשלחה",
     "settingsTitle": "הגדרות הנכס",
-    "tariffsAndMeters": "תעריפים ומונים",
+    "tariffsAndMeters": "פרטי הנכס והמונים",
     "tariffsAndMetersHint": "תעריפי חשמל, מים וביוב, מונים ופריסת המונים",
     "extraCharges": "חיובים נוספים",
     "extraChargesHint": "ארנונה, ועד בית ועוד – קבועים או חד-פעמיים",
@@ -188,6 +199,7 @@
     "noUnits": "אין יחידות תואמות."
   },
   "common": {
+    "close": "סגירה",
     "loading": "טוען…",
     "save": "שמור",
     "cancel": "ביטול",
@@ -229,6 +241,8 @@
     "waterPercent": "חלק במונה המים המשותף (%)"
   },
   "bills": {
+    "newCharge": "חיוב חדש",
+    "willBeAdded": "יתווסף לחשבון {{month}}:",
     "yourShare": "החלק שלך",
     "howCalculatedLink": "איך חושב החשבון?",
     "sendToRenter": "שליחה לשוכר",
@@ -276,7 +290,7 @@
     "chargeTo": "חיוב ליחידה",
     "chargeDescription": "תיאור",
     "chargeAmount": "סכום",
-    "addCharge": "הוספה",
+    "addCharge": "הוספת החיוב",
     "total": "סה״כ לתשלום",
     "kwh": "קוט״ש",
     "m3": "מ״ק",
@@ -456,7 +470,8 @@
     }
   },
   "alerts": {
-    "title": "מרכז התראות",
+    "title": "התראות",
+    "go": { "history": "לגרף הצריכה", "readings": "לבדיקת הקריאות", "bills": "לחשבונות", "unit": "ליחידה" },
     "markAllRead": "סימון הכל כנקרא",
     "new": "חדשות",
     "earlier": "קודם",
@@ -514,6 +529,7 @@
     "earlierContracts": "חוזים קודמים"
   },
   "whatsapp": {
+    "edit": "עריכת הנוסח",
     "title": "ההודעה שתישלח (אפשר לערוך לפני השליחה)",
     "open": "פתיחה בוואטסאפ ושליחה",
     "copy": "העתקה",

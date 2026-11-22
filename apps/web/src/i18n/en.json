@@ -88,6 +88,17 @@
     "orgName": "Organization name"
   },
   "landlord": {
+    "unitsAndRenters": "Units and renters",
+    "tariffs": "Tariffs",
+    "updatedOn": "Updated",
+    "byWater": "By water use",
+    "propertyTax": "Property tax",
+    "communityFee": "Community fee",
+    "bimonthly": "Every two months",
+    "monthly": "Monthly",
+    "allUnits": "All units",
+    "addCharge": "Add a charge – recurring or one-off",
+    "addChargeHint": "and choose which units pay",
     "perKwh": "per kWh",
     "perM3": "per m³",
     "fixedPerMonth": "Fixed {{amount}} a month",
@@ -95,7 +106,7 @@
     "connected": "Connected",
     "inviteSent": "Invite sent",
     "settingsTitle": "Property settings",
-    "tariffsAndMeters": "Tariffs and meters",
+    "tariffsAndMeters": "Property details and meters",
     "tariffsAndMetersHint": "Electricity, water and sewage tariffs, meters and meter layout",
     "extraCharges": "Extra charges",
     "extraChargesHint": "Property tax, building fee and more – recurring or one-off",
@@ -188,6 +199,7 @@
     "noUnits": "No matching units."
   },
   "common": {
+    "close": "Close",
     "loading": "Loading…",
     "save": "Save",
     "cancel": "Cancel",
@@ -229,6 +241,8 @@
     "waterPercent": "Share of the shared water meter (%)"
   },
   "bills": {
+    "newCharge": "New charge",
+    "willBeAdded": "Will be added to the {{month}} bill:",
     "yourShare": "Your share",
     "howCalculatedLink": "How was the bill calculated?",
     "sendToRenter": "Send to renter",
@@ -457,6 +471,7 @@
   },
   "alerts": {
     "title": "Alerts",
+    "go": { "history": "To the usage chart", "readings": "Check the readings", "bills": "To the bills", "unit": "To the unit" },
     "markAllRead": "Mark all as read",
     "new": "New",
     "earlier": "Earlier",
@@ -514,6 +529,7 @@
     "earlierContracts": "Earlier contracts"
   },
   "whatsapp": {
+    "edit": "Edit the text",
     "title": "The message that will be sent (you can edit it first)",
     "open": "Open in WhatsApp and send",
     "copy": "Copy",

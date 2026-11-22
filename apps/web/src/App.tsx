@@ -1,5 +1,5 @@
 import { useEffect, useState, type ComponentType, type ReactNode } from 'react';
-import { BrowserRouter, Navigate, NavLink, Outlet, Route, Routes, useOutletContext } from 'react-router-dom';
+import { BrowserRouter, Navigate, NavLink, Outlet, Route, Routes, useLocation, useOutletContext } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { AuthProvider, useAuth } from './auth/AuthProvider';
 import { RoleProvider, useRole } from './auth/RoleProvider';
@@ -11,6 +11,7 @@ import BillsPage from './pages/bills/BillsPage';
 import MyBillPage from './pages/bills/MyBillPage';
 import ReportsPage from './pages/bills/ReportsPage';
 import BillDocument from './pages/bills/BillDocument';
+import SendPage from './pages/bills/SendPage';
 import { supabase } from './lib/supabase';
 import LoginPage from './pages/LoginPage';
 import HomePage from './pages/HomePage';
@@ -56,9 +57,11 @@ function Shell() {
   const { t } = useTranslation();
   const { isPlatformAdmin } = useAuth();
   const { role } = useRole();
+  const { pathname } = useLocation();
+  const subPage = pathname.startsWith('/alerts') || pathname.startsWith('/bill/');
   return (
     <div className="mx-auto flex min-h-dvh max-w-2xl flex-col">
-      {role?.kind !== 'renter' && (
+      {role?.kind !== 'renter' && !subPage && (
       <header className="flex items-center justify-between px-[18px] pb-1 pt-4 print:hidden">
         {role?.kind === 'landlord' ? (
           <PropertySwitcher label={t('landlord.properties')} />
@@ -166,6 +169,7 @@ export default function App() {
             <Route index element={<HomePage />} />
             <Route path="/bill/:id" element={<BillDocument />} />
             <Route element={<RequireLandlord />}>
+              <Route path="/bill/:id/send" element={<SendPage />} />
               <Route path="/properties/:propertyId" element={<LandlordRoute page={PropertyPage} />} />
               <Route path="/units/:unitId" element={<LandlordRoute page={UnitPage} />} />
               <Route path="/readings" element={<ReadingsPage />} />

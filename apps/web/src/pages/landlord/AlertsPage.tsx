@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
 import type { ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
+import BackButton from '../../components/BackButton';
 import { BoltIcon, CalendarIcon, CheckIcon, DropIcon, GaugeIcon, ReceiptIcon } from '../../components/NavIcons';
 import { formatMoney } from '../../lib/money';
 import { monthLabel } from '../../lib/period';
@@ -49,18 +50,37 @@ export default function AlertsPage() {
     }
   };
 
+  // the link line under an alert, as in the design
+  const goLabel = (a: Alert) => {
+    switch (a.type) {
+      case 'highUsage':
+        return t('alerts.go.history');
+      case 'noReport':
+      case 'reported':
+        return t('alerts.go.readings');
+      case 'unpaid':
+      case 'renterPaid':
+        return t('alerts.go.bills');
+      default:
+        return t('alerts.go.unit');
+    }
+  };
+
   const row = (a: Alert, isNew: boolean) => {
     const { title, body } = text(a);
     const [glyph, tone] = icon(a);
     return (
-      <li key={a.key}>
-        <Link to={a.to} className={`flex items-start gap-3 rounded-2xl border p-3.5 ${isNew ? 'border-[#a7c9c1] bg-[#f7fbfa]' : 'border-line bg-card'}`}>
-          <span className={`flex h-[38px] w-[38px] flex-none items-center justify-center rounded-xl ${tone}`}>{glyph}</span>
-          <span className="flex flex-1 flex-col">
-            <span className="text-[15px] font-medium leading-snug">{title}</span>
-            <span className="mt-0.5 text-sm leading-snug text-muted">{body}</span>
-          </span>
-        </Link>
+      <li key={a.key} className={`flex items-start gap-3 rounded-2xl border p-3.5 ${isNew ? 'border-[#a7c9c1] bg-[#f7fbfa]' : 'border-line bg-card'}`}>
+        <span className={`flex h-[38px] w-[38px] flex-none items-center justify-center rounded-xl ${tone}`}>{glyph}</span>
+        <span className="flex flex-1 flex-col">
+          <span className="text-[15px] font-medium leading-snug">{title}</span>
+          <span className="mt-0.5 text-sm leading-snug text-muted">{body}</span>
+          {goLabel(a) && (
+            <Link to={a.to} className="mt-2 text-sm font-medium text-primary-dark">
+              {goLabel(a)}
+            </Link>
+          )}
+        </span>
       </li>
     );
   };
@@ -70,8 +90,9 @@ export default function AlertsPage() {
 
   return (
     <section className="flex flex-col gap-2.5 px-[18px] pb-4 pt-1">
-      <div className="mb-1 flex items-center justify-between gap-2">
-        <h1 className="text-[22px] font-semibold">{t('alerts.title')}</h1>
+      <div className="mb-1 flex items-center gap-1.5 pt-3">
+        <BackButton />
+        <h1 className="flex-1 text-[22px] font-semibold">{t('alerts.title')}</h1>
         {unread.length > 0 && (
           <button className="h-10 px-2.5 text-sm font-medium text-primary-dark" onClick={markAllRead}>
             {t('alerts.markAllRead')}

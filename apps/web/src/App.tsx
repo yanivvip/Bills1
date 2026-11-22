@@ -58,7 +58,7 @@ function Shell() {
   const { isPlatformAdmin } = useAuth();
   const { role } = useRole();
   const { pathname } = useLocation();
-  const subPage = pathname.startsWith('/alerts') || pathname.startsWith('/bill/');
+  const subPage = pathname.startsWith('/alerts') || pathname.startsWith('/bill/') || pathname.startsWith('/property/new');
   return (
     <div className="mx-auto flex min-h-dvh max-w-2xl flex-col">
       {role?.kind !== 'renter' && !subPage && (

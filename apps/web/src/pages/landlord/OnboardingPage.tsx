@@ -1,11 +1,11 @@
-import { useMemo, useState, type ReactNode } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useEffect, useMemo, useState, type ReactNode } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import type { FixedScope, KindLayout } from '@bills/engine';
 import { supabase } from '../../lib/supabase';
 import { parseAgorot, parseRate } from '../../lib/money';
 import { today } from '../../lib/period';
-import { BackLink, card, input, primary } from './shared';
+import { input } from './shared';
 
 interface UnitDraft {
   name: string;
@@ -22,6 +22,7 @@ interface UnitDraft {
 }
 const emptyUnit = (): UnitDraft => ({ name: '', emails: '', phone: '', start: today(), end: '', rent: '', fee: '', tax: '', quota: '', occupants: '1', open: { electricity: '', water: '' } });
 const KINDS = ['electricity', 'water'] as const;
+const STEPS = 6; // the sections of the wizard
 const MODES: KindLayout['mode'][] = ['main_sub', 'separate', 'shared', 'direct'];
 const SCOPES: FixedScope[] = ['units', 'all', 'landlord'];
 const emailsOf = (s: string) => [...new Set(s.split(/[\s,;]+/).map((x) => x.trim().toLowerCase()).filter(Boolean))];
@@ -48,6 +49,21 @@ export default function OnboardingPage({ orgId }: { orgId: string }) {
   const [taxAnchor, setTaxAnchor] = useState('');
   const [homeOccupants, setHomeOccupants] = useState('1');
   const [unitTab, setUnitTab] = useState(0);
+  // which of the sections is being read: the bar at the top fills up as the page is scrolled
+  const [step, setStep] = useState(0);
+  useEffect(() => {
+    const onScroll = () => {
+      let cur = 0;
+      for (let i = 1; i <= STEPS; i++) {
+        const el = document.getElementById(`wiz-${i}`);
+        if (el && el.getBoundingClientRect().top < window.innerHeight * 0.5) cur = i - 1;
+      }
+      setStep(cur);
+    };
+    onScroll();
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
+  }, []);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
 
@@ -141,7 +157,7 @@ export default function OnboardingPage({ orgId }: { orgId: string }) {
   };
 
   const section = (n: number, title: string, children: ReactNode) => (
-    <div className="flex flex-col gap-2.5">
+    <div id={`wiz-${n}`} className="flex flex-col gap-2.5">
       <h2 className="mt-2 flex items-center gap-2.5 text-[19px] font-semibold">
         <span className="flex h-[30px] w-[30px] flex-none items-center justify-center rounded-full bg-primary text-[15px] text-white">{n}</span>
         {title}
@@ -193,11 +209,22 @@ export default function OnboardingPage({ orgId }: { orgId: string }) {
 
   return (
     <section className="flex flex-col gap-3.5 px-[18px] pb-6 pt-1">
-      <BackLink to="/property">{t('landlord.properties')}</BackLink>
-      <div>
-        <h1 className="text-2xl font-semibold">{t('onboarding.title')}</h1>
-        <p className="text-sm text-muted">{t('onboarding.intro')}</p>
-      </div>
+      <header className="sticky top-0 z-10 -mx-[18px] -mt-1 border-b border-line bg-page px-5 pb-3 pt-5">
+        <div className="flex items-center justify-between">
+          <h1 className="text-[22px] font-semibold">{t('onboarding.title')}</h1>
+          <Link to="/property" aria-label={t('common.close')} className="flex h-11 w-11 items-center justify-center text-[#3e4643]">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
+              <path d="M6 6l12 12M18 6 6 18" />
+            </svg>
+          </Link>
+        </div>
+        <div className="mt-2.5 flex gap-1" aria-hidden="true">
+          {Array.from({ length: STEPS }, (_, i) => (
+            <div key={i} className={`h-[5px] flex-1 rounded-[3px] ${i <= step ? 'bg-primary' : 'bg-step'}`} />
+          ))}
+        </div>
+        <p className="mt-2 text-[13px] text-muted">{t('onboarding.intro')}</p>
+      </header>
 
       {section(1, t('onboarding.property'), (
         <>

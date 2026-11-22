@@ -60,6 +60,7 @@
     "building": "כל הנכס (מונה ראשי)"
   },
   "readings": {
+    "nextUnit": "מעבר ליחידה הבאה",
     "fixedTitle": "חיובים קבועים החודש",
     "fixedHint": "הסכומים מהתעריף של הנכס – עדכנו אם החשבון השתנה, והם יחולו גם בחודשים הבאים.",
     "fixedSaved": "הסכומים הקבועים עודכנו",
@@ -87,6 +88,9 @@
     "orgName": "שם הארגון"
   },
   "landlord": {
+    "perKwh": "לקוט״ש",
+    "perM3": "למ״ק",
+    "fixedPerMonth": "חיוב קבוע {{amount}} לחודש",
     "phone": "טלפון",
     "connected": "מחובר",
     "inviteSent": "הזמנה נשלחה",
@@ -190,6 +194,7 @@
     "back": "חזרה"
   },
   "tariff": {
+    "sewageShort": "ביוב",
     "title": "תעריפים",
     "electricityRate": "חשמל (₪ לקוט״ש)",
     "electricityFixed": "חשמל – תשלום קבוע חודשי (₪)",
@@ -224,6 +229,10 @@
     "waterPercent": "חלק במונה המים המשותף (%)"
   },
   "bills": {
+    "sendToRenter": "שליחה לשוכר",
+    "markPaidAction": "סימון ששולם",
+    "details": "פירוט",
+    "downloadYearly": "הורדת קובץ אקסל שנתי",
     "chargeName": "שם החיוב",
     "chargeKind": "סוג החיוב",
     "chargeOneTime": "חד-פעמי",

@@ -5,6 +5,7 @@ import { supabase } from '../../lib/supabase';
 import { formatMoney } from '../../lib/money';
 import { monthStart, shiftMonth } from '../../lib/period';
 import { card } from './shared';
+import { BarsIcon, BoltIcon, DropIcon } from '../../components/NavIcons';
 import { useProperty } from './PropertyContext';
 
 type Kind = 'electricity' | 'water' | 'cost';
@@ -151,16 +152,19 @@ export default function HistoryPage() {
           )}
 
           {view.summary.changePct !== undefined && Math.abs(view.summary.changePct) >= 10 && (
-            <div className={card}>
-              <h2 className="text-[17px] font-semibold">{t('history.insights')}</h2>
-              <p className="text-sm">
-                {t(view.summary.changePct > 0 ? 'history.higher' : 'history.lower', {
-                  what: kind === 'cost' ? t('history.cost') : t(`meters.${kind}`),
-                  month: new Date(`${lastMonth}T00:00:00`).toLocaleDateString(lang, { month: 'long' }),
-                  pct: Math.round(Math.abs(view.summary.changePct)),
-                })}
-              </p>
-            </div>
+            <>
+              <h2 className="mx-0.5 mt-1 text-base font-semibold">{t('history.insights')}</h2>
+              <div className={`flex gap-3 rounded-2xl p-3.5 ${view.summary.changePct > 0 ? 'bg-warn-soft text-[#5c3a00]' : 'border border-line bg-card'}`}>
+                <span className="mt-0.5 flex-none">{kind === 'water' ? <DropIcon /> : kind === 'electricity' ? <BoltIcon /> : <BarsIcon />}</span>
+                <p className="text-sm leading-normal">
+                  {t(view.summary.changePct > 0 ? 'history.higher' : 'history.lower', {
+                    what: kind === 'cost' ? t('history.cost') : t(`meters.${kind}`),
+                    month: new Date(`${lastMonth}T00:00:00`).toLocaleDateString(lang, { month: 'long' }),
+                    pct: Math.round(Math.abs(view.summary.changePct)),
+                  })}
+                </p>
+              </div>
+            </>
           )}
         </>
       )}

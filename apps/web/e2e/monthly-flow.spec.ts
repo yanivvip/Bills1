@@ -176,6 +176,7 @@ test('the landlord sets tariffs, approves the month and marks it paid', async ({
   await expect(page.getByText(/שילמת.*50.00/)).toBeVisible();
 
   // a partial payment first, then the rest
+  await page.getByRole('button', { name: he.bills.markPaidAction }).click();
   await page.getByLabel(he.bills.paymentAmount, { exact: true }).fill('100');
   await page.getByRole('button', { name: he.bills.markPaid }).click();
   await expect(page.getByText(he.bills.partlyPaid)).toBeVisible();
@@ -185,7 +186,7 @@ test('the landlord sets tariffs, approves the month and marks it paid', async ({
 
   // the month strip marks the month as paid with a symbol, and the printable page is now a receipt
   await expect(page.locator('button[aria-current="date"]')).toContainText('✓');
-  await page.getByRole('link', { name: he.bills.viewBill }).click();
+  await page.getByRole('link', { name: he.bills.sendToRenter }).click();
   await expect(page.getByRole('heading', { name: he.bills.receipt })).toBeVisible();
   await page.getByLabel(he.whatsapp.title).fill('Hello Dana, edited');
   await expect(page.getByRole('link', { name: he.whatsapp.open })).toHaveAttribute('href', /wa.me.*Hello%20Dana%2C%20edited/);

@@ -83,6 +83,11 @@ export default function ReadingsPage() {
           ))}
         </div>
       )}
+      {shown && groups.length > 1 && groups.findIndex((g) => g.key === shown.key) < groups.length - 1 && (
+        <button type="button" onClick={() => setGroup(groups[groups.findIndex((g) => g.key === shown.key) + 1]!.key)} className="h-14 rounded-2xl bg-primary text-[17px] font-medium text-white">
+          {t('readings.nextUnit')}
+        </button>
+      )}
     </section>
   );
 }

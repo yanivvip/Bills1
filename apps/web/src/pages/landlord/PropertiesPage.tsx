@@ -5,7 +5,17 @@ import { supabase } from '../../lib/supabase';
 import { ChevronIcon, PlusIcon } from '../../components/NavIcons';
 import { AddToggle, input, useWriter } from './shared';
 import { useProperty } from './PropertyContext';
+import { formatMoney, rateToShekels } from '../../lib/money';
 
+interface Tariff {
+  property_id: string;
+  electricity_rate: number;
+  electricity_fixed: number;
+  water_rate_a: number;
+  water_rate_b: number;
+  water_fixed: number;
+  sewage_rate: number;
+}
 interface PropertyRow {
   id: string;
   name: string;
@@ -17,15 +27,18 @@ interface PropertyRow {
 export default function PropertiesPage({ orgId }: { orgId: string }) {
   const { t } = useTranslation();
   const [orgName, setOrgName] = useState('');
+  const [tariffs, setTariffs] = useState<Record<string, Tariff>>({});
   const [rows, setRows] = useState<PropertyRow[] | null>(null);
   const [name, setName] = useState('');
   const [address, setAddress] = useState('');
 
   const load = async () => {
-    const [{ data: org }, { data: props }] = await Promise.all([
+    const [{ data: org }, { data: props }, { data: tar }] = await Promise.all([
       supabase.from('organizations').select('name').eq('id', orgId).single(),
       supabase.from('properties').select('id,name,address,units(id,name,contracts(id,status,end_date,contract_renters(email,full_name,user_id)))').eq('org_id', orgId).order('created_at'),
+      supabase.from('tariffs').select('property_id,electricity_rate,electricity_fixed,water_rate_a,water_rate_b,water_fixed,sewage_rate'),
     ]);
+    setTariffs(Object.fromEntries(((tar ?? []) as Tariff[]).map((x) => [x.property_id, x])));
     setOrgName(org?.name ?? '');
     setRows((props as unknown as PropertyRow[]) ?? []);
   };
@@ -108,6 +121,24 @@ export default function PropertiesPage({ orgId }: { orgId: string }) {
             <div>
               <Title>{t('landlord.settingsTitle')}</Title>
               <div className={group}>
+                {tariffs[p.id] && (
+                  <>
+                    {([
+                      ['electricity', Number(tariffs[p.id]!.electricity_fixed), `₪${rateToShekels(Number(tariffs[p.id]!.electricity_rate))} ${t('landlord.perKwh')}`, null],
+                      ['water', Number(tariffs[p.id]!.water_fixed), `₪${rateToShekels(Number(tariffs[p.id]!.water_rate_a))} · ₪${rateToShekels(Number(tariffs[p.id]!.water_rate_b))}`, null],
+                      ['sewage', 0, `₪${rateToShekels(Number(tariffs[p.id]!.sewage_rate))} ${t('landlord.perM3')}`, null],
+                    ] as const).map(([kind, fixed, value]) => (
+                      <Link key={kind} to={`/properties/${p.id}`} className={rowCls}>
+                        <span className="flex-1">
+                          {t(kind === 'sewage' ? 'tariff.sewageShort' : `meters.${kind}`)}
+                          {fixed > 0 && <span className="mt-0.5 block text-[13px] text-muted">{t('landlord.fixedPerMonth', { amount: formatMoney(fixed) })}</span>}
+                        </span>
+                        <span className="text-[15px] text-[#3e4643]">{value}</span>
+                        {chevron}
+                      </Link>
+                    ))}
+                  </>
+                )}
                 <Link to={`/properties/${p.id}`} className={rowCls}>
                   <span className="flex-1">
                     {t('landlord.tariffsAndMeters')}

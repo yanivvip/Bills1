@@ -60,6 +60,7 @@
     "building": "Whole property (main meter)"
   },
   "readings": {
+    "nextUnit": "Next unit",
     "fixedTitle": "Fixed charges this month",
     "fixedHint": "The amounts come from the property tariff – update them if the bill changed; they hold for the coming months too.",
     "fixedSaved": "Fixed amounts updated",
@@ -87,6 +88,9 @@
     "orgName": "Organization name"
   },
   "landlord": {
+    "perKwh": "per kWh",
+    "perM3": "per m³",
+    "fixedPerMonth": "Fixed {{amount}} a month",
     "phone": "Phone",
     "connected": "Connected",
     "inviteSent": "Invite sent",
@@ -190,6 +194,7 @@
     "back": "Back"
   },
   "tariff": {
+    "sewageShort": "Sewage",
     "title": "Tariffs",
     "electricityRate": "Electricity (₪ per kWh)",
     "electricityFixed": "Electricity – fixed monthly charge (₪)",
@@ -224,6 +229,10 @@
     "waterPercent": "Share of the shared water meter (%)"
   },
   "bills": {
+    "sendToRenter": "Send to renter",
+    "markPaidAction": "Mark as paid",
+    "details": "Details",
+    "downloadYearly": "Download the yearly Excel file",
     "chargeName": "Charge name",
     "chargeKind": "Kind of charge",
     "chargeOneTime": "One-off",

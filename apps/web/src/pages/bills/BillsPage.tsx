@@ -26,6 +26,22 @@ export default function BillsPage({ orgId }: { orgId: string }) {
   const [period, setPeriod] = useState(monthStart());
   const b = useBilling(propertyId, period);
   const [busy, setBusy] = useState(false);
+  // who rents each billed contract, shown under the unit name
+  const [renterNames, setRenterNames] = useState<Record<string, string>>({});
+  const contractIds = b.statements.map((x) => x.contract_id).join(',');
+  useEffect(() => {
+    const ids = contractIds ? contractIds.split(',') : [];
+    if (ids.length === 0) return setRenterNames({});
+    void supabase
+      .from('contract_renters')
+      .select('contract_id,full_name,email')
+      .in('contract_id', ids)
+      .then(({ data }) => {
+        const map: Record<string, string[]> = {};
+        for (const r of (data ?? []) as { contract_id: string; full_name: string | null; email: string }[]) (map[r.contract_id] ??= []).push(r.full_name || r.email);
+        setRenterNames(Object.fromEntries(Object.entries(map).map(([k, v]) => [k, v.join(', ')])));
+      });
+  }, [contractIds]);
 
   if (!properties) return <p className="p-4">{t('common.loading')}</p>;
 
@@ -85,9 +101,12 @@ export default function BillsPage({ orgId }: { orgId: string }) {
           </div>
           <p className="text-sm text-ok">✓ {t('bills.approved')}</p>
           {b.statements.map((s) => (
-            <StatementCard key={s.id} s={s} unit={unitName(s.unit_id)} payments={b.payments.filter((p) => p.statement_id === s.id)} busy={busy} act={act} />
+            <StatementCard key={s.id} s={s} unit={unitName(s.unit_id)} renters={renterNames[s.contract_id] ?? ''} payments={b.payments.filter((p) => p.statement_id === s.id)} busy={busy} act={act} />
           ))}
           <SupplierCard orgId={orgId} propertyId={propertyId!} period={period} supplier={b.supplier} lines={b.statements.map((s) => s.lines)} act={act} busy={busy} />
+          <Link to="/reports" className="flex h-12 items-center justify-center gap-2 rounded-xl border border-line-strong bg-white text-[15px] font-medium text-primary-dark">
+            {t('bills.downloadYearly')}
+          </Link>
           <button className="self-start text-sm text-muted underline" onClick={() => void reopen()}>
             {t('bills.reopen')}
           </button>
@@ -135,38 +154,55 @@ export default function BillsPage({ orgId }: { orgId: string }) {
   );
 }
 
-function StatementCard({ s, unit, payments, busy, act }: { s: StatementRow; unit: string; payments: PaymentRow[]; busy: boolean; act: (op: PromiseLike<{ error: { message: string } | null }>) => Promise<boolean> }) {
+function StatementCard({ s, unit, renters, payments, busy, act }: { s: StatementRow; unit: string; renters: string; payments: PaymentRow[]; busy: boolean; act: (op: PromiseLike<{ error: { message: string } | null }>) => Promise<boolean> }) {
   const { t, i18n } = useTranslation();
   const remaining = s.total_agorot - s.paid_agorot;
   const [date, setDate] = useState(today());
   const [method, setMethod] = useState<(typeof METHODS)[number]>('bit');
   const [amount, setAmount] = useState('');
+  const [paying, setPaying] = useState(false);
   const typed = amount.trim() === '' ? remaining : parseAgorot(amount);
   const valid = typed !== null && typed > 0 && typed <= remaining && !!date;
   const money = (a: number) => formatMoney(a, i18n.language);
   const full = remaining <= 0;
+  // a paid bill is folded to its total; the details open on request
+  const [open, setOpen] = useState(!full);
+  const shown = open || !full;
   return (
     <div className={card}>
-      <div className="flex items-center justify-between gap-2">
-        <strong className="text-[17px] font-semibold">{unit}</strong>
+      <div className="flex items-start justify-between gap-2">
+        <div>
+          <strong className="text-[17px] font-semibold">{unit}</strong>
+          {renters && <div className="mt-0.5 text-[13px] text-muted">{renters}</div>}
+        </div>
         {full ? (
-          <span className="inline-flex h-[26px] items-center rounded-full bg-primary-soft px-2.5 text-[13px] font-medium text-primary-dark">✓ {t('bills.paid')}</span>
+          <span className="inline-flex h-[26px] items-center rounded-full bg-primary-soft px-2.5 text-[13px] font-medium text-primary-dark">
+            ✓ {t('bills.paid')}
+            {s.paid_on ? ` ${s.paid_on.slice(8, 10)}.${s.paid_on.slice(5, 7)}` : ''}
+          </span>
         ) : s.paid_agorot > 0 ? (
           <span className="inline-flex h-[26px] items-center rounded-full bg-info-soft px-2.5 text-[13px] font-medium text-info">{t('bills.partlyPaid')}</span>
         ) : (
           <span className="inline-flex h-[26px] items-center rounded-full bg-warn-soft px-2.5 text-[13px] font-medium text-warn">{t('bills.unpaid')}</span>
         )}
       </div>
-      <StatementView lines={s.lines} total={s.total_agorot} />
-      <Link to={`/bill/${s.id}`} className="flex h-12 items-center justify-center rounded-xl border border-line-strong text-[15px] font-medium text-primary-dark">
-        {t('bills.viewBill')}
-      </Link>
-      {full && s.paid_on && (
+      <div className="flex items-center justify-between">
+        <span className="text-[30px] font-semibold" dir="ltr">
+          {money(s.total_agorot)}
+        </span>
+        {full && (
+          <button type="button" aria-expanded={shown} onClick={() => setOpen(!open)} className="flex h-10 items-center gap-1 px-3 text-[15px] font-medium text-primary-dark">
+            {t('bills.details')}
+          </button>
+        )}
+      </div>
+      {shown && <StatementView lines={s.lines} total={s.total_agorot} />}
+      {shown && full && s.paid_on && (
         <p className="text-sm text-ink-2">
           {t('bills.paidOn', { date: s.paid_on })} · {t(`bills.method.${s.paid_method}`)}
         </p>
       )}
-      {payments.length > 0 && (
+      {shown && payments.length > 0 && (
         <ul className="flex flex-col gap-1 text-sm text-ink-2">
           {payments.map((p) => (
             <li key={p.id} className="flex items-center justify-between gap-2">
@@ -183,32 +219,40 @@ function StatementCard({ s, unit, payments, busy, act }: { s: StatementRow; unit
       {!full && s.renter_paid_notice_at && (
         <p className="rounded-lg bg-info-soft px-3 py-2 text-sm text-info">{t('bills.renterSaysPaid', { date: s.renter_paid_notice_at.slice(0, 10) })}</p>
       )}
-      {!full && (
-        <>
-          {s.paid_agorot > 0 && <p className="text-sm text-warn">{t('bills.remaining', { amount: money(remaining) })}</p>}
-          <div className="flex flex-wrap items-center gap-2">
-            <input type="text" inputMode="decimal" dir="ltr" value={amount} onChange={(e) => setAmount(e.target.value)} placeholder={`${t('bills.paymentAmount')} (${money(remaining)})`} className={`${input} w-40`} aria-label={t('bills.paymentAmount')} />
-            <input type="date" value={date} max={today()} onChange={(e) => setDate(e.target.value)} className={input} aria-label={t('bills.paymentDate')} />
-            <select value={method} onChange={(e) => setMethod(e.target.value as (typeof METHODS)[number])} className={input} aria-label={t('bills.paymentMethod')}>
-              {METHODS.map((m) => (
-                <option key={m} value={m}>
-                  {t(`bills.method.${m}`)}
-                </option>
-              ))}
-            </select>
-            <button
-              disabled={busy || !valid}
-              className={`${primary} disabled:opacity-50`}
-              onClick={() => {
-                const paying = typed;
-                setAmount(''); // clear at once so a second click cannot pay the same amount again
-                void act(supabase.rpc('add_payment', { p_statement: s.id, p_amount: paying, p_paid_on: date, p_method: method }));
-              }}
-            >
-              {t('bills.markPaid')}
-            </button>
-          </div>
-        </>
+      {!full && s.paid_agorot > 0 && <p className="text-sm text-warn">{t('bills.remaining', { amount: money(remaining) })}</p>}
+      <div className="flex gap-2.5">
+        <Link to={`/bill/${s.id}`} className="flex h-12 flex-1 items-center justify-center gap-1.5 rounded-xl bg-primary text-[15px] font-medium text-white">
+          {t('bills.sendToRenter')}
+        </Link>
+        {!full && (
+          <button type="button" aria-expanded={paying} onClick={() => setPaying(!paying)} className="flex h-12 flex-1 items-center justify-center rounded-xl border border-line-strong bg-white text-[15px] font-medium text-primary-dark">
+            {t('bills.markPaidAction')}
+          </button>
+        )}
+      </div>
+      {!full && paying && (
+        <div className="flex flex-wrap items-center gap-2">
+          <input type="text" inputMode="decimal" dir="ltr" value={amount} onChange={(e) => setAmount(e.target.value)} placeholder={`${t('bills.paymentAmount')} (${money(remaining)})`} className={`${input} w-40`} aria-label={t('bills.paymentAmount')} />
+          <input type="date" value={date} max={today()} onChange={(e) => setDate(e.target.value)} className={input} aria-label={t('bills.paymentDate')} />
+          <select value={method} onChange={(e) => setMethod(e.target.value as (typeof METHODS)[number])} className={input} aria-label={t('bills.paymentMethod')}>
+            {METHODS.map((m) => (
+              <option key={m} value={m}>
+                {t(`bills.method.${m}`)}
+              </option>
+            ))}
+          </select>
+          <button
+            disabled={busy || !valid}
+            className={`${primary} disabled:opacity-50`}
+            onClick={() => {
+              const paying = typed;
+              setAmount(''); // clear at once so a second click cannot pay the same amount again
+              void act(supabase.rpc('add_payment', { p_statement: s.id, p_amount: paying, p_paid_on: date, p_method: method }));
+            }}
+          >
+            {t('bills.markPaid')}
+          </button>
+        </div>
       )}
     </div>
   );

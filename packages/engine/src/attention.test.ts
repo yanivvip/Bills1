@@ -13,13 +13,16 @@ const meters = [
 const r = (meterId: string, period: string, value: number) => ({ meterId, period, value });
 
 describe('attentionItems', () => {
-  it('flags a rented unit that has not reported, but not a vacant unit or a main meter', () => {
+  it('flags a rented unit and a main meter with no reading, but not a vacant unit', () => {
     const items = attentionItems({ period: '2026-10-01', units, meters, readings: [], statements: [] });
-    expect(items).toEqual([{ type: 'noReport', unitId: 'u1', meterId: 'e1', kind: 'electricity' }]);
+    expect(items).toEqual([
+      { type: 'noReport', unitId: 'u1', meterId: 'e1', kind: 'electricity' },
+      { type: 'noReport', unitId: null, meterId: 'w0', kind: 'water' },
+    ]);
   });
 
   it('does not flag a unit that reported', () => {
-    const items = attentionItems({ period: '2026-10-01', units, meters, readings: [r('e1', '2026-10-01', 500)], statements: [] });
+    const items = attentionItems({ period: '2026-10-01', units, meters, readings: [r('e1', '2026-10-01', 500), r('w0', '2026-10-01', 90)], statements: [] });
     expect(items).toEqual([]);
   });
 
@@ -38,7 +41,7 @@ describe('attentionItems', () => {
   });
 
   // usage per month: Jul 100, Aug 100, Sep 100 (readings 0,100,200,300), October jumps by 200
-  const history = [r('e1', '2026-06-01', 0), r('e1', '2026-07-01', 100), r('e1', '2026-08-01', 200), r('e1', '2026-09-01', 300)];
+  const history = [r('e1', '2026-06-01', 0), r('e1', '2026-07-01', 100), r('e1', '2026-08-01', 200), r('e1', '2026-09-01', 300), r('w0', '2026-10-01', 50)];
 
   it('flags usage more than 40% above the recent average', () => {
     const items = attentionItems({ period: '2026-10-01', units, meters, readings: [...history, r('e1', '2026-10-01', 500)], statements: [] });
@@ -47,7 +50,7 @@ describe('attentionItems', () => {
 
   it('does not flag normal usage, or a meter with too little history', () => {
     expect(attentionItems({ period: '2026-10-01', units, meters, readings: [...history, r('e1', '2026-10-01', 430)], statements: [] })).toEqual([]);
-    const short = [r('e1', '2026-08-01', 0), r('e1', '2026-09-01', 100), r('e1', '2026-10-01', 400)];
+    const short = [r('e1', '2026-08-01', 0), r('e1', '2026-09-01', 100), r('e1', '2026-10-01', 400), r('w0', '2026-10-01', 50)];
     expect(attentionItems({ period: '2026-10-01', units, meters, readings: short, statements: [] })).toEqual([]);
   });
 });

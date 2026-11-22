@@ -91,7 +91,7 @@ export function useAlerts() {
       for (const [unitId, at] of reported) out.push({ key: `reported:${unitId}:${period}:${at}`, type: 'reported', to: '/readings', params: { unit: name(unitId) } });
 
       // the monthly reminder: from the chosen day, one line to remind the renters who have not reported
-      const missing = items.filter((it) => it.type === 'noReport').length;
+      const missing = items.filter((it) => it.type === 'noReport' && it.unitId !== null).length;
       if (remindNow && missing > 0) out.unshift({ key: `remind:${period}`, type: 'monthlyReminder', to: '/', params: { count: missing } });
 
       const ending = settings.contract_alert

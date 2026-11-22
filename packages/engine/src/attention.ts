@@ -27,7 +27,7 @@ export interface AttentionStatement {
 }
 
 export type AttentionItem =
-  | { type: 'noReport'; unitId: string; meterId: string; kind: 'electricity' | 'water' }
+  | { type: 'noReport'; unitId: string | null; meterId: string; kind: 'electricity' | 'water' }
   | { type: 'unpaid'; unitId: string; period: string; total: Agorot }
   | { type: 'highUsage'; meterId: string; unitId: string | null; kind: 'electricity' | 'water'; usage: number; average: number };
 
@@ -57,7 +57,9 @@ export function attentionItems(input: {
 
   for (const m of meters) {
     const unit = units.find((u) => u.id === m.unitId);
-    if (unit?.rented && value(m.id, period) === undefined) items.push({ type: 'noReport', unitId: unit.id, meterId: m.id, kind: m.kind });
+    // a main meter (no unit) is the landlord's own to read; a unit's meter counts only while the unit is rented
+    const due = m.unitId === null ? true : unit?.rented === true;
+    if (due && value(m.id, period) === undefined) items.push({ type: 'noReport', unitId: m.unitId, meterId: m.id, kind: m.kind });
   }
 
   for (const s of statements) {

@@ -17,3 +17,6 @@ createRoot(document.getElementById('root')!).render(
     <App />
   </StrictMode>,
 );
+
+// the build stamp, readable from the browser console
+console.info(`Bills ${__BUILD_TIME__} (${__BUILD_SHA__})`);

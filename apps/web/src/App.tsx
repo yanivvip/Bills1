@@ -1,3 +1,4 @@
+import VersionPage from './pages/VersionPage';
 import { useEffect, useState, type ComponentType, type ReactNode } from 'react';
 import { BrowserRouter, Navigate, NavLink, Outlet, Route, Routes, useLocation, useOutletContext } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
@@ -165,6 +166,7 @@ export default function App() {
       <BrowserRouter>
         <Routes>
           <Route path="/login" element={<LoginPage />} />
+          <Route path="/version" element={<VersionPage />} />
           <Route element={<RequireAuth />}>
             <Route index element={<HomePage />} />
             <Route path="/bill/:id" element={<BillDocument />} />

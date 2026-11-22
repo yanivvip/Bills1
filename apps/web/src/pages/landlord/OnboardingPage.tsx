@@ -212,7 +212,7 @@ export default function OnboardingPage({ orgId }: { orgId: string }) {
       <header className="sticky top-0 z-10 -mx-[18px] -mt-1 border-b border-line bg-page px-5 pb-3 pt-5">
         <div className="flex items-center justify-between">
           <h1 className="text-[22px] font-semibold">{t('onboarding.title')}</h1>
-          <Link to="/property" aria-label={t('common.close')} className="flex h-11 w-11 items-center justify-center text-[#3e4643]">
+          <Link to="/property" aria-label={t('common.close')} className="flex h-11 w-11 items-center justify-center text-ink-2">
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
               <path d="M6 6l12 12M18 6 6 18" />
             </svg>
@@ -264,7 +264,7 @@ export default function OnboardingPage({ orgId }: { orgId: string }) {
           {units.length > 1 && (
             <div className="flex gap-1 rounded-xl bg-track p-1" role="tablist">
               {units.map((u, i) => (
-                <button type="button" key={i} role="tab" aria-selected={i === Math.min(unitTab, units.length - 1)} onClick={() => setUnitTab(i)} className={`h-10 flex-1 rounded-[9px] text-sm ${i === Math.min(unitTab, units.length - 1) ? 'bg-white font-semibold text-primary-dark shadow-sm' : 'text-[#3e4643]'}`}>
+                <button type="button" key={i} role="tab" aria-selected={i === Math.min(unitTab, units.length - 1)} onClick={() => setUnitTab(i)} className={`h-10 flex-1 rounded-[9px] text-sm ${i === Math.min(unitTab, units.length - 1) ? 'bg-white font-semibold text-primary-dark shadow-sm' : 'text-ink-2'}`}>
                   {t('onboarding.unitN', { n: i + 1 })}
                 </button>
               ))}

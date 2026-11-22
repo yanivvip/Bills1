@@ -156,7 +156,7 @@ export default function PropertiesPage({ orgId }: { orgId: string }) {
                         {fixed > 0 ? t('landlord.fixedPerMonth', { amount: formatMoney(fixed) }) : kind === 'sewage' ? t('landlord.byWater') : ''}
                       </span>
                     </span>
-                    <span className="text-[15px] text-[#3e4643]">{value}</span>
+                    <span className="text-[15px] text-ink-2">{value}</span>
                     {chevron}
                   </Link>
                 ))}
@@ -173,7 +173,7 @@ export default function PropertiesPage({ orgId }: { orgId: string }) {
                     {t('landlord.propertyTax')}
                     <span className="mt-0.5 block text-[13px] text-muted">{tariff?.property_tax_every === 2 ? t('landlord.bimonthly') : t('landlord.monthly')} · {t('landlord.allUnits')}</span>
                   </span>
-                  <span className="text-[15px] text-[#3e4643]">{formatMoney(taxTotal)}</span>
+                  <span className="text-[15px] text-ink-2">{formatMoney(taxTotal)}</span>
                   {chevron}
                 </Link>
               )}
@@ -183,7 +183,7 @@ export default function PropertiesPage({ orgId }: { orgId: string }) {
                     {t('landlord.communityFee')}
                     <span className="mt-0.5 block text-[13px] text-muted">{t('landlord.monthly')} · {t('landlord.allUnits')}</span>
                   </span>
-                  <span className="text-[15px] text-[#3e4643]">{formatMoney(feeTotal)}</span>
+                  <span className="text-[15px] text-ink-2">{formatMoney(feeTotal)}</span>
                   {chevron}
                 </Link>
               )}

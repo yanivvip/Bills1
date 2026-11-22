@@ -29,7 +29,7 @@ export default function StatementView({ lines, total, variant = 'dots' }: { line
     <div className="flex flex-col text-[15px]">
       {lines.map((l, i) => (
         <div key={i} className="flex items-center justify-between gap-3 border-t border-line-soft py-2">
-          <span className="flex items-center gap-2 text-[#3e4643] print:text-black">
+          <span className="flex items-center gap-2 text-ink-2 print:text-black">
             <span aria-hidden className="h-2 w-2 flex-none rounded-full print:hidden" style={{ background: DOT[l.type] ?? '#8a918e' }} />
             {lineLabel(t, l)}
           </span>

@@ -103,10 +103,10 @@ export function Charges({
       {open && (
         <div className="fixed inset-0 z-50 flex flex-col justify-end bg-black/40" role="dialog" aria-modal="true" aria-label={t('bills.newCharge')}>
           <div className="mx-auto flex max-h-[92dvh] min-h-[70dvh] w-full max-w-2xl flex-col overflow-y-auto rounded-t-[28px] bg-page px-[18px] pb-6 pt-3">
-            <div className="mx-auto mb-4 h-1 w-11 rounded-full bg-[#d0cdc4]" aria-hidden="true" />
+            <div className="mx-auto mb-4 h-1 w-11 rounded-full bg-[#cfcbc2]" aria-hidden="true" />
             <div className="mb-4 flex items-center justify-between">
               <h2 className="text-2xl font-semibold">{t('bills.newCharge')}</h2>
-              <button type="button" aria-label={t('common.close')} onClick={() => setOpen(false)} className="flex h-11 w-11 items-center justify-center text-[#3e4643]">
+              <button type="button" aria-label={t('common.close')} onClick={() => setOpen(false)} className="flex h-11 w-11 items-center justify-center text-ink-2">
                 <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
                   <path d="M6 6l12 12M18 6 6 18" />
                 </svg>
@@ -125,7 +125,7 @@ export function Charges({
           <div className="mb-1.5 text-sm text-muted">{t('bills.chargeKind')}</div>
           <div className="flex gap-1 rounded-xl bg-track p-1" role="group">
             {[false, true].map((r) => (
-              <button type="button" key={String(r)} aria-pressed={recurring === r} onClick={() => setRecurring(r)} className={`h-10 flex-1 rounded-[9px] text-sm ${recurring === r ? 'bg-white font-semibold text-primary-dark shadow-sm' : 'text-[#3e4643]'}`}>
+              <button type="button" key={String(r)} aria-pressed={recurring === r} onClick={() => setRecurring(r)} className={`h-10 flex-1 rounded-[9px] text-sm ${recurring === r ? 'bg-white font-semibold text-primary-dark shadow-sm' : 'text-ink-2'}`}>
                 {r ? t('bills.chargeRecurring') : t('bills.chargeOneTime')}
               </button>
             ))}
@@ -139,7 +139,7 @@ export function Charges({
               ...(landlordHome ? [['all', t('bills.chargeAll')]] : []),
               ...b.units.map((u) => [u.id, u.name]),
             ].map(([key, label]) => (
-              <button type="button" key={key} aria-pressed={who === key} onClick={() => setWho(key!)} className={`h-10 rounded-full border px-3.5 text-sm ${who === key ? 'border-primary bg-primary-soft font-semibold text-primary-dark' : 'border-line-strong bg-white text-[#3e4643]'}`}>
+              <button type="button" key={key} aria-pressed={who === key} onClick={() => setWho(key!)} className={`h-10 rounded-full border px-3.5 text-sm ${who === key ? 'border-primary bg-primary-soft font-semibold text-primary-dark' : 'border-line-strong bg-white text-ink-2'}`}>
                 {label}
               </button>
             ))}

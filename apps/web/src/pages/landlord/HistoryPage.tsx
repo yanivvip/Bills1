@@ -89,12 +89,12 @@ export default function HistoryPage() {
   const lastMonth = view ? view.months[5]! : '';
 
   const chip = (key: string, label: string) => (
-    <button key={key} onClick={() => setScopeKey(key)} aria-pressed={scopeKey === key} className={`h-9 whitespace-nowrap rounded-full border px-3.5 text-sm ${scopeKey === key ? 'border-ink bg-ink text-white' : 'border-line-strong bg-white text-[#3e4643]'}`}>
+    <button key={key} onClick={() => setScopeKey(key)} aria-pressed={scopeKey === key} className={`h-9 whitespace-nowrap rounded-full border px-3.5 text-sm ${scopeKey === key ? 'border-ink bg-ink text-white' : 'border-line-strong bg-white text-ink-2'}`}>
       {label}
     </button>
   );
   const tab = (k: Kind, label: string) => (
-    <button key={k} onClick={() => setKind(k)} aria-pressed={kind === k} className={`h-10 flex-1 rounded-[9px] text-[15px] ${kind === k ? 'bg-white font-semibold text-primary-dark shadow-sm' : 'text-[#3e4643]'}`}>
+    <button key={k} onClick={() => setKind(k)} aria-pressed={kind === k} className={`h-10 flex-1 rounded-[9px] text-[15px] ${kind === k ? 'bg-white font-semibold text-primary-dark shadow-sm' : 'text-ink-2'}`}>
       {label}
     </button>
   );
@@ -130,7 +130,7 @@ export default function HistoryPage() {
                     <span dir="ltr" className={v === undefined ? 'text-faint' : i === 5 ? 'font-semibold text-[#8a5300]' : 'text-ink-2'}>
                       {v === undefined ? '—' : show(v)}
                     </span>
-                    <div className={`w-7 rounded-t-lg rounded-b ${i === 5 ? 'bg-[#d9922e]' : 'bg-[#9cc9bf]'}`} style={{ height: `${v === undefined ? 2 : Math.max(3, (v / max) * 100)}%` }} />
+                    <div className={`w-7 rounded-t-lg rounded-b ${i === 5 ? 'bg-[#d9932a]' : 'bg-[#9cc9bf]'}`} style={{ height: `${v === undefined ? 2 : Math.max(3, (v / max) * 100)}%` }} />
                     <span className="text-muted">{monthShort(p)}</span>
                   </div>
                 );

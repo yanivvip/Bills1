@@ -1,6 +1,6 @@
 import VersionPage from './pages/VersionPage';
-import { useEffect, useState, type ComponentType, type ReactNode } from 'react';
-import { BrowserRouter, Navigate, NavLink, Outlet, Route, Routes, useLocation, useOutletContext } from 'react-router-dom';
+import { useEffect, useRef, useState, type ComponentType, type ReactNode } from 'react';
+import { BrowserRouter, Navigate, NavLink, Outlet, Route, Routes, useLocation, useNavigate, useOutletContext } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { AuthProvider, useAuth } from './auth/AuthProvider';
 import { RoleProvider, useRole } from './auth/RoleProvider';
@@ -59,6 +59,17 @@ function Shell() {
   const { isPlatformAdmin } = useAuth();
   const { role } = useRole();
   const { pathname } = useLocation();
+  const navigate = useNavigate();
+  const taps = useRef<number[]>([]);
+  // five quick taps on the bottom bar open the hidden version page (for support, on a phone)
+  const countTap = () => {
+    const now = Date.now();
+    taps.current = [...taps.current.filter((x) => now - x < 2500), now];
+    if (taps.current.length >= 5) {
+      taps.current = [];
+      navigate('/version');
+    }
+  };
   const subPage = pathname.startsWith('/alerts') || pathname.startsWith('/bill/') || pathname.startsWith('/property/new');
   return (
     <div className="mx-auto flex min-h-dvh max-w-2xl flex-col">
@@ -77,7 +88,7 @@ function Shell() {
       <main className="flex-1">
         <Outlet />
       </main>
-      <nav aria-label={t('nav.label')} className="flex h-[78px] items-stretch justify-around border-t border-line bg-card px-1.5 pb-[max(0.875rem,env(safe-area-inset-bottom))] pt-1.5 print:hidden">
+      <nav onClick={countTap} aria-label={t('nav.label')} className="flex h-[78px] items-stretch justify-around border-t border-line bg-card px-1.5 pb-[max(0.875rem,env(safe-area-inset-bottom))] pt-1.5 print:hidden">
         <Tab to="/" end icon={<HomeIcon />} label={t('nav.home')} />
         {role?.kind === 'landlord' && <Tab to="/readings" icon={<GaugeIcon />} label={t('nav.readings')} />}
         {role?.kind === 'landlord' && <Tab to="/bills" icon={<ReceiptIcon />} label={t('nav.bills')} />}

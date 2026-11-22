@@ -5,6 +5,7 @@ import { supabase } from '../../lib/supabase';
 import { formatMoney } from '../../lib/money';
 import { monthLabel, monthStart } from '../../lib/period';
 import AttentionCard from './AttentionCard';
+import { useProperty } from './PropertyContext';
 import { ChevronIcon, PlusIcon } from '../../components/NavIcons';
 
 interface Data {
@@ -20,20 +21,22 @@ export default function LandlordHome({ orgId }: { orgId: string }) {
   const { t, i18n } = useTranslation();
   const [data, setData] = useState<Data | null>(null);
   const period = monthStart();
+  const { properties, propertyId } = useProperty();
 
   useEffect(() => {
     void (async () => {
       const [org, props, units, meters, readings, statements] = await Promise.all([
         supabase.from('organizations').select('name').eq('id', orgId).single(),
         supabase.from('properties').select('id'),
-        supabase.from('units').select('id,name,contracts(status)'),
-        supabase.from('meters').select('id,unit_id,kind'),
+        supabase.from('units').select('id,name,property_id,contracts(status)'),
+        supabase.from('meters').select('id,unit_id,kind,property_id'),
         supabase.from('readings').select('meter_id').eq('period', period),
         supabase.from('statements').select('period,total_agorot,paid_agorot,paid_on').order('period', { ascending: false }).limit(60),
       ]);
-      const unitRows = (units.data ?? []) as { id: string; name: string; contracts: { status: string }[] }[];
+      const unitRows = ((units.data ?? []) as { id: string; name: string; property_id: string; contracts: { status: string }[] }[]).filter((u) => !propertyId || u.property_id === propertyId);
       const reported = new Set(((readings.data ?? []) as { meter_id: string }[]).map((x) => x.meter_id));
-      const expected = ((meters.data ?? []) as { id: string; unit_id: string | null; kind: 'electricity' | 'water' }[])
+      const expected = ((meters.data ?? []) as { id: string; unit_id: string | null; kind: 'electricity' | 'water'; property_id: string }[])
+        .filter((m) => !propertyId || m.property_id === propertyId)
         .map((m) => ({ m, unit: unitRows.find((u) => u.id === m.unit_id) }))
         .filter(({ m, unit }) => m.unit_id === null || unit?.contracts.some((c) => c.status === 'active'))
         .map(({ m, unit }) => ({ id: m.id, label: `${unit ? unit.name : t('bills.mainMeters')} · ${t(`meters.${m.kind}`)}`, done: reported.has(m.id) }));
@@ -57,9 +60,9 @@ export default function LandlordHome({ orgId }: { orgId: string }) {
       });
     })();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [orgId]);
+  }, [orgId, propertyId]);
 
-  if (!data) return <p className="p-4">{t('common.loading')}</p>;
+  if (!data || !properties) return <p className="p-4">{t('common.loading')}</p>;
 
   const done = data.meters.filter((m) => m.done).length;
   const money = (a: number) => formatMoney(a, i18n.language);

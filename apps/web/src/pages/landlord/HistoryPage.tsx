@@ -4,7 +4,8 @@ import { lastMonths, monthlyUsage, summarizeUsage, type HistoryScope } from '@bi
 import { supabase } from '../../lib/supabase';
 import { formatMoney } from '../../lib/money';
 import { monthStart, shiftMonth } from '../../lib/period';
-import { card, input } from './shared';
+import { card } from './shared';
+import { useProperty } from './PropertyContext';
 
 type Kind = 'electricity' | 'water' | 'cost';
 interface Prop {
@@ -21,23 +22,10 @@ interface Data {
 // Consumption and cost of the last six months for the whole property, one unit or the landlord's own house.
 export default function HistoryPage() {
   const { t, i18n } = useTranslation();
-  const [properties, setProperties] = useState<Prop[] | null>(null);
-  const [propertyId, setPropertyId] = useState<string>();
+  const { properties, propertyId } = useProperty();
   const [data, setData] = useState<Data | null>(null);
   const [kind, setKind] = useState<Kind>('electricity');
   const [scopeKey, setScopeKey] = useState('property'); // 'property' | 'house' | a unit id
-
-  useEffect(() => {
-    void supabase
-      .from('properties')
-      .select('id,name')
-      .order('created_at')
-      .then(({ data: list }) => {
-        const props = (list as Prop[]) ?? [];
-        setProperties(props);
-        setPropertyId((cur) => cur ?? props[0]?.id);
-      });
-  }, []);
 
   useEffect(() => {
     if (!propertyId) return;
@@ -113,15 +101,6 @@ export default function HistoryPage() {
   return (
     <section className="flex flex-col gap-3.5 px-[18px] pb-4 pt-1">
       <h1 className="text-2xl font-semibold">{t('history.title')}</h1>
-      {properties.length > 1 && (
-        <select value={propertyId} onChange={(e) => setPropertyId(e.target.value)} className={input} aria-label={t('landlord.properties')}>
-          {properties.map((p) => (
-            <option key={p.id} value={p.id}>
-              {p.name}
-            </option>
-          ))}
-        </select>
-      )}
       {properties.length === 0 && <p className="text-muted">{t('bills.noProperty')}</p>}
       {propertyId && !data && <p>{t('common.loading')}</p>}
 

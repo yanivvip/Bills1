@@ -5,6 +5,7 @@ import { supabase } from '../../lib/supabase';
 import { formatMoney, parseAgorot } from '../../lib/money';
 import { monthStart, today } from '../../lib/period';
 import MonthNav from '../readings/MonthNav';
+import { useProperty } from '../landlord/PropertyContext';
 import { card, input, primary } from '../landlord/shared';
 import StatementView from './StatementView';
 import MonthStrip from './MonthStrip';
@@ -21,23 +22,10 @@ const METHODS = ['bit', 'transfer', 'cash', 'other'] as const;
 // Landlord: preview the month's bills, add one-off charges, approve, then track payments.
 export default function BillsPage({ orgId }: { orgId: string }) {
   const { t, i18n } = useTranslation();
-  const [properties, setProperties] = useState<Prop[] | null>(null);
-  const [propertyId, setPropertyId] = useState<string>();
+  const { properties, propertyId } = useProperty();
   const [period, setPeriod] = useState(monthStart());
   const b = useBilling(propertyId, period);
   const [busy, setBusy] = useState(false);
-
-  useEffect(() => {
-    void supabase
-      .from('properties')
-      .select('id,name')
-      .order('created_at')
-      .then(({ data }) => {
-        const list = (data as Prop[]) ?? [];
-        setProperties(list);
-        setPropertyId((cur) => cur ?? list[0]?.id);
-      });
-  }, []);
 
   if (!properties) return <p className="p-4">{t('common.loading')}</p>;
 
@@ -73,15 +61,6 @@ export default function BillsPage({ orgId }: { orgId: string }) {
   return (
     <section className="flex flex-col gap-3.5 px-[18px] pb-4 pt-1">
       <h1 className="text-2xl font-semibold">{t('bills.title')}</h1>
-      {properties.length > 1 && (
-        <select value={propertyId} onChange={(e) => setPropertyId(e.target.value)} className={input} aria-label={t('landlord.properties')}>
-          {properties.map((p) => (
-            <option key={p.id} value={p.id}>
-              {p.name}
-            </option>
-          ))}
-        </select>
-      )}
       <MonthNav period={period} onChange={setPeriod} />
       {propertyId && <MonthStrip propertyId={propertyId} period={period} onChange={setPeriod} version={b.statements} />}
       {b.error && <p className="text-sm text-danger">{b.error}</p>}

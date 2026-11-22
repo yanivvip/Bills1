@@ -326,3 +326,21 @@ test('a renter phone entered in the wizard shows on the unit page and can be cha
   await page.reload();
   await expect(page.getByLabel(he.landlord.phone)).toHaveValue('052-7654321');
 });
+
+test('the header switches between properties and the pages follow', async ({ page }) => {
+  await signIn(page, wizardLandlord);
+  await page.getByRole('link', { name: he.nav.property, exact: true }).click();
+  await page.getByRole('button', { name: he.landlord.addProperty }).click();
+  await page.getByPlaceholder(he.landlord.propertyName).fill('Second 7');
+  await page.getByRole('button', { name: he.common.save }).click();
+
+  const switcher = page.getByLabel(he.landlord.properties);
+  await expect(switcher).toBeVisible();
+  await switcher.selectOption({ label: 'Second 7' });
+
+  // the new property has no meters yet; the first one has
+  await page.getByRole('link', { name: he.nav.readings }).click();
+  await expect(page.getByText(he.readings.noMeters)).toBeVisible();
+  await switcher.selectOption({ label: 'Wizard 5' });
+  await expect(page.getByText(he.readings.noMeters)).toHaveCount(0);
+});

@@ -23,6 +23,7 @@ import HistoryPage from './pages/landlord/HistoryPage';
 import PropertiesPage from './pages/landlord/PropertiesPage';
 import OnboardingPage from './pages/landlord/OnboardingPage';
 import { useAlerts } from './pages/landlord/useAlerts';
+import { PropertyProvider, PropertySwitcher } from './pages/landlord/PropertyContext';
 import { BarsIcon, BellIcon, BuildingIcon, GaugeIcon, HomeIcon, ReceiptIcon, ShieldIcon } from './components/NavIcons';
 
 // The bell in the header: a square button linking to the alerts centre, with a dot while something is unread.
@@ -58,9 +59,13 @@ function Shell() {
   return (
     <div className="mx-auto flex min-h-dvh max-w-2xl flex-col">
       <header className="flex items-center justify-between px-[18px] pb-1 pt-4 print:hidden">
-        <button className="h-11 rounded-xl px-2 text-sm text-muted" onClick={() => void supabase.auth.signOut()}>
-          {t('auth.signOut')}
-        </button>
+        {role?.kind === 'landlord' ? (
+          <PropertySwitcher label={t('landlord.properties')} />
+        ) : (
+          <button className="h-11 rounded-xl px-2 text-sm text-muted" onClick={() => void supabase.auth.signOut()}>
+            {t('auth.signOut')}
+          </button>
+        )}
         {role?.kind === 'landlord' && <AlertsBell />}
       </header>
       <main className="flex-1">
@@ -101,13 +106,23 @@ function TermsGate({ children }: { children: ReactNode }) {
   return <>{children}</>;
 }
 
+// the landlord's property list is shared by the header switcher and the pages
+function PropertiesScope() {
+  const { role } = useRole();
+  return (
+    <PropertyProvider enabled={role?.kind === 'landlord'}>
+      <Shell />
+    </PropertyProvider>
+  );
+}
+
 function RequireAuth() {
   const { session, loading } = useAuth();
   if (loading) return null;
   return session ? (
     <TermsGate>
       <RoleProvider>
-        <Shell />
+        <PropertiesScope />
       </RoleProvider>
     </TermsGate>
   ) : (

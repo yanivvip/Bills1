@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { monthStart } from '../../lib/period';
+import { useProperty } from '../landlord/PropertyContext';
 import MonthNav from './MonthNav';
 import ReadingInput from './ReadingInput';
 import { useMonthlyReadings, type MeterRow } from './useMonthlyReadings';
@@ -17,7 +18,9 @@ export default function ReadingsPage() {
   const { t } = useTranslation();
   const [period, setPeriod] = useState(monthStart());
   const [group, setGroup] = useState('');
-  const { meters, error, save, current, previous } = useMonthlyReadings(period);
+  const { meters: all, error, save, current, previous } = useMonthlyReadings(period);
+  const { propertyId } = useProperty();
+  const meters = all && (propertyId ? all.filter((m) => m.property_id === propertyId) : all);
 
   if (!meters) return <p className="p-4">{t('common.loading')}</p>;
 

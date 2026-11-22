@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { supabase } from '../../lib/supabase';
 import { ChevronIcon, PlusIcon } from '../../components/NavIcons';
 import { AddToggle, input, useWriter } from './shared';
+import { useProperty } from './PropertyContext';
 
 interface PropertyRow {
   id: string;
@@ -33,7 +34,11 @@ export default function PropertiesPage({ orgId }: { orgId: string }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [orgId]);
 
-  const { error, run } = useWriter(load);
+  const { reload: reloadProperties } = useProperty();
+  const { error, run } = useWriter(async () => {
+    await load();
+    await reloadProperties();
+  });
 
   if (!rows) return <p className="p-4">{t('common.loading')}</p>;
 
@@ -133,6 +138,9 @@ export default function PropertiesPage({ orgId }: { orgId: string }) {
             </span>
             {chevron}
           </Link>
+          <button type="button" onClick={() => void supabase.auth.signOut()} className={rowCls}>
+            <span className="flex-1 text-start">{t('auth.signOut')}</span>
+          </button>
           <Link to="/property/new" className={rowCls}>
             <span className="text-primary-dark">
               <PlusIcon />

@@ -18,6 +18,24 @@ export function lineLabel(t: TFunction, l: BillLine): string {
   }
 }
 
+/** The bill line split as in the renter's design: a title and a small description under it. */
+export function lineParts(t: TFunction, l: BillLine): { title: string; sub?: string } {
+  switch (l.type) {
+    case 'electricity':
+      return { title: t('bills.line.electricity'), sub: `${l.qty} ${t('bills.kwh')} × ₪${rateToShekels(l.rate ?? 0)}` };
+    case 'waterA':
+    case 'waterB':
+      return { title: t(`bills.line.${l.type}`), sub: `${l.qty} ${t('bills.m3')} × ₪${rateToShekels(l.rate ?? 0)}` };
+    case 'electricityFixed':
+    case 'waterFixed':
+      return { title: t(`bills.line.${l.type}`), sub: t('bills.yourShare') };
+    case 'charge':
+      return { title: l.description ?? t('bills.line.charge') };
+    default:
+      return { title: t(`bills.line.${l.type}`) };
+  }
+}
+
 /** A sentence that explains where one line of the bill comes from, using the stored meter readings when there are any. */
 export function explainLine(t: TFunction, l: BillLine, readings?: { electricity?: { prev: number; cur: number }; water?: { prev: number; cur: number } } | null): string {
   const rate = rateToShekels(l.rate ?? 0);

@@ -229,6 +229,8 @@
     "waterPercent": "חלק במונה המים המשותף (%)"
   },
   "bills": {
+    "yourShare": "החלק שלך",
+    "howCalculatedLink": "איך חושב החשבון?",
     "sendToRenter": "שליחה לשוכר",
     "markPaidAction": "סימון ששולם",
     "details": "פירוט",
@@ -498,6 +500,8 @@
     "lower": "ה{{what}} ב{{month}} נמוך ב-{{pct}}% מהממוצע של 3 החודשים הקודמים."
   },
   "renterHome": {
+    "hello": "שלום, {{name}}",
+    "toDetails": "לפירוט",
     "timeToReport": "הגיע הזמן לדווח על המונים",
     "timeToReportBody_one": "מונה אחד מחכה לדיווח. לוקח פחות מדקה.",
     "timeToReportBody_other": "{{count}} מונים מחכים לדיווח. לוקח פחות מדקה.",
@@ -517,6 +521,9 @@
     "reset": "שחזור הנוסח המקורי"
   },
   "landlordHome": {
+    "entered": "הוזן {{v}}",
+    "renterReported": "השוכר דיווח {{v}}",
+    "notYet": "עוד לא דיווחו",
     "sendReminder": "שליחת תזכורת",
     "night": "לילה טוב",
     "morning": "בוקר טוב",

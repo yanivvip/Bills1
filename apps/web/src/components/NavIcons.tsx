@@ -79,3 +79,8 @@ export const CalendarIcon = () => (
     <path d="M3 10h18M8 3v4M16 3v4" />
   </Svg>
 );
+export const TrendIcon = ({ up = false }: { up?: boolean }) => (
+  <Svg>
+    <path d={up ? 'M3 17l6-6 4 4 8-8M15 7h6v6' : 'M3 7l6 6 4-4 8 8M15 17h6v-6'} />
+  </Svg>
+);

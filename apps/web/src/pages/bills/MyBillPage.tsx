@@ -6,7 +6,6 @@ import { formatMoney } from '../../lib/money';
 import { monthStart } from '../../lib/period';
 import MonthNav from '../readings/MonthNav';
 import { explainLine } from '../../lib/billLabels';
-import { card } from '../landlord/shared';
 import StatementView from './StatementView';
 import type { StatementRow } from './useBilling';
 
@@ -48,22 +47,30 @@ export default function MyBillPage() {
       <MonthNav period={period} onChange={setPeriod} />
       {!s && <p className="text-muted">{t('bills.notPublished')}</p>}
       {s && (
-        <div className={card}>
-          <div className="flex items-center justify-between gap-2">
-            <span className="flex flex-col"><span className="text-sm text-muted">{t('bills.totalToPay')}</span><span className="text-[34px] font-semibold leading-tight" dir="ltr">{formatMoney(s.total_agorot, i18n.language)}</span></span>
+        <>
+          <div className="flex flex-col items-center gap-2.5 rounded-[18px] border border-line bg-card px-4 py-6 text-center">
+            <span className="text-[15px] text-muted">{t('bills.totalToPay')}</span>
+            <span className="text-5xl font-semibold leading-none" dir="ltr">
+              {formatMoney(s.total_agorot, i18n.language)}
+            </span>
             {s.paid_on ? (
-              <span className="inline-flex h-[26px] items-center rounded-full bg-primary-soft px-2.5 text-[13px] font-medium text-primary-dark">✓ {t('bills.paid')}</span>
+              <span className="inline-flex h-8 items-center rounded-full bg-primary-soft px-3.5 text-[15px] font-medium text-primary-dark">✓ {t('bills.paid')}</span>
             ) : s.paid_agorot > 0 ? (
-              <span className="inline-flex h-[26px] items-center rounded-full bg-info-soft px-2.5 text-[13px] font-medium text-info">{t('bills.partlyPaid')}</span>
+              <span className="inline-flex h-8 items-center rounded-full bg-info-soft px-3.5 text-[15px] font-medium text-info">{t('bills.partlyPaid')}</span>
             ) : (
-              <span className="inline-flex h-[26px] items-center rounded-full bg-warn-soft px-2.5 text-[13px] font-medium text-warn">{t('bills.unpaid')}</span>
+              <span className="inline-flex h-8 items-center rounded-full bg-warn-soft px-3.5 text-[15px] font-medium text-warn">{t('bills.unpaid')}</span>
             )}
+            {s.paid_on && <p className="text-sm text-ink-2">{t('bills.paidOn', { date: s.paid_on })} · {t(`bills.method.${s.paid_method}`)}</p>}
           </div>
-          {s.paid_on && <p className="text-sm text-ink-2">{t('bills.paidOn', { date: s.paid_on })} · {t(`bills.method.${s.paid_method}`)}</p>}
-          <StatementView lines={s.lines} total={s.total_agorot} />
-          <details className="text-sm">
-            <summary className="cursor-pointer font-medium text-primary-dark">{t('bills.howCalculated')}</summary>
-            <ul className="mt-2 flex list-disc flex-col gap-1 ps-5 text-ink-2">
+          <div className="rounded-[18px] border border-line bg-card px-4 py-1">
+            <StatementView lines={s.lines} total={s.total_agorot} variant="sub" />
+          </div>
+          <details className="text-center text-[15px]">
+            <summary className="mx-auto flex cursor-pointer list-none items-center justify-center gap-2 py-2 font-medium text-primary-dark">
+              <span className="flex h-[22px] w-[22px] items-center justify-center rounded-full border-2 border-current text-xs font-bold" aria-hidden="true">i</span>
+              {t('bills.howCalculated')}
+            </summary>
+            <ul className="mt-2 flex list-disc flex-col gap-1 ps-5 text-start text-ink-2">
               {s.lines.map((l, i) => (
                 <li key={i}>{explainLine(t, l, s.readings)}</li>
               ))}
@@ -72,16 +79,16 @@ export default function MyBillPage() {
           {error && <p className="text-sm text-danger">{error}</p>}
           {!s.paid_on &&
             (s.renter_paid_notice_at ? (
-              <p className="text-sm text-info">✓ {t('bills.noticeSent', { date: s.renter_paid_notice_at.slice(0, 10) })}</p>
+              <p className="text-center text-sm text-info">✓ {t('bills.noticeSent', { date: s.renter_paid_notice_at.slice(0, 10) })}</p>
             ) : (
-              <button className="h-[52px] rounded-[14px] bg-primary text-[17px] font-semibold text-white" onClick={() => void notifyPaid(s.id)}>
+              <button className="h-14 rounded-2xl bg-primary text-[17px] font-medium text-white" onClick={() => void notifyPaid(s.id)}>
                 {t('bills.iPaid')}
               </button>
             ))}
-          <Link to={`/bill/${s.id}`} className="flex h-12 items-center justify-center rounded-xl border border-line-strong text-[15px] font-medium text-primary-dark">
+          <Link to={`/bill/${s.id}`} className="flex h-12 items-center justify-center rounded-xl border border-line-strong bg-white text-[15px] font-medium text-primary-dark">
             {t('bills.viewBill')}
           </Link>
-        </div>
+        </>
       )}
     </section>
   );

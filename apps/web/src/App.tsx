@@ -58,6 +58,7 @@ function Shell() {
   const { role } = useRole();
   return (
     <div className="mx-auto flex min-h-dvh max-w-2xl flex-col">
+      {role?.kind !== 'renter' && (
       <header className="flex items-center justify-between px-[18px] pb-1 pt-4 print:hidden">
         {role?.kind === 'landlord' ? (
           <PropertySwitcher label={t('landlord.properties')} />
@@ -68,6 +69,7 @@ function Shell() {
         )}
         {role?.kind === 'landlord' && <AlertsBell />}
       </header>
+      )}
       <main className="flex-1">
         <Outlet />
       </main>

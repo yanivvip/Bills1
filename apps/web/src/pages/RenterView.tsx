@@ -3,8 +3,9 @@ import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { monthlyUsage, summarizeUsage } from '@bills/engine';
 import { supabase } from '../lib/supabase';
+import { useAuth } from '../auth/AuthProvider';
 import { formatMoney } from '../lib/money';
-import { BoltIcon, CalendarIcon, DropIcon, GaugeIcon } from '../components/NavIcons';
+import { BoltIcon, CalendarIcon, ChevronIcon, DropIcon, GaugeIcon } from '../components/NavIcons';
 import { monthLabel, monthStart, shiftMonth } from '../lib/period';
 
 interface RenterContract {
@@ -41,6 +42,8 @@ export default function RenterView() {
   const [meters, setMeters] = useState<Meter[]>([]);
   const [readings, setReadings] = useState<Reading[]>([]);
   const [bill, setBill] = useState<LastBill | null>(null);
+  const { session } = useAuth();
+  const email = session?.user.email;
   const period = monthStart();
 
   useEffect(() => {
@@ -99,19 +102,23 @@ export default function RenterView() {
   };
 
   const owed = bill ? bill.total_agorot - bill.paid_agorot : 0;
+  const me = (email ?? '').toLowerCase();
+  const mine = active?.contract_renters.find((r) => r.email.toLowerCase() === me);
+  const myName = mine?.full_name || (email ?? '').split('@')[0] || '';
 
   return (
     <section className="flex flex-col gap-3.5 px-[18px] pb-4 pt-2.5">
-      {active ? (
+      <header className="flex items-start justify-between gap-3">
         <div>
-          <h1 className="text-[22px] font-semibold">
-            {active.units?.name} · {active.units?.properties?.name}
-          </h1>
-          {active.units?.properties?.address && <p className="text-sm text-muted">{active.units.properties.address}</p>}
+          {active && (
+            <div className="text-[15px] text-muted">
+              {active.units?.name} · {active.units?.properties?.name}
+            </div>
+          )}
+          <h1 className="mt-0.5 text-[28px] font-semibold leading-tight">{active ? t('renterHome.hello', { name: myName }) : t('renter.title')}</h1>
         </div>
-      ) : (
-        <h1 className="text-2xl font-bold">{t('renter.title')}</h1>
-      )}
+        <img src="/favicon.svg" alt="" width={48} height={48} className="flex-none" />
+      </header>
       {contracts.length === 0 && <p className="text-muted">{t('renter.none')}</p>}
 
       {active && meters.length > 0 &&
@@ -121,7 +128,7 @@ export default function RenterView() {
               <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-white/15">
                 <GaugeIcon />
               </span>
-              <span className="text-sm opacity-90">{monthLabel(period, i18n.language)}</span>
+              <span className="text-sm opacity-90">{new Date(`${period}T00:00:00`).toLocaleDateString(i18n.language, { day: 'numeric', month: 'long' })}</span>
             </div>
             <h2 className="text-[22px] font-semibold leading-tight">{t('renterHome.timeToReport')}</h2>
             <p className="text-[15px] leading-normal opacity-90">{t('renterHome.timeToReportBody', { count: missing.length })}</p>
@@ -142,14 +149,14 @@ export default function RenterView() {
             <strong className="mt-0.5 text-[28px] font-semibold" dir="ltr">
               {money(bill.total_agorot)}
             </strong>
+            <span className={`mt-0.5 text-[13px] ${owed <= 0 ? 'text-primary-dark' : bill.paid_agorot > 0 ? 'text-info' : 'text-warn'}`}>
+              {owed <= 0 ? `✓ ${t('bills.paid')}` : bill.paid_agorot > 0 ? t('bills.partlyPaid') : t('bills.unpaid')}
+            </span>
           </span>
-          {owed <= 0 ? (
-            <span className="rounded-full bg-ok-soft text-ok px-2 py-0.5 text-xs">✓ {t('bills.paid')}</span>
-          ) : bill.paid_agorot > 0 ? (
-            <span className="rounded-full bg-info-soft text-info px-2 py-0.5 text-xs">{t('bills.partlyPaid')}</span>
-          ) : (
-            <span className="rounded-full bg-warn-soft text-warn px-2 py-0.5 text-xs">{t('bills.unpaid')}</span>
-          )}
+          <span className="flex items-center gap-1 text-[15px] font-medium text-primary-dark">
+            {t('renterHome.toDetails')}
+            <ChevronIcon />
+          </span>
         </Link>
       )}
 
@@ -172,6 +179,10 @@ export default function RenterView() {
           </span>
         </p>
       )}
+
+      <button type="button" className="mt-2 self-center rounded-xl px-4 py-2 text-sm text-muted" onClick={() => void supabase.auth.signOut()}>
+        {t('auth.signOut')}
+      </button>
 
       {contracts.filter((c) => c.status === 'ended').length > 0 && (
         <details className="text-sm text-muted">

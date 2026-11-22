@@ -64,7 +64,7 @@ test('landlord sets up an organization, property, unit, contract and meters', as
 
 test('the renter signs up, sees their rental and reports a reading', async ({ page }) => {
   await signUp(page, renter);
-  await expect(page.getByRole('heading', { name: /Apt 1/ })).toBeVisible();
+  await expect(page.getByText(/Apt 1/).first()).toBeVisible();
   await expect(page.getByText(/Dizengoff 10/).first()).toBeVisible();
   await expect(page.getByText(he.renterHome.timeToReport)).toBeVisible(); // nothing reported yet this month
 

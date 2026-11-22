@@ -229,6 +229,8 @@
     "waterPercent": "Share of the shared water meter (%)"
   },
   "bills": {
+    "yourShare": "Your share",
+    "howCalculatedLink": "How was the bill calculated?",
     "sendToRenter": "Send to renter",
     "markPaidAction": "Mark as paid",
     "details": "Details",
@@ -498,6 +500,8 @@
     "lower": "{{what}} in {{month}} is {{pct}}% below the average of the 3 months before."
   },
   "renterHome": {
+    "hello": "Hello, {{name}}",
+    "toDetails": "Details",
     "timeToReport": "Time to report your meters",
     "timeToReportBody_one": "One meter is waiting for a reading. It takes less than a minute.",
     "timeToReportBody_other": "{{count}} meters are waiting for a reading. It takes less than a minute.",
@@ -517,6 +521,9 @@
     "reset": "Restore the original text"
   },
   "landlordHome": {
+    "entered": "Entered {{v}}",
+    "renterReported": "Renter reported {{v}}",
+    "notYet": "Not reported yet",
     "sendReminder": "Send reminder",
     "night": "Good night",
     "morning": "Good morning",

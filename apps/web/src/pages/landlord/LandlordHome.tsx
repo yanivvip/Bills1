@@ -13,7 +13,7 @@ interface Data {
   orgName: string;
   properties: number;
   /** every meter of a rented unit, and every main meter, with whether it has this month's reading */
-  meters: { id: string; label: string; done: boolean; remind?: string }[];
+  meters: { id: string; label: string; sub: string; done: boolean; remind?: string }[];
   bill: { period: string; total: number; paid: number; count: number; paidCount: number } | null;
 }
 
@@ -31,11 +31,12 @@ export default function LandlordHome({ orgId }: { orgId: string }) {
         supabase.from('properties').select('id'),
         supabase.from('units').select('id,name,property_id,contracts(status,contract_renters(phone))'),
         supabase.from('meters').select('id,unit_id,kind,property_id'),
-        supabase.from('readings').select('meter_id').eq('period', period),
+        supabase.from('readings').select('meter_id,value').eq('period', period),
         supabase.from('statements').select('period,total_agorot,paid_agorot,paid_on').order('period', { ascending: false }).limit(60),
       ]);
       const unitRows = ((units.data ?? []) as { id: string; name: string; property_id: string; contracts: { status: string; contract_renters: { phone: string | null }[] }[] }[]).filter((u) => !propertyId || u.property_id === propertyId);
-      const reported = new Set(((readings.data ?? []) as { meter_id: string }[]).map((x) => x.meter_id));
+      const values = new Map(((readings.data ?? []) as { meter_id: string; value: number }[]).map((x) => [x.meter_id, Number(x.value)]));
+      const reported = new Set(values.keys());
       const expected = ((meters.data ?? []) as { id: string; unit_id: string | null; kind: 'electricity' | 'water'; property_id: string }[])
         .filter((m) => !propertyId || m.property_id === propertyId)
         .map((m) => ({ m, unit: unitRows.find((u) => u.id === m.unit_id) }))
@@ -44,6 +45,7 @@ export default function LandlordHome({ orgId }: { orgId: string }) {
           id: m.id,
           label: `${unit ? unit.name : t('bills.mainMeters')} · ${t(`meters.${m.kind}`)}`,
           done: reported.has(m.id),
+          sub: reported.has(m.id) ? t(unit ? 'landlordHome.renterReported' : 'landlordHome.entered', { v: values.get(m.id) }) : t('landlordHome.notYet'),
           // a ready WhatsApp reminder for the renter of a unit meter that is still empty
           remind: unit && !reported.has(m.id) ? whatsappLink(t('attention.remindReport', { unit: unit.name, kind: t(`meters.${m.kind}`) }), unit.contracts.find((c) => c.status === 'active')?.contract_renters.find((r) => r.phone)?.phone) : undefined,
         }));
@@ -107,7 +109,10 @@ export default function LandlordHome({ orgId }: { orgId: string }) {
           <ul>
             {data.meters.map((m) => (
               <li key={m.id} className="flex items-center justify-between gap-2 border-t border-line-soft py-3 first:border-t-0">
-                <span className="font-medium">{m.label}</span>
+                <span>
+                  <span className="block font-medium">{m.label}</span>
+                  <span className="block text-[13px] text-muted">{m.sub}</span>
+                </span>
                 {m.done ? (
                   <span className="inline-flex h-[26px] items-center rounded-full bg-primary-soft px-2.5 text-[13px] font-medium text-primary-dark">✓ {t('landlordHome.reported')}</span>
                 ) : m.remind ? (

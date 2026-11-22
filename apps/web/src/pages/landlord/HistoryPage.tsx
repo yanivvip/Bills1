@@ -5,7 +5,7 @@ import { supabase } from '../../lib/supabase';
 import { formatMoney } from '../../lib/money';
 import { monthStart, shiftMonth } from '../../lib/period';
 import { card } from './shared';
-import { BarsIcon, BoltIcon, DropIcon } from '../../components/NavIcons';
+import { TrendIcon } from '../../components/NavIcons';
 import { useProperty } from './PropertyContext';
 
 type Kind = 'electricity' | 'water' | 'cost';
@@ -127,10 +127,10 @@ export default function HistoryPage() {
                 const v = view.series[i];
                 return (
                   <div key={p} className="flex h-full flex-1 flex-col items-center justify-end gap-1 text-xs">
-                    <span dir="ltr" className={v === undefined ? 'text-faint' : 'text-ink'}>
+                    <span dir="ltr" className={v === undefined ? 'text-faint' : i === 5 ? 'font-semibold text-[#8a5300]' : 'text-ink-2'}>
                       {v === undefined ? '—' : show(v)}
                     </span>
-                    <div className={`w-7 rounded-t-lg rounded-b ${i === 5 ? 'bg-primary-mid' : 'bg-[#9cc9bf]'}`} style={{ height: `${v === undefined ? 2 : Math.max(3, (v / max) * 100)}%` }} />
+                    <div className={`w-7 rounded-t-lg rounded-b ${i === 5 ? 'bg-[#d9922e]' : 'bg-[#9cc9bf]'}`} style={{ height: `${v === undefined ? 2 : Math.max(3, (v / max) * 100)}%` }} />
                     <span className="text-muted">{monthShort(p)}</span>
                   </div>
                 );
@@ -155,7 +155,7 @@ export default function HistoryPage() {
             <>
               <h2 className="mx-0.5 mt-1 text-base font-semibold">{t('history.insights')}</h2>
               <div className={`flex gap-3 rounded-2xl p-3.5 ${view.summary.changePct > 0 ? 'bg-warn-soft text-[#5c3a00]' : 'border border-line bg-card'}`}>
-                <span className="mt-0.5 flex-none">{kind === 'water' ? <DropIcon /> : kind === 'electricity' ? <BoltIcon /> : <BarsIcon />}</span>
+                <span className="mt-0.5 flex-none">{view.summary.changePct > 0 ? <TrendIcon up /> : <TrendIcon />}</span>
                 <p className="text-sm leading-normal">
                   {t(view.summary.changePct > 0 ? 'history.higher' : 'history.lower', {
                     what: kind === 'cost' ? t('history.cost') : t(`meters.${kind}`),

@@ -31,15 +31,18 @@ const remembered = () => {
 
 // The landlord's properties and the one currently chosen (remembered in the browser). Reloaded when the page changes,
 // so a property added in the wizard shows up in the header at once.
-export function PropertyProvider({ enabled, children }: { enabled: boolean; children: ReactNode }) {
+export function PropertyProvider({ enabled, orgId, children }: { enabled: boolean; orgId?: string; children: ReactNode }) {
   const [properties, setProperties] = useState<PropertyOption[] | null>(null);
   const [chosen, setChosen] = useState<string | undefined>(remembered());
   const { pathname } = useLocation();
 
   const load = useCallback(async () => {
-    const { data } = await supabase.from('properties').select('id,name').order('created_at');
+    // only the landlord's own organization (a platform admin can read the others, but not write to them)
+    let q = supabase.from('properties').select('id,name').order('created_at');
+    if (orgId) q = q.eq('org_id', orgId);
+    const { data } = await q;
     setProperties((data as PropertyOption[]) ?? []);
-  }, []);
+  }, [orgId]);
   useEffect(() => {
     if (enabled) void load();
   }, [enabled, load, pathname]);

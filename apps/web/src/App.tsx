@@ -127,7 +127,7 @@ function TermsGate({ children }: { children: ReactNode }) {
 function PropertiesScope() {
   const { role } = useRole();
   return (
-    <PropertyProvider enabled={role?.kind === 'landlord'}>
+    <PropertyProvider enabled={role?.kind === 'landlord'} orgId={role?.kind === 'landlord' ? role.orgId : undefined}>
       <Shell />
     </PropertyProvider>
   );

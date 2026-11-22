@@ -25,6 +25,7 @@
     "passwordHint": "At least 8 characters."
   },
   "nav": {
+    "label": "Main navigation",
     "home": "Home",
     "admin": "Admin",
     "readings": "Readings",
@@ -78,6 +79,14 @@
     "orgName": "Organization name"
   },
   "landlord": {
+    "connected": "Connected",
+    "inviteSent": "Invite sent",
+    "settingsTitle": "Property settings",
+    "tariffsAndMeters": "Tariffs and meters",
+    "tariffsAndMetersHint": "Electricity, water and sewage tariffs, meters and meter layout",
+    "extraCharges": "Extra charges",
+    "extraChargesHint": "Property tax, building fee and more – recurring or one-off",
+    "general": "General",
     "properties": "Properties",
     "noProperties": "No properties yet. Add your first one below.",
     "propertyName": "Property name",
@@ -206,6 +215,8 @@
     "waterPercent": "Share of the shared water meter (%)"
   },
   "bills": {
+    "totalToPay": "Total to pay",
+    "totalToCollect": "Total to collect",
     "title": "Monthly bills",
     "noProperty": "No properties yet.",
     "noTariff": "No tariffs are set for this property yet.",
@@ -479,6 +490,10 @@
     "reset": "Restore the original text"
   },
   "landlordHome": {
+    "night": "Good night",
+    "morning": "Good morning",
+    "afternoon": "Good afternoon",
+    "evening": "Good evening",
     "firstProperty": "Add your first property",
     "firstPropertyBody": "Name, address, units and renters – you can change anything later.",
     "readings": "This month’s readings",

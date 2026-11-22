@@ -38,10 +38,10 @@ export default function MyBillPage() {
   const balance = statements.reduce((sum, x) => sum + (x.total_agorot - x.paid_agorot), 0);
 
   return (
-    <section className="flex flex-col gap-4 p-4">
-      <h1 className="text-2xl font-bold">{t('bills.myBill')}</h1>
+    <section className="flex flex-col gap-3.5 px-[18px] pb-4 pt-1">
+      <h1 className="text-2xl font-semibold">{t('bills.myBill')}</h1>
       {balance > 0 && (
-        <div className="rounded-2xl bg-warn-soft p-3 text-warn">
+        <div className="rounded-[18px] bg-warn-soft p-3.5 text-warn">
           {t('bills.balanceDue')}: <strong dir="ltr">{formatMoney(balance, i18n.language)}</strong>
         </div>
       )}
@@ -50,19 +50,19 @@ export default function MyBillPage() {
       {s && (
         <div className={card}>
           <div className="flex items-center justify-between gap-2">
-            <span className="text-3xl font-bold" dir="ltr">{formatMoney(s.total_agorot, i18n.language)}</span>
+            <span className="flex flex-col"><span className="text-sm text-muted">{t('bills.totalToPay')}</span><span className="text-[34px] font-semibold leading-tight" dir="ltr">{formatMoney(s.total_agorot, i18n.language)}</span></span>
             {s.paid_on ? (
-              <span className="rounded-full bg-ok-soft text-ok px-2 py-0.5 text-xs">✓ {t('bills.paid')}</span>
+              <span className="inline-flex h-[26px] items-center rounded-full bg-primary-soft px-2.5 text-[13px] font-medium text-primary-dark">✓ {t('bills.paid')}</span>
             ) : s.paid_agorot > 0 ? (
-              <span className="rounded-full bg-info-soft text-info px-2 py-0.5 text-xs">{t('bills.partlyPaid')}</span>
+              <span className="inline-flex h-[26px] items-center rounded-full bg-info-soft px-2.5 text-[13px] font-medium text-info">{t('bills.partlyPaid')}</span>
             ) : (
-              <span className="rounded-full bg-warn-soft text-warn px-2 py-0.5 text-xs">{t('bills.unpaid')}</span>
+              <span className="inline-flex h-[26px] items-center rounded-full bg-warn-soft px-2.5 text-[13px] font-medium text-warn">{t('bills.unpaid')}</span>
             )}
           </div>
           {s.paid_on && <p className="text-sm text-ink-2">{t('bills.paidOn', { date: s.paid_on })} · {t(`bills.method.${s.paid_method}`)}</p>}
           <StatementView lines={s.lines} total={s.total_agorot} />
           <details className="text-sm">
-            <summary className="cursor-pointer underline">{t('bills.howCalculated')}</summary>
+            <summary className="cursor-pointer font-medium text-primary-dark">{t('bills.howCalculated')}</summary>
             <ul className="mt-2 flex list-disc flex-col gap-1 ps-5 text-ink-2">
               {s.lines.map((l, i) => (
                 <li key={i}>{explainLine(t, l, s.readings)}</li>
@@ -74,11 +74,11 @@ export default function MyBillPage() {
             (s.renter_paid_notice_at ? (
               <p className="text-sm text-info">✓ {t('bills.noticeSent', { date: s.renter_paid_notice_at.slice(0, 10) })}</p>
             ) : (
-              <button className="self-start rounded-lg bg-primary text-white px-4 py-2 font-semibold" onClick={() => void notifyPaid(s.id)}>
+              <button className="h-[52px] rounded-[14px] bg-primary text-[17px] font-semibold text-white" onClick={() => void notifyPaid(s.id)}>
                 {t('bills.iPaid')}
               </button>
             ))}
-          <Link to={`/bill/${s.id}`} className="self-start text-sm underline">
+          <Link to={`/bill/${s.id}`} className="flex h-12 items-center justify-center rounded-xl border border-line-strong text-[15px] font-medium text-primary-dark">
             {t('bills.viewBill')}
           </Link>
         </div>

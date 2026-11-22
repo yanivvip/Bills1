@@ -23,22 +23,33 @@ import HistoryPage from './pages/landlord/HistoryPage';
 import PropertiesPage from './pages/landlord/PropertiesPage';
 import OnboardingPage from './pages/landlord/OnboardingPage';
 import { useAlerts } from './pages/landlord/useAlerts';
+import { BarsIcon, BellIcon, BuildingIcon, GaugeIcon, HomeIcon, ReceiptIcon, ShieldIcon } from './components/NavIcons';
 
-// The bell in the header: a link to the alerts centre with the number of alerts not read yet.
+// The bell in the header: a square button linking to the alerts centre, with a dot while something is unread.
 function AlertsBell() {
   const { t } = useTranslation();
   const { unread } = useAlerts();
   return (
-    <NavLink to="/alerts" aria-label={t('alerts.title')} className="relative px-1 text-lg">
-      🔔
-      {unread.length > 0 && (
-        <span className="absolute -end-1 -top-1 min-w-4 rounded-full bg-warn-strong px-1 text-center text-[10px] font-bold leading-4 text-black">{unread.length}</span>
-      )}
+    <NavLink to="/alerts" aria-label={t('alerts.title')} className="relative flex h-11 w-11 items-center justify-center rounded-xl border border-line bg-card text-ink-2">
+      <BellIcon />
+      {unread.length > 0 && <span data-testid="alerts-dot" className="absolute left-2.5 top-2 h-[9px] w-[9px] rounded-full border-2 border-white bg-danger" />}
     </NavLink>
   );
 }
 
-const navClass = ({ isActive }: { isActive: boolean }) => `rounded-xl px-3 py-1.5 text-sm ${isActive ? 'bg-primary-soft font-semibold text-primary-dark' : 'text-muted'}`;
+// One tab of the bottom bar: the icon sits in a pill that turns soft teal when the tab is active.
+function Tab({ to, end, icon, label }: { to: string; end?: boolean; icon: ReactNode; label: string }) {
+  return (
+    <NavLink to={to} end={end} className={({ isActive }) => `flex flex-1 flex-col items-center justify-center gap-1 rounded-xl text-xs ${isActive ? 'font-semibold text-primary-dark' : 'text-muted hover:text-ink'}`}>
+      {({ isActive }) => (
+        <>
+          <span className={`flex h-[30px] w-[52px] items-center justify-center rounded-full ${isActive ? 'bg-primary-soft' : ''}`}>{icon}</span>
+          {label}
+        </>
+      )}
+    </NavLink>
+  );
+}
 
 function Shell() {
   const { t } = useTranslation();
@@ -46,27 +57,24 @@ function Shell() {
   const { role } = useRole();
   return (
     <div className="mx-auto flex min-h-dvh max-w-2xl flex-col">
-      <header className="flex items-center justify-between border-b border-line bg-card p-3 print:hidden">
-        <img src="/brand/logo.svg" alt={t('app.name')} className="h-8 w-auto" />
-        <div className="flex items-center gap-3 text-sm">
-          {role?.kind === 'landlord' && <AlertsBell />}
-          <button onClick={() => void supabase.auth.signOut()}>{t('auth.signOut')}</button>
-        </div>
+      <header className="flex items-center justify-between px-[18px] pb-1 pt-4 print:hidden">
+        <button className="h-11 rounded-xl px-2 text-sm text-muted" onClick={() => void supabase.auth.signOut()}>
+          {t('auth.signOut')}
+        </button>
+        {role?.kind === 'landlord' && <AlertsBell />}
       </header>
       <main className="flex-1">
         <Outlet />
       </main>
-      <nav className="flex justify-around border-t border-line bg-card p-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] print:hidden">
-        <NavLink to="/" end className={navClass}>
-          {t('nav.home')}
-        </NavLink>
-        {role?.kind === 'landlord' && <NavLink to="/readings" className={navClass}>{t('nav.readings')}</NavLink>}
-        {role?.kind === 'landlord' && <NavLink to="/bills" className={navClass}>{t('nav.bills')}</NavLink>}
-        {role?.kind === 'landlord' && <NavLink to="/history" className={navClass}>{t('nav.history')}</NavLink>}
-        {role?.kind === 'landlord' && <NavLink to="/property" className={navClass}>{t('nav.property')}</NavLink>}
-        {role?.kind === 'renter' && <NavLink to="/report" className={navClass}>{t('nav.report')}</NavLink>}
-        {role?.kind === 'renter' && <NavLink to="/my-bill" className={navClass}>{t('nav.myBill')}</NavLink>}
-        {isPlatformAdmin && <NavLink to="/admin" className={navClass}>{t('nav.admin')}</NavLink>}
+      <nav aria-label={t('nav.label')} className="flex h-[78px] items-stretch justify-around border-t border-line bg-card px-1.5 pb-[max(0.875rem,env(safe-area-inset-bottom))] pt-1.5 print:hidden">
+        <Tab to="/" end icon={<HomeIcon />} label={t('nav.home')} />
+        {role?.kind === 'landlord' && <Tab to="/readings" icon={<GaugeIcon />} label={t('nav.readings')} />}
+        {role?.kind === 'landlord' && <Tab to="/bills" icon={<ReceiptIcon />} label={t('nav.bills')} />}
+        {role?.kind === 'landlord' && <Tab to="/history" icon={<BarsIcon />} label={t('nav.history')} />}
+        {role?.kind === 'landlord' && <Tab to="/property" icon={<BuildingIcon />} label={t('nav.property')} />}
+        {role?.kind === 'renter' && <Tab to="/report" icon={<GaugeIcon />} label={t('nav.report')} />}
+        {role?.kind === 'renter' && <Tab to="/my-bill" icon={<ReceiptIcon />} label={t('nav.myBill')} />}
+        {isPlatformAdmin && <Tab to="/admin" icon={<ShieldIcon />} label={t('nav.admin')} />}
       </nav>
     </div>
   );

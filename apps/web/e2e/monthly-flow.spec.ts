@@ -20,14 +20,14 @@ test('landlord sets up an organization, property, unit, contract and meters', as
   // brand-new users create their organization
   await page.getByPlaceholder(he.home.orgName).fill('E2E Landlord');
   await page.getByRole('button', { name: he.home.createOrg }).click();
-  await expect(page.getByRole('heading', { name: 'E2E Landlord' })).toBeVisible();
+  await expect(page.getByText(/E2E Landlord/)).toBeVisible();
 
   // property (added in the Property tab)
   await page.getByRole('link', { name: he.nav.property, exact: true }).click();
   await page.getByRole('button', { name: he.landlord.addProperty }).click();
   await page.getByPlaceholder(he.landlord.propertyName).fill('Dizengoff 10');
   await page.getByRole('button', { name: he.common.save }).click();
-  await page.getByRole('link', { name: /Dizengoff 10/ }).click();
+  await page.getByRole('link', { name: he.landlord.tariffsAndMeters }).click();
 
   // main (building) water meter
   const meterForm = page.locator('form').filter({ has: page.getByPlaceholder(he.meters.namePlaceholder) });
@@ -89,10 +89,12 @@ test('the landlord sees the reading, adds the main meter reading and the month i
   await signIn(page, landlord);
   await page.getByRole('link', { name: he.nav.readings }).click();
   await expect(page.getByText(progress(1, 2))).toBeVisible();
+  await page.getByRole('tab', { name: /Apt 1/ }).click();
 
   const values = await page.locator('input[type=number]').evaluateAll((els) => els.map((e) => (e as HTMLInputElement).value));
   expect(values).toContain('1250');
 
+  await page.getByRole('tab', { name: new RegExp(he.meters.main) }).click();
   // the building water meter is the one still empty
   const mainInput = page.locator('form', { hasText: 'Building water' }).locator('input[type=number]');
   await mainInput.fill('480');
@@ -109,6 +111,7 @@ test('the landlord sets tariffs, approves the month and marks it paid', async ({
 
   // the opening (previous month) reading of the unit meter
   await page.getByRole('link', { name: he.nav.readings }).click();
+  await page.getByRole('tab', { name: /Apt 1/ }).click();
   await page.getByLabel('previous month').click();
   const meterForm = page.locator('form', { hasText: 'Apt 1 electricity' });
   await meterForm.locator('input[type=number]').fill('1000');
@@ -117,7 +120,7 @@ test('the landlord sets tariffs, approves the month and marks it paid', async ({
 
   // tariffs on the property page
   await page.getByRole('link', { name: he.nav.property, exact: true }).click();
-  await page.getByRole('link', { name: /Dizengoff 10/ }).click();
+  await page.getByRole('link', { name: he.landlord.tariffsAndMeters }).click();
   await page.getByLabel(he.tariff.electricityRate, { exact: true }).fill('0.64');
   await page.getByLabel(he.tariff.electricityFixed, { exact: true }).fill('90');
   await page.getByLabel(he.tariff.waterA, { exact: true }).fill('4.543');
@@ -247,7 +250,7 @@ test('the landlord sees the consumption history and the alerts centre', async ({
 test('the landlord replaces the tenant; the old renter keeps the bills but cannot report', async ({ page }) => {
   await signIn(page, landlord);
   await page.getByRole('link', { name: he.nav.property, exact: true }).click();
-  await page.getByRole('link', { name: /Dizengoff 10/ }).click();
+  await page.getByRole('link', { name: he.landlord.tariffsAndMeters }).click();
   await page.getByRole('link', { name: /Apt 1/ }).click();
   await page.getByRole('button', { name: he.replace.button }).click();
 
@@ -282,7 +285,7 @@ test('a new landlord sets up a whole property in one scroll', async ({ page }) =
   await signUp(page, wizardLandlord);
   await page.getByPlaceholder(he.home.orgName).fill('Wizard Landlord');
   await page.getByRole('button', { name: he.home.createOrg }).click();
-  await expect(page.getByRole('heading', { name: 'Wizard Landlord' })).toBeVisible();
+  await expect(page.getByText(/Wizard Landlord/)).toBeVisible();
 
   // the home page invites to set up the first property
   await page.getByRole('link', { name: he.landlordHome.firstProperty }).click();

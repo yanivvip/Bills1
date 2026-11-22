@@ -1,5 +1,7 @@
 import { Link } from 'react-router-dom';
+import type { ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
+import { BoltIcon, CalendarIcon, CheckIcon, DropIcon, GaugeIcon, ReceiptIcon } from '../../components/NavIcons';
 import { formatMoney } from '../../lib/money';
 import { monthLabel } from '../../lib/period';
 import { useAlerts, type Alert } from './useAlerts';
@@ -30,16 +32,34 @@ export default function AlertsPage() {
     }
   };
 
+  // the round icon of an alert: its colour says how serious it is
+  const icon = (a: Alert): [ReactNode, string] => {
+    switch (a.type) {
+      case 'highUsage':
+        return [a.params.kind === 'water' ? <DropIcon /> : <BoltIcon />, 'bg-warn-soft text-warn'];
+      case 'noReport':
+        return [<GaugeIcon />, 'bg-warn-soft text-warn'];
+      case 'unpaid':
+        return [<ReceiptIcon />, 'bg-warn-soft text-warn'];
+      case 'renterPaid':
+      case 'reported':
+        return [<CheckIcon />, 'bg-primary-soft text-primary-dark'];
+      case 'contractEnding':
+        return [<CalendarIcon />, 'bg-track text-ink-2'];
+    }
+  };
+
   const row = (a: Alert, isNew: boolean) => {
     const { title, body } = text(a);
+    const [glyph, tone] = icon(a);
     return (
       <li key={a.key}>
-        <Link to={a.to} className={`flex flex-col gap-0.5 rounded-xl px-3 py-2 ${isNew ? 'bg-warn-soft' : 'border border-line bg-card'}`}>
-          <span className="flex items-center gap-2 font-semibold">
-            {isNew && <span aria-hidden className="h-2 w-2 rounded-full bg-warn-strong" />}
-            {title}
+        <Link to={a.to} className={`flex items-start gap-3 rounded-2xl border p-3.5 ${isNew ? 'border-[#a7c9c1] bg-[#f7fbfa]' : 'border-line bg-card'}`}>
+          <span className={`flex h-[38px] w-[38px] flex-none items-center justify-center rounded-xl ${tone}`}>{glyph}</span>
+          <span className="flex flex-1 flex-col">
+            <span className="text-[15px] font-medium leading-snug">{title}</span>
+            <span className="mt-0.5 text-sm leading-snug text-muted">{body}</span>
           </span>
-          <span className="text-sm text-ink-2">{body}</span>
         </Link>
       </li>
     );
@@ -49,11 +69,11 @@ export default function AlertsPage() {
   const old = alerts.filter((a) => seen.has(a.key));
 
   return (
-    <section className="flex flex-col gap-4 p-4">
-      <div className="flex items-center justify-between gap-2">
-        <h1 className="text-2xl font-bold">{t('alerts.title')}</h1>
+    <section className="flex flex-col gap-2.5 px-[18px] pb-4 pt-1">
+      <div className="mb-1 flex items-center justify-between gap-2">
+        <h1 className="text-[22px] font-semibold">{t('alerts.title')}</h1>
         {unread.length > 0 && (
-          <button className="text-sm text-ink-2 underline" onClick={markAllRead}>
+          <button className="h-10 px-2.5 text-sm font-medium text-primary-dark" onClick={markAllRead}>
             {t('alerts.markAllRead')}
           </button>
         )}
@@ -61,14 +81,14 @@ export default function AlertsPage() {
       {alerts.length === 0 && <p className="rounded-2xl bg-ok-soft p-3 text-sm text-ok">✓ {t('alerts.none')}</p>}
       {fresh.length > 0 && (
         <>
-          <h2 className="text-sm font-semibold text-muted">{t('alerts.new')}</h2>
-          <ul className="flex flex-col gap-2">{fresh.map((a) => row(a, true))}</ul>
+          <h2 className="mx-1 mt-1.5 text-sm font-medium text-muted">{t('alerts.new')}</h2>
+          <ul className="flex flex-col gap-2.5">{fresh.map((a) => row(a, true))}</ul>
         </>
       )}
       {old.length > 0 && (
         <>
-          <h2 className="text-sm font-semibold text-muted">{t('alerts.earlier')}</h2>
-          <ul className="flex flex-col gap-2">{old.map((a) => row(a, false))}</ul>
+          <h2 className="mx-1 mt-1.5 text-sm font-medium text-muted">{t('alerts.earlier')}</h2>
+          <ul className="flex flex-col gap-2.5">{old.map((a) => row(a, false))}</ul>
         </>
       )}
     </section>

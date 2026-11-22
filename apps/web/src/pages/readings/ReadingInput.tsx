@@ -1,5 +1,6 @@
 import { useEffect, useState, type FormEvent } from 'react';
 import { useTranslation } from 'react-i18next';
+import { BoltIcon, DropIcon } from '../../components/NavIcons';
 import { defaultReadDate, monthLabel, today } from '../../lib/period';
 import type { MeterRow, ReadingRow } from './useMonthlyReadings';
 
@@ -46,59 +47,73 @@ export default function ReadingInput({
     setState((await onSave(entered, date)) ? 'saved' : 'failed');
   };
 
+  const isWater = meter.kind === 'water';
   return (
-    <form onSubmit={submit} className="flex flex-col gap-1 rounded-xl border border-line bg-card p-3">
+    <form onSubmit={submit} className="flex flex-col gap-3.5 rounded-[18px] border border-line bg-card p-4">
       <div className="flex items-center justify-between gap-2">
-        <strong>
-          {meter.kind === 'electricity' ? '⚡' : '💧'} {meter.name}
-        </strong>
+        <span className="flex items-center gap-2.5">
+          <span className={`flex h-[34px] w-[34px] flex-none items-center justify-center rounded-[10px] ${isWater ? 'bg-info-soft text-info' : 'bg-warn-soft text-warn'}`}>{isWater ? <DropIcon /> : <BoltIcon />}</span>
+          <strong className="text-[17px] font-semibold">{meter.name}</strong>
+        </span>
         {current ? (
-          <span className="text-xs text-ok">✓ {t('readings.submitted')}</span>
+          <span className="inline-flex h-[26px] items-center rounded-full bg-primary-soft px-2.5 text-[13px] font-medium text-primary-dark">✓ {t('readings.submitted')}</span>
         ) : (
-          <span className="text-xs text-warn">{t('readings.missing')}</span>
+          <span className="inline-flex h-[26px] items-center rounded-full bg-warn-soft px-2.5 text-[13px] font-medium text-warn">{t('readings.missing')}</span>
         )}
       </div>
-      <div className="flex gap-2">
-        <input
-          type="number"
-          inputMode="decimal"
-          step="any"
-          min="0"
-          value={text}
-          disabled={locked}
-          onChange={(e) => {
-            setText(e.target.value);
-            setState('idle');
-          }}
-          placeholder={`${t('readings.value')} (${unitOf(meter.kind)})`}
-          className="flex-1 rounded-lg bg-field px-3 py-2 outline-none focus:ring-2 focus:ring-primary disabled:opacity-60"
-        />
-        <button
-          disabled={!valid || !validDate || !dirty || state === 'saving' || locked}
-          className="rounded-lg bg-primary text-white px-4 py-2 font-semibold disabled:opacity-50"
-        >
+      <div className="grid grid-cols-2 gap-3">
+        <div>
+          <div className="mb-1.5 text-[13px] text-muted">{previous ? t('readings.last') : t('readings.noPrevious')}</div>
+          <div dir="ltr" className="flex h-[52px] items-center rounded-xl bg-page px-3.5 text-xl text-ink-2">
+            {previous ? previous.value : '—'}
+          </div>
+        </div>
+        <label className="block">
+          <span className="mb-1.5 block text-[13px] text-muted">{t('readings.value')} ({unitOf(meter.kind)})</span>
+          <input
+            type="number"
+            inputMode="decimal"
+            step="any"
+            min="0"
+            dir="ltr"
+            value={text}
+            disabled={locked}
+            onChange={(e) => {
+              setText(e.target.value);
+              setState('idle');
+            }}
+            placeholder={`${t('readings.value')} (${unitOf(meter.kind)})`}
+            aria-label={`${t('readings.value')} (${unitOf(meter.kind)})`}
+            className="h-[52px] w-full rounded-xl border border-line-strong bg-white px-3.5 text-xl font-medium outline-none focus:ring-2 focus:ring-primary disabled:opacity-60"
+          />
+        </label>
+      </div>
+      {used !== null && (
+        <div className="flex items-center justify-between rounded-[10px] bg-[#f1f8f6] px-3 py-2.5 text-[15px]">
+          <span className="text-muted">{t('readings.used')}</span>
+          <span dir="ltr" className="font-medium">
+            {Math.round(used * 1000) / 1000} {unitOf(meter.kind)}
+          </span>
+        </div>
+      )}
+      <div className="flex items-end gap-3">
+        <label className="flex flex-1 flex-col gap-1 text-[13px] text-muted">
+          {t('readings.date')}
+          <input
+            type="date"
+            value={date}
+            max={today()}
+            disabled={locked}
+            onChange={(e) => {
+              setDate(e.target.value);
+              setState('idle');
+            }}
+            className="h-11 rounded-xl border border-line-strong bg-white px-3 text-[15px] text-ink outline-none focus:ring-2 focus:ring-primary disabled:opacity-60"
+          />
+        </label>
+        <button disabled={!valid || !validDate || !dirty || state === 'saving' || locked} className="h-11 rounded-xl bg-primary px-6 font-semibold text-white disabled:opacity-50">
           {state === 'saving' ? '…' : t('common.save')}
         </button>
-      </div>
-      <label className="flex items-center gap-2 text-xs text-muted">
-        {t('readings.date')}
-        <input
-          type="date"
-          value={date}
-          max={today()}
-          disabled={locked}
-          onChange={(e) => {
-            setDate(e.target.value);
-            setState('idle');
-          }}
-          className="rounded-lg bg-field px-2 py-1 text-ink outline-none focus:ring-2 focus:ring-primary disabled:opacity-60"
-        />
-      </label>
-      <div className="text-xs text-muted">
-        {previous
-          ? `${t('readings.last')}: ${previous.value} ${unitOf(meter.kind)}`
-          : t('readings.noPrevious')}
-        {used !== null && ` · ${t('readings.used')}: ${Math.round(used * 1000) / 1000} ${unitOf(meter.kind)}`}
       </div>
       {lower && <p className="text-xs text-warn">{t('readings.lowerWarning')}</p>}
       {state === 'saved' && (

@@ -25,6 +25,7 @@
     "passwordHint": "לפחות 8 תווים."
   },
   "nav": {
+    "label": "ניווט ראשי",
     "home": "ראשי",
     "admin": "ניהול",
     "readings": "קריאות",
@@ -78,6 +79,14 @@
     "orgName": "שם הארגון"
   },
   "landlord": {
+    "connected": "מחובר",
+    "inviteSent": "הזמנה נשלחה",
+    "settingsTitle": "הגדרות הנכס",
+    "tariffsAndMeters": "תעריפים ומונים",
+    "tariffsAndMetersHint": "תעריפי חשמל, מים וביוב, מונים ופריסת המונים",
+    "extraCharges": "חיובים נוספים",
+    "extraChargesHint": "ארנונה, ועד בית ועוד – קבועים או חד-פעמיים",
+    "general": "כללי",
     "properties": "נכסים",
     "noProperties": "עדיין אין נכסים. הוסף את הראשון למטה.",
     "propertyName": "שם הנכס",
@@ -206,6 +215,8 @@
     "waterPercent": "חלק במונה המים המשותף (%)"
   },
   "bills": {
+    "totalToPay": "סה״כ לתשלום",
+    "totalToCollect": "סה״כ לגבייה",
     "title": "חשבונות חודשיים",
     "noProperty": "עדיין אין נכסים.",
     "noTariff": "עדיין לא הוגדרו תעריפים לנכס הזה.",
@@ -479,6 +490,10 @@
     "reset": "שחזור הנוסח המקורי"
   },
   "landlordHome": {
+    "night": "לילה טוב",
+    "morning": "בוקר טוב",
+    "afternoon": "צהריים טובים",
+    "evening": "ערב טוב",
     "firstProperty": "מוסיפים את הנכס הראשון",
     "firstPropertyBody": "שם, כתובת, יחידות ושוכרים – ובכל זמן אפשר לשנות.",
     "readings": "קריאות החודש",

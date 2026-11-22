@@ -71,8 +71,8 @@ export default function BillsPage({ orgId }: { orgId: string }) {
   };
 
   return (
-    <section className="flex flex-col gap-4 p-4">
-      <h1 className="text-2xl font-bold">{t('bills.title')}</h1>
+    <section className="flex flex-col gap-3.5 px-[18px] pb-4 pt-1">
+      <h1 className="text-2xl font-semibold">{t('bills.title')}</h1>
       {properties.length > 1 && (
         <select value={propertyId} onChange={(e) => setPropertyId(e.target.value)} className={input} aria-label={t('landlord.properties')}>
           {properties.map((p) => (
@@ -98,6 +98,12 @@ export default function BillsPage({ orgId }: { orgId: string }) {
       {/* ── approved month ── */}
       {b.loaded && b.billing && (
         <>
+          <div className="flex items-baseline justify-between px-1">
+            <span className="text-muted">{t('bills.totalToCollect')}</span>
+            <span className="text-[26px] font-semibold" dir="ltr">
+              {money(b.statements.reduce((sum, s) => sum + s.total_agorot, 0))}
+            </span>
+          </div>
           <p className="text-sm text-ok">✓ {t('bills.approved')}</p>
           {b.statements.map((s) => (
             <StatementCard key={s.id} s={s} unit={unitName(s.unit_id)} payments={b.payments.filter((p) => p.statement_id === s.id)} busy={busy} act={act} />
@@ -163,17 +169,17 @@ function StatementCard({ s, unit, payments, busy, act }: { s: StatementRow; unit
   return (
     <div className={card}>
       <div className="flex items-center justify-between gap-2">
-        <strong className="text-lg">{unit}</strong>
+        <strong className="text-[17px] font-semibold">{unit}</strong>
         {full ? (
-          <span className="rounded-full bg-ok-soft text-ok px-2 py-0.5 text-xs">{t('bills.paid')}</span>
+          <span className="inline-flex h-[26px] items-center rounded-full bg-primary-soft px-2.5 text-[13px] font-medium text-primary-dark">✓ {t('bills.paid')}</span>
         ) : s.paid_agorot > 0 ? (
-          <span className="rounded-full bg-info-soft text-info px-2 py-0.5 text-xs">{t('bills.partlyPaid')}</span>
+          <span className="inline-flex h-[26px] items-center rounded-full bg-info-soft px-2.5 text-[13px] font-medium text-info">{t('bills.partlyPaid')}</span>
         ) : (
-          <span className="rounded-full bg-warn-soft text-warn px-2 py-0.5 text-xs">{t('bills.unpaid')}</span>
+          <span className="inline-flex h-[26px] items-center rounded-full bg-warn-soft px-2.5 text-[13px] font-medium text-warn">{t('bills.unpaid')}</span>
         )}
       </div>
       <StatementView lines={s.lines} total={s.total_agorot} />
-      <Link to={`/bill/${s.id}`} className="self-start text-sm underline">
+      <Link to={`/bill/${s.id}`} className="flex h-12 items-center justify-center rounded-xl border border-line-strong text-[15px] font-medium text-primary-dark">
         {t('bills.viewBill')}
       </Link>
       {full && s.paid_on && (
@@ -244,7 +250,7 @@ function SupplierCard({ orgId, propertyId, period, supplier, lines, act, busy }:
   };
   return (
     <div className={card}>
-      <h2 className="text-xl font-semibold text-ink-2">{t('bills.supplierTitle')}</h2>
+      <h2 className="text-[17px] font-semibold">{t('bills.supplierTitle')}</h2>
       <p className="text-xs text-muted">{t('bills.supplierHint')}</p>
       {(['electricity', 'water'] as const).map((k) => (
         <div key={k} className="flex flex-col gap-1">

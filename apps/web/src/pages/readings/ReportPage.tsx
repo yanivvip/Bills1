@@ -17,10 +17,10 @@ export default function ReportPage() {
   const property = meters[0]?.properties?.name;
 
   return (
-    <section className="flex flex-col gap-4 p-4">
+    <section className="flex flex-col gap-3.5 px-[18px] pb-4 pt-1">
       <div>
-        <h1 className="text-2xl font-bold">{t('readings.report')}</h1>
-        {property && <p className="text-muted">{property} · {unit}</p>}
+        <h1 className="text-[22px] font-semibold">{t('readings.report')}</h1>
+        {property && <p className="text-sm text-muted">{property} · {unit}</p>}
       </div>
       <MonthNav period={period} onChange={setPeriod} />
       {error && <p className="text-sm text-danger">{error}</p>}

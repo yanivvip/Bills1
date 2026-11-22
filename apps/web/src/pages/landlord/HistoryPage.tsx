@@ -100,19 +100,19 @@ export default function HistoryPage() {
   const lastMonth = view ? view.months[5]! : '';
 
   const chip = (key: string, label: string) => (
-    <button key={key} onClick={() => setScopeKey(key)} aria-pressed={scopeKey === key} className={`whitespace-nowrap rounded-full px-3 py-1.5 text-sm ${scopeKey === key ? 'bg-primary text-white font-semibold' : 'bg-field'}`}>
+    <button key={key} onClick={() => setScopeKey(key)} aria-pressed={scopeKey === key} className={`h-9 whitespace-nowrap rounded-full border px-3.5 text-sm ${scopeKey === key ? 'border-ink bg-ink text-white' : 'border-line-strong bg-white text-[#3e4643]'}`}>
       {label}
     </button>
   );
   const tab = (k: Kind, label: string) => (
-    <button key={k} onClick={() => setKind(k)} aria-pressed={kind === k} className={`flex-1 rounded-lg px-3 py-2 text-sm ${kind === k ? 'bg-primary text-white font-semibold' : 'bg-field'}`}>
+    <button key={k} onClick={() => setKind(k)} aria-pressed={kind === k} className={`h-10 flex-1 rounded-[9px] text-[15px] ${kind === k ? 'bg-white font-semibold text-primary-dark shadow-sm' : 'text-[#3e4643]'}`}>
       {label}
     </button>
   );
 
   return (
-    <section className="flex flex-col gap-4 p-4">
-      <h1 className="text-2xl font-bold">{t('history.title')}</h1>
+    <section className="flex flex-col gap-3.5 px-[18px] pb-4 pt-1">
+      <h1 className="text-2xl font-semibold">{t('history.title')}</h1>
       {properties.length > 1 && (
         <select value={propertyId} onChange={(e) => setPropertyId(e.target.value)} className={input} aria-label={t('landlord.properties')}>
           {properties.map((p) => (
@@ -127,7 +127,7 @@ export default function HistoryPage() {
 
       {data && view && (
         <>
-          <div className="flex gap-2">
+          <div className="flex gap-1 rounded-xl bg-track p-1" role="tablist">
             {tab('electricity', t('meters.electricity'))}
             {tab('water', t('meters.water'))}
             {tab('cost', t('history.cost'))}
@@ -139,10 +139,10 @@ export default function HistoryPage() {
           </div>
 
           <div className={card}>
-            <h2 className="font-semibold text-ink-2">
+            <h2 className="text-[17px] font-semibold">
               {t('history.last6')} · {kind === 'cost' ? '₪' : unitLabel}
             </h2>
-            <div className="flex h-40 items-end gap-2" role="img" aria-label={t('history.last6')}>
+            <div dir="ltr" className="flex h-40 items-end gap-2" role="img" aria-label={t('history.last6')}>
               {view.months.map((p, i) => {
                 const v = view.series[i];
                 return (
@@ -150,7 +150,7 @@ export default function HistoryPage() {
                     <span dir="ltr" className={v === undefined ? 'text-faint' : 'text-ink'}>
                       {v === undefined ? '—' : show(v)}
                     </span>
-                    <div className={`w-full rounded-t-md ${i === 5 ? 'bg-primary' : 'bg-primary-mid'}`} style={{ height: `${v === undefined ? 2 : Math.max(3, (v / max) * 100)}%` }} />
+                    <div className={`w-7 rounded-t-lg rounded-b ${i === 5 ? 'bg-primary-mid' : 'bg-[#9cc9bf]'}`} style={{ height: `${v === undefined ? 2 : Math.max(3, (v / max) * 100)}%` }} />
                     <span className="text-muted">{monthShort(p)}</span>
                   </div>
                 );
@@ -173,7 +173,7 @@ export default function HistoryPage() {
 
           {view.summary.changePct !== undefined && Math.abs(view.summary.changePct) >= 10 && (
             <div className={card}>
-              <h2 className="font-semibold text-ink-2">{t('history.insights')}</h2>
+              <h2 className="text-[17px] font-semibold">{t('history.insights')}</h2>
               <p className="text-sm">
                 {t(view.summary.changePct > 0 ? 'history.higher' : 'history.lower', {
                   what: kind === 'cost' ? t('history.cost') : t(`meters.${kind}`),

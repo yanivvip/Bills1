@@ -7,14 +7,14 @@ import { lineLabel } from '../../lib/billLabels';
 export default function StatementView({ lines, total }: { lines: readonly BillLine[]; total: number }) {
   const { t, i18n } = useTranslation();
   return (
-    <div className="flex flex-col gap-1 text-sm">
+    <div className="flex flex-col text-[15px]">
       {lines.map((l, i) => (
-        <div key={i} className="flex justify-between gap-3">
-          <span className="text-ink-2 print:text-black">{lineLabel(t, l)}</span>
+        <div key={i} className="flex items-center justify-between gap-3 border-t border-line-soft py-2">
+          <span className="text-[#3e4643] print:text-black">{lineLabel(t, l)}</span>
           <span className="whitespace-nowrap" dir="ltr">{formatMoney(l.amount, i18n.language)}</span>
         </div>
       ))}
-      <div className="mt-1 flex justify-between gap-3 border-t border-line pt-1 font-bold print:border-black">
+      <div className="flex justify-between gap-3 border-t border-line pt-2.5 text-base font-semibold print:border-black">
         <span>{t('bills.total')}</span>
         <span dir="ltr">{formatMoney(total, i18n.language)}</span>
       </div>

@@ -5,7 +5,7 @@ import { supabase } from '../../lib/supabase';
 import { formatMoney } from '../../lib/money';
 import { monthLabel, monthStart } from '../../lib/period';
 import AttentionCard from './AttentionCard';
-import { card } from './shared';
+import { ChevronIcon, PlusIcon } from '../../components/NavIcons';
 
 interface Data {
   orgName: string;
@@ -64,49 +64,72 @@ export default function LandlordHome({ orgId }: { orgId: string }) {
   const done = data.meters.filter((m) => m.done).length;
   const money = (a: number) => formatMoney(a, i18n.language);
 
+  const hour = new Date().getHours();
+  const greeting = hour < 5 ? t('landlordHome.night') : hour < 12 ? t('landlordHome.morning') : hour < 18 ? t('landlordHome.afternoon') : t('landlordHome.evening');
+  const pct = data.meters.length ? Math.round((done / data.meters.length) * 100) : 0;
+
   return (
-    <section className="flex flex-col gap-4 p-4">
+    <section className="flex flex-col gap-3.5 px-[18px] pb-4 pt-2">
       <div>
-        <h1 className="text-2xl font-bold">{data.orgName}</h1>
-        <p className="text-muted">{monthLabel(period, i18n.language)}</p>
+        <div className="text-[15px] text-muted">
+          {greeting}
+          {data.orgName ? `, ${data.orgName}` : ''}
+        </div>
+        <h1 className="mt-0.5 text-[26px] font-semibold">{monthLabel(period, i18n.language)}</h1>
       </div>
 
       {data.properties === 0 && (
-        <Link to="/property/new" className="flex flex-col gap-1 rounded-2xl bg-primary p-4 text-white">
+        <Link to="/property/new" className="flex flex-col gap-1 rounded-[18px] bg-primary p-4 text-white">
           <strong className="text-lg">{t('landlordHome.firstProperty')}</strong>
           <span className="text-sm text-white/85">{t('landlordHome.firstPropertyBody')}</span>
         </Link>
       )}
 
       {data.meters.length > 0 && (
-        <div className={card}>
-          <div className="flex items-center justify-between gap-2">
-            <h2 className="text-lg font-semibold text-ink-2">{t('landlordHome.readings')}</h2>
+        <div className="rounded-[18px] border border-line bg-card p-4">
+          <div className="mb-2.5 flex items-center justify-between gap-2">
+            <h2 className="text-[17px] font-semibold">{t('landlordHome.readings')}</h2>
             <span className="text-sm text-muted">{t('landlordHome.readingsProgress', { done, total: data.meters.length })}</span>
           </div>
-          <ul className="flex flex-col gap-1 text-sm">
+          <div className="mb-1 h-2 overflow-hidden rounded bg-track">
+            <div className="h-full rounded bg-primary" style={{ width: `${pct}%` }} />
+          </div>
+          <ul>
             {data.meters.map((m) => (
-              <li key={m.id} className="flex justify-between gap-2">
-                <span>{m.label}</span>
-                <span className={m.done ? 'text-ok' : 'text-warn'}>{m.done ? `✓ ${t('landlordHome.reported')}` : t('landlordHome.waiting')}</span>
+              <li key={m.id} className="flex items-center justify-between gap-2 border-t border-line-soft py-3 first:border-t-0">
+                <span className="font-medium">{m.label}</span>
+                {m.done ? (
+                  <span className="inline-flex h-[26px] items-center rounded-full bg-primary-soft px-2.5 text-[13px] font-medium text-primary-dark">✓ {t('landlordHome.reported')}</span>
+                ) : (
+                  <span className="inline-flex h-[26px] items-center rounded-full bg-warn-soft px-2.5 text-[13px] font-medium text-warn">{t('landlordHome.waiting')}</span>
+                )}
               </li>
             ))}
           </ul>
-          <Link to="/readings" className="self-start rounded-lg bg-field px-3 py-1.5 text-sm font-semibold">
-            {t('landlordHome.enterReading')}
-          </Link>
         </div>
       )}
 
+      {data.meters.length > 0 && (
+        <Link to="/readings" className="flex h-14 items-center justify-center gap-2 rounded-2xl bg-primary text-[17px] font-medium text-white">
+          <PlusIcon />
+          {t('landlordHome.enterReading')}
+        </Link>
+      )}
+
       {data.bill && (
-        <Link to="/bills" className={card}>
-          <span className="text-sm text-muted">
-            {t('landlordHome.lastBills')} · {monthLabel(data.bill.period, i18n.language)}
+        <Link to="/bills" className="flex items-center justify-between rounded-[18px] border border-line bg-card p-4">
+          <span className="flex flex-col">
+            <span className="text-sm text-muted">
+              {t('landlordHome.lastBills')} · {monthLabel(data.bill.period, i18n.language)}
+            </span>
+            <strong className="mt-0.5 text-[26px] font-semibold" dir="ltr">
+              {money(data.bill.total)}
+            </strong>
+            <span className="mt-0.5 text-[13px] text-primary-dark">{t('landlordHome.paidOf', { paid: data.bill.paidCount, count: data.bill.count, amount: money(data.bill.paid) })}</span>
           </span>
-          <strong className="text-3xl" dir="ltr">
-            {money(data.bill.total)}
-          </strong>
-          <span className="text-sm text-muted">{t('landlordHome.paidOf', { paid: data.bill.paidCount, count: data.bill.count, amount: money(data.bill.paid) })}</span>
+          <span className="text-muted">
+            <ChevronIcon />
+          </span>
         </Link>
       )}
 

@@ -16,6 +16,7 @@ interface Group {
 export default function ReadingsPage() {
   const { t } = useTranslation();
   const [period, setPeriod] = useState(monthStart());
+  const [group, setGroup] = useState('');
   const { meters, error, save, current, previous } = useMonthlyReadings(period);
 
   if (!meters) return <p className="p-4">{t('common.loading')}</p>;
@@ -35,9 +36,11 @@ export default function ReadingsPage() {
 
   const done = meters.filter((m) => current(m.id)).length;
 
+  const shown = groups.find((g) => g.key === group) ?? groups.find((g) => g.meters.some((m) => !current(m.id))) ?? groups[0];
+
   return (
-    <section className="flex flex-col gap-4 p-4">
-      <h1 className="text-2xl font-bold">{t('readings.title')}</h1>
+    <section className="flex flex-col gap-3.5 px-[18px] pb-4 pt-1">
+      <h1 className="text-2xl font-semibold">{t('readings.title')}</h1>
       <MonthNav period={period} onChange={setPeriod} />
       {meters.length > 0 && (
         <p className={`text-sm ${done === meters.length ? 'text-ok' : 'text-warn'}`}>
@@ -52,14 +55,29 @@ export default function ReadingsPage() {
         </p>
       )}
 
-      {groups.map((g) => (
-        <div key={g.key} className="flex flex-col gap-2">
-          <h2 className="text-sm font-semibold uppercase tracking-wide text-muted">{g.title}</h2>
-          {g.meters.map((m) => (
+      {groups.length > 1 && (
+        <div className="flex gap-1 rounded-xl bg-track p-1" role="tablist">
+          {groups.map((g) => {
+            const complete = g.meters.every((m) => current(m.id));
+            const on = g.key === shown?.key;
+            return (
+              <button key={g.key} role="tab" aria-selected={on} onClick={() => setGroup(g.key)} className={`h-10 flex-1 rounded-[9px] px-1 text-sm ${on ? 'bg-white font-semibold text-primary-dark shadow-sm' : 'text-ink-2'}`}>
+                {g.title.split(' · ').slice(1).join(' · ') || g.title}
+                {complete ? ' ✓' : ''}
+              </button>
+            );
+          })}
+        </div>
+      )}
+
+      {shown && (
+        <div key={shown.key} className="flex flex-col gap-3.5">
+          {groups.length === 1 && <h2 className="text-sm font-semibold text-muted">{shown.title}</h2>}
+          {shown.meters.map((m) => (
             <ReadingInput key={m.id} meter={m} period={period} current={current(m.id)} previous={previous(m.id)} onSave={(v, d) => save(m, v, d)} />
           ))}
         </div>
-      ))}
+      )}
     </section>
   );
 }

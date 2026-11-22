@@ -21,9 +21,9 @@ export interface Contract {
   contract_renters: Renter[];
 }
 
-export const input = 'rounded-lg border border-line bg-white px-3 py-2 outline-none focus:ring-2 focus:ring-primary';
-export const primary = 'rounded-lg bg-primary text-white px-4 py-2 font-semibold';
-export const card = 'flex flex-col gap-3 rounded-2xl border border-line bg-card p-4';
+export const input = 'rounded-xl border border-line-strong bg-white px-3 py-2.5 outline-none focus:ring-2 focus:ring-primary';
+export const primary = 'rounded-xl bg-primary text-white px-4 py-3 font-semibold';
+export const card = 'flex flex-col gap-3 rounded-[18px] border border-line bg-card p-4';
 
 const shekels = (agorot: number) => (agorot / 100).toLocaleString(undefined, { minimumFractionDigits: 2 });
 const parseEmails = (s: string) => [...new Set(s.split(/[\s,;]+/).map((x) => x.trim().toLowerCase()).filter(Boolean))];

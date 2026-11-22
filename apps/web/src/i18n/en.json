@@ -93,6 +93,7 @@
     "orgName": "Organization name"
   },
   "landlord": {
+    "newProperty": "New property",
     "alertsTitle": "Alerts",
     "unitsAndRenters": "Units and renters",
     "tariffs": "Tariffs",

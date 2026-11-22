@@ -93,6 +93,7 @@
     "orgName": "שם הארגון"
   },
   "landlord": {
+    "newProperty": "נכס חדש",
     "alertsTitle": "התראות",
     "unitsAndRenters": "יחידות ושוכרים",
     "tariffs": "תעריפים",

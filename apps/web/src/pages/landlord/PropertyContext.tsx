@@ -1,3 +1,5 @@
+import { useTranslation } from 'react-i18next';
+import { useNavigate } from 'react-router-dom';
 import { createContext, useCallback, useContext, useEffect, useState, type ReactNode } from 'react';
 import { useLocation } from 'react-router-dom';
 import { supabase } from '../../lib/supabase';
@@ -56,26 +58,27 @@ export function PropertyProvider({ enabled, children }: { enabled: boolean; chil
 }
 
 // The property switcher of the header: a button with the property name; with several properties it opens the list.
+const NEW = '__new';
+
 export function PropertySwitcher({ label }: { label: string }) {
+  const { t } = useTranslation();
+  const navigate = useNavigate();
   const { properties, propertyId, select } = useProperty();
   if (!properties || properties.length === 0) return <span />;
   return (
     <label className="relative flex h-11 items-center gap-1.5 rounded-xl border border-line bg-card ps-3 pe-2 font-semibold">
       <span className="max-w-[10rem] truncate">{properties.find((p) => p.id === propertyId)?.name}</span>
-      {properties.length > 1 && (
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
           <path d="m6 9 6 6 6-6" />
         </svg>
-      )}
-      {properties.length > 1 && (
-        <select aria-label={label} value={propertyId} onChange={(e) => select(e.target.value)} className="absolute inset-0 h-full w-full cursor-pointer opacity-0">
+      <select aria-label={label} value={propertyId} onChange={(e) => (e.target.value === NEW ? navigate('/property/new') : select(e.target.value))} className="absolute inset-0 h-full w-full cursor-pointer opacity-0">
           {properties.map((p) => (
             <option key={p.id} value={p.id}>
               {p.name}
             </option>
           ))}
+          <option value={NEW}>+ {t('landlord.newProperty')}</option>
         </select>
-      )}
     </label>
   );
 }

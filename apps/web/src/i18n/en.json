@@ -179,6 +179,13 @@
     "none": "No contract is linked to your account yet."
   },
   "admin": {
+    "workAs": "Work as landlord",
+    "workAsReason": "Reason for entering \"{{org}}\" (kept in the audit log):",
+    "workAsFull": "Allow changes too (saving readings etc.)? OK = full, Cancel = view only.",
+    "orgNotUnique": "No single organization with that name was found.",
+    "workingAsFull": "Working as \"{{org}}\" – full mode",
+    "workingAsRead": "View only in \"{{org}}\"",
+    "endWorkAs": "End",
     "title": "Platform admin",
     "users": "Users",
     "usersCount_one": "{{count}} user",

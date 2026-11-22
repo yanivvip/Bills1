@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { useAuth } from '../auth/AuthProvider';
 import { supabase } from '../lib/supabase';
 import AdminTabs from './AdminTabs';
+import { useRole } from '../auth/RoleProvider';
 
 interface UserRow {
   user_id: string;
@@ -34,6 +35,7 @@ export default function AdminPage() {
   const [filter, setFilter] = useState('');
   const [error, setError] = useState('');
   const [busyId, setBusyId] = useState<string | null>(null);
+  const { reload: reloadRole } = useRole();
 
   const load = async () => {
     const { data, error } = await supabase.rpc('admin_list_users');
@@ -53,6 +55,23 @@ export default function AdminPage() {
     setBusyId(null);
     if (error) return setError(error.message);
     await load();
+  };
+
+  // Work inside a landlord's organization for up to an hour (logged in the audit trail), to help or to test.
+  const workAs = async (u: UserRow) => {
+    if (!u.org_name) return;
+    const { data: orgs } = await supabase.from('organizations').select('id').eq('name', u.org_name);
+    if (!orgs || orgs.length !== 1) return setError(t('admin.orgNotUnique'));
+    const reason = window.prompt(t('admin.workAsReason', { org: u.org_name }));
+    if (!reason?.trim()) return;
+    const full = window.confirm(t('admin.workAsFull'));
+    setBusyId(u.user_id);
+    setError('');
+    const { error } = await supabase.rpc('start_impersonation', { p_org: orgs[0]!.id, p_reason: reason.trim(), p_mode: full ? 'full' : 'read_only', p_minutes: 60 });
+    setBusyId(null);
+    if (error) return setError(error.message);
+    await reloadRole();
+    window.location.assign('/');
   };
 
   const removeRenter = async (u: UserRow, r: RenterUnit) => {
@@ -109,6 +128,11 @@ export default function AdminPage() {
             >
               {u.is_super_user ? t('admin.removeSuper') : t('admin.makeSuper')}
             </button>
+            {u.org_name && (
+              <button disabled={busyId === u.user_id} onClick={() => void workAs(u)} className="rounded-lg bg-primary-soft px-3 py-1.5 text-sm font-semibold text-primary-dark disabled:opacity-60">
+                {t('admin.workAs')}
+              </button>
+            )}
             {u.renter_units.map((r) => (
               <button
                 key={r.id}

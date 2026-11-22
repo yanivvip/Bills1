@@ -57,7 +57,7 @@ function Tab({ to, end, icon, label }: { to: string; end?: boolean; icon: ReactN
 function Shell() {
   const { t } = useTranslation();
   const { isPlatformAdmin } = useAuth();
-  const { role } = useRole();
+  const { role, reload: reloadRole } = useRole();
   const { pathname } = useLocation();
   const navigate = useNavigate();
   const taps = useRef<number[]>([]);
@@ -73,6 +73,20 @@ function Shell() {
   const subPage = pathname.startsWith('/alerts') || pathname.startsWith('/bill/') || pathname.startsWith('/property/new');
   return (
     <div className="mx-auto flex min-h-dvh max-w-2xl flex-col">
+      {role?.kind === 'landlord' && role.impersonation && (
+        <div className="flex items-center justify-between gap-3 bg-amber-soft px-[18px] py-2 text-[13px] text-amber-dark print:hidden">
+          <span>{t(role.impersonation.mode === 'full' ? 'admin.workingAsFull' : 'admin.workingAsRead', { org: role.impersonation.orgName })}</span>
+          <button
+            className="h-8 rounded-lg bg-amber-dark px-3 font-semibold text-white"
+            onClick={() => void supabase.rpc('end_impersonation', { p_session: role.impersonation!.sessionId }).then(async () => {
+              await reloadRole();
+              window.location.assign('/admin');
+            })}
+          >
+            {t('admin.endWorkAs')}
+          </button>
+        </div>
+      )}
       {role?.kind !== 'renter' && !subPage && (
       <header className="flex items-center justify-between px-[18px] pb-1 pt-4 print:hidden">
         {role?.kind === 'landlord' ? (

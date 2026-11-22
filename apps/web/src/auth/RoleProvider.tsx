@@ -3,7 +3,12 @@ import { useAuth } from './AuthProvider';
 import { supabase } from '../lib/supabase';
 
 // landlord = owner of an organization; renter = linked to a rental contract; none = brand-new user.
-export type Role = { kind: 'landlord'; orgId: string } | { kind: 'renter' } | { kind: 'none' };
+export interface Impersonation {
+  sessionId: string;
+  mode: 'read_only' | 'full';
+  orgName: string;
+}
+export type Role = { kind: 'landlord'; orgId: string; impersonation?: Impersonation } | { kind: 'renter' } | { kind: 'none' };
 
 interface RoleState {
   role: Role | null; // null while loading
@@ -22,6 +27,19 @@ export function RoleProvider({ children }: { children: ReactNode }) {
     if (!uid) return;
     // Link any renter invitations sent to this (confirmed) email before checking roles.
     await supabase.rpc('claim_renter_invites');
+    // a platform admin who is working inside a landlord's organization (a live "work as" session) acts as that landlord
+    const { data: imp } = await supabase
+      .from('impersonation_sessions')
+      .select('id,org_id,mode,organizations(name)')
+      .is('ended_at', null)
+      .gt('expires_at', new Date().toISOString())
+      .order('started_at', { ascending: false })
+      .limit(1)
+      .maybeSingle();
+    if (imp) {
+      const o = (imp as unknown as { organizations: { name: string } | null }).organizations;
+      return setRole({ kind: 'landlord', orgId: imp.org_id, impersonation: { sessionId: imp.id, mode: imp.mode as Impersonation['mode'], orgName: o?.name ?? '' } });
+    }
     const { data: m } = await supabase
       .from('memberships')
       .select('org_id')

@@ -13,8 +13,12 @@ export default function LoginPage() {
   const { session } = useAuth();
   // Invitation links look like /login?mode=signup&email=renter@example.com
   const [params] = useSearchParams();
-  const invited = params.get('mode') === 'signup';
-  const [mode, setMode] = useState<'signIn' | 'signUp'>(invited ? 'signUp' : 'signIn');
+  const linkInvite = params.get('mode') === 'signup';
+  // the opening screen comes first, unless an invitation link already says who the visitor is
+  const [step, setStep] = useState<'intro' | 'form'>(linkInvite ? 'form' : 'intro');
+  const [asRenter, setAsRenter] = useState(false);
+  const invited = linkInvite || asRenter;
+  const [mode, setMode] = useState<'signIn' | 'signUp'>(linkInvite ? 'signUp' : 'signIn');
   const [email, setEmail] = useState(params.get('email') ?? '');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -40,6 +44,54 @@ export default function LoginPage() {
   if (session) return <Navigate to="/" replace />;
 
   const signIn = mode === 'signIn';
+  const open = (m: 'signIn' | 'signUp', renter = false) => {
+    setMode(m);
+    setAsRenter(renter);
+    setStep('form');
+  };
+
+  if (step === 'intro')
+    return (
+      <div className="min-h-dvh bg-page">
+        <main className="mx-auto flex min-h-dvh max-w-sm flex-col gap-7 px-6 pb-8 pt-14">
+          <h1 className="self-start">
+            <img src="/brand/logo.svg" alt={t('app.name')} width={180} height={64} />
+          </h1>
+          <div className="flex flex-1 flex-col justify-center gap-7">
+            <div className="flex h-[220px] items-end justify-center overflow-hidden rounded-[28px] bg-primary-soft pb-7" aria-hidden="true">
+              <svg width="200" height="150" viewBox="0 0 200 150" fill="none">
+                <path d="M30 70 100 18l70 52v72H30z" fill="#fff" stroke="#0E6B5E" strokeWidth="3" strokeLinejoin="round" />
+                <rect x="84" y="96" width="32" height="46" rx="4" fill="#0E6B5E" />
+                <rect x="44" y="84" width="28" height="24" rx="4" fill="#E4F0EC" stroke="#0E6B5E" strokeWidth="2" />
+                <rect x="128" y="84" width="28" height="24" rx="4" fill="#E4F0EC" stroke="#0E6B5E" strokeWidth="2" />
+                <circle cx="168" cy="36" r="18" fill="#fff" stroke="#B7791F" strokeWidth="3" />
+                <path d="M170 26l-7 11h6l-2 9 8-12h-6z" fill="#B7791F" />
+                <circle cx="30" cy="40" r="16" fill="#fff" stroke="#2B6CB0" strokeWidth="3" />
+                <path d="M30 30s7 7 7 12a7 7 0 0 1-14 0c0-5 7-12 7-12z" fill="#2B6CB0" />
+              </svg>
+            </div>
+            <div>
+              <p className="mb-2.5 text-[28px] font-semibold leading-tight">{t('auth.hero')}</p>
+              <p className="text-base leading-relaxed text-muted">{t('auth.heroSub')}</p>
+            </div>
+          </div>
+          <div className="flex flex-col gap-3">
+            <button type="button" onClick={() => open('signUp')} className="h-14 rounded-2xl bg-primary text-[17px] font-medium text-white">
+              {t('auth.introLandlord')}
+            </button>
+            <button type="button" onClick={() => open('signUp', true)} className="h-14 rounded-2xl border border-line-strong bg-white text-[17px] font-medium text-primary-dark">
+              {t('auth.introInvited')}
+            </button>
+            <p className="mt-2 text-center text-[15px] text-muted">
+              {t('auth.introRegistered')}{' '}
+              <button type="button" onClick={() => open('signIn')} className="font-medium text-primary">
+                {t('auth.introSignIn')}
+              </button>
+            </p>
+          </div>
+        </main>
+      </div>
+    );
 
   return (
     <div className="relative min-h-dvh overflow-hidden bg-page">

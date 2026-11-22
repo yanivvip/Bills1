@@ -11,6 +11,7 @@ test('login page is in Hebrew, right-to-left, with no language switch', async ({
 
 test('wrong credentials show a friendly error', async ({ page }) => {
   await page.goto('/login');
+  await page.getByRole('button', { name: he.auth.introSignIn, exact: true }).click();
   await page.getByLabel(he.auth.email).fill('nobody@test.dev');
   await page.getByLabel(he.auth.password).fill(PASSWORD);
   await page.getByRole('button', { name: he.auth.signIn, exact: true }).click();
@@ -25,6 +26,7 @@ test('an invitation link opens the sign-up form with the email filled in', async
 
 test('password can be shown and hidden', async ({ page }) => {
   await page.goto('/login');
+  await page.getByRole('button', { name: he.auth.introSignIn, exact: true }).click();
   const password = page.getByLabel(he.auth.password);
   await expect(password).toHaveAttribute('type', 'password');
   await page.getByRole('button', { name: he.auth.show }).click();

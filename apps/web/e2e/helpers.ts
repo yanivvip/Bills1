@@ -26,7 +26,7 @@ export async function acceptTermsIfAsked(page: Page) {
 
 export async function signUp(page: Page, email: string) {
   await page.goto('/login');
-  await page.getByRole('button', { name: he.auth.toSignUp }).click();
+  await page.getByRole('button', { name: he.auth.introLandlord }).click();
   await page.getByLabel(he.auth.email).fill(email);
   await page.getByLabel(he.auth.password).fill(PASSWORD);
   await page.getByRole('button', { name: he.auth.signUp, exact: true }).click();
@@ -36,6 +36,7 @@ export async function signUp(page: Page, email: string) {
 
 export async function signIn(page: Page, email: string) {
   await page.goto('/login');
+  await page.getByRole('button', { name: he.auth.introSignIn, exact: true }).click();
   await page.getByLabel(he.auth.email).fill(email);
   await page.getByLabel(he.auth.password).fill(PASSWORD);
   await page.getByRole('button', { name: he.auth.signIn, exact: true }).click();

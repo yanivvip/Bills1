@@ -56,7 +56,7 @@ jobs:
           version: latest
       # The full API (auth + REST) is needed here, unlike the database job.
       - name: Start local Supabase
-        run: supabase start -x studio,imgproxy,edge-runtime,logflare,vector,mailpit,realtime,storage-api,postgres-meta,supavisor
+        run: supabase start -x studio,imgproxy,edge-runtime,logflare,vector,mailpit,realtime,postgres-meta,supavisor
       - run: pnpm --filter @bills/web exec playwright install --with-deps chromium
       - run: pnpm --filter @bills/web test:e2e
       - uses: actions/upload-artifact@v4

@@ -327,7 +327,7 @@ test('a renter phone entered in the wizard shows on the unit page and can be cha
   const phone = page.getByLabel(he.landlord.phone);
   await expect(phone).toHaveValue('050-1234567');
   await phone.fill('052-7654321');
-  await phone.blur();
+  await Promise.all([page.waitForResponse((r) => r.url().includes('contract_renters') && r.request().method() === 'PATCH'), phone.blur()]);
   await page.reload();
   await expect(page.getByLabel(he.landlord.phone)).toHaveValue('052-7654321');
 });
@@ -363,4 +363,43 @@ test('fixed charges are edited beside the readings and the home reminder opens t
 
   await page.getByRole('link', { name: he.nav.home, exact: true }).click();
   await expect(page.getByRole('link', { name: he.landlordHome.sendReminder }).first()).toHaveAttribute('href', /wa\.me\/972527654321/);
+});
+
+test('a photo of the meter is kept next to the reading and can be viewed', async ({ page }) => {
+  await signIn(page, wizardLandlord);
+  await page.getByRole('link', { name: he.nav.readings }).click();
+  await page.getByRole('tab', { name: /Apt W/ }).click();
+  const card = page.locator('form', { hasText: 'Apt W' }).first();
+
+  // a picture taken with the camera (here drawn in the page), shrunk and shown as a thumbnail
+  const jpeg = await page.evaluate(async () => {
+    const c = document.createElement('canvas');
+    c.width = 1600;
+    c.height = 900;
+    const x = c.getContext('2d')!;
+    x.fillStyle = '#fff';
+    x.fillRect(0, 0, 1600, 900);
+    x.fillStyle = '#000';
+    x.font = '300px sans-serif';
+    x.fillText('01234', 100, 500);
+    const blob = await new Promise<Blob>((r) => c.toBlob((b) => r(b!), 'image/jpeg'));
+    let s = '';
+    new Uint8Array(await blob.arrayBuffer()).forEach((v) => (s += String.fromCharCode(v)));
+    return btoa(s);
+  });
+  await card.getByLabel(he.readings.photo).setInputFiles({ name: 'meter.jpg', mimeType: 'image/jpeg', buffer: Buffer.from(jpeg, 'base64') });
+  await expect(card.getByAltText(he.readings.photoTaken)).toBeVisible();
+
+  await card.locator('input[type=number]').fill('1100');
+  await card.getByRole('button', { name: he.common.save }).click();
+  await expect(card.getByText(`✓ ${he.readings.submitted}`)).toBeVisible();
+
+  // after a reload the picture is still there, in the private bucket, behind a short-lived link
+  await page.reload();
+  await page.getByRole('tab', { name: /Apt W/ }).click();
+  await page.locator('form', { hasText: 'Apt W' }).first().getByRole('button', { name: he.readings.viewPhoto }).click();
+  const shown = page.getByRole('dialog').locator('img');
+  await expect(shown).toBeVisible();
+  await expect.poll(() => shown.evaluate((el) => (el as HTMLImageElement).naturalWidth)).toBeGreaterThan(0);
+  await page.getByRole('button', { name: he.common.close }).click();
 });

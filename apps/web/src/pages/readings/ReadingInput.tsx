@@ -1,6 +1,7 @@
 import { useEffect, useState, type FormEvent } from 'react';
 import { useTranslation } from 'react-i18next';
-import { BoltIcon, DropIcon } from '../../components/NavIcons';
+import { BoltIcon, CameraIcon, DropIcon } from '../../components/NavIcons';
+import { compressImage, meterPhotoPath, meterPhotoUrl, uploadMeterPhoto } from '../../lib/photo';
 import { defaultReadDate, monthLabel, today } from '../../lib/period';
 import type { MeterRow, ReadingRow } from './useMonthlyReadings';
 
@@ -18,18 +19,26 @@ export default function ReadingInput({
   current?: ReadingRow;
   previous?: ReadingRow;
   period: string;
-  onSave: (value: number, readOn: string) => Promise<boolean>;
+  onSave: (value: number, readOn: string, photoPath?: string) => Promise<boolean>;
 }) {
   const { t, i18n } = useTranslation();
   const [text, setText] = useState(current ? String(current.value) : '');
   const [date, setDate] = useState(current?.read_on ?? defaultReadDate(period));
   const [state, setState] = useState<'idle' | 'saving' | 'saved' | 'failed'>('idle');
+  // the picture of the meter, kept next to the reading as evidence
+  const [photo, setPhoto] = useState<Blob | null>(null);
+  const [preview, setPreview] = useState<string | null>(null);
+  const [photoError, setPhotoError] = useState('');
+  const [viewing, setViewing] = useState<string | null>(null);
 
   // Follow the saved value when the month changes or data reloads.
   useEffect(() => {
     setText(current ? String(current.value) : '');
     setDate(current?.read_on ?? defaultReadDate(period));
     setState('idle');
+    setPhoto(null);
+    setPreview(null);
+    setPhotoError('');
   }, [current?.id, current?.value, current?.read_on, period]);
 
   const entered = text.trim() === '' ? null : Number(text);
@@ -38,13 +47,46 @@ export default function ReadingInput({
   const used = current && previous ? current.value - previous.value : null;
   const locked = current?.status === 'approved';
   const validDate = /^\d{4}-\d{2}-\d{2}$/.test(date) && date <= today();
-  const dirty = !current || (valid && (entered !== current.value || date !== current.read_on));
+  const dirty = !current || (valid && (entered !== current.value || date !== current.read_on || photo !== null));
 
   const submit = async (e: FormEvent) => {
     e.preventDefault();
     if (!valid || !validDate) return;
     setState('saving');
-    setState((await onSave(entered, date)) ? 'saved' : 'failed');
+    let path: string | undefined;
+    if (photo) {
+      path = meterPhotoPath(meter.org_id, meter.id, period);
+      const err = await uploadMeterPhoto(path, photo);
+      if (err) {
+        setPhotoError(err);
+        setState('failed');
+        return;
+      }
+    }
+    const ok = await onSave(entered, date, path);
+    if (ok) {
+      setPhoto(null);
+      setPreview(null);
+    }
+    setState(ok ? 'saved' : 'failed');
+  };
+
+  const pick = async (file: File | undefined) => {
+    if (!file) return;
+    setPhotoError('');
+    try {
+      const small = await compressImage(file);
+      setPhoto(small);
+      setPreview(URL.createObjectURL(small));
+      setState('idle');
+    } catch {
+      setPhotoError(t('readings.photoFailed'));
+    }
+  };
+
+  const view = async () => {
+    if (!current?.photo_path) return;
+    setViewing(await meterPhotoUrl(current.photo_path));
   };
 
   const isWater = meter.kind === 'water';
@@ -82,7 +124,7 @@ export default function ReadingInput({
               setText(e.target.value);
               setState('idle');
             }}
-            placeholder={`${t('readings.value')} (${unitOf(meter.kind)})`}
+            placeholder="—"
             aria-label={`${t('readings.value')} (${unitOf(meter.kind)})`}
             className="h-[52px] w-full rounded-xl border border-line-strong bg-white px-3.5 text-xl font-medium outline-none focus:ring-2 focus:ring-primary disabled:opacity-60"
           />
@@ -94,6 +136,35 @@ export default function ReadingInput({
           <span dir="ltr" className="font-medium">
             {Math.round(used * 1000) / 1000} {unitOf(meter.kind)}
           </span>
+        </div>
+      )}
+      {!locked && (
+        <div className="flex items-center gap-3">
+          <label className="flex h-11 flex-1 cursor-pointer items-center justify-center gap-2 rounded-xl bg-primary-soft text-[15px] font-medium text-primary-dark">
+            <CameraIcon />
+            {t('readings.photo')}
+            <input type="file" accept="image/*" capture="environment" className="sr-only" aria-label={t('readings.photo')} onChange={(e) => void pick(e.target.files?.[0])} />
+          </label>
+          {preview && <img src={preview} alt={t('readings.photoTaken')} className="h-11 w-11 rounded-lg object-cover" />}
+          {!preview && current?.photo_path && (
+            <button type="button" onClick={() => void view()} className="h-11 rounded-xl border border-line-strong bg-white px-3 text-[15px] font-medium text-primary-dark">
+              {t('readings.viewPhoto')}
+            </button>
+          )}
+        </div>
+      )}
+      {locked && current?.photo_path && (
+        <button type="button" onClick={() => void view()} className="h-11 rounded-xl border border-line-strong bg-white px-3 text-[15px] font-medium text-primary-dark">
+          {t('readings.viewPhoto')}
+        </button>
+      )}
+      {photoError && <p className="text-xs text-danger">{photoError}</p>}
+      {viewing && (
+        <div className="fixed inset-0 z-50 flex flex-col items-center justify-center gap-4 bg-black/80 p-4" role="dialog" aria-modal="true" aria-label={t('readings.viewPhoto')}>
+          <img src={viewing} alt={meter.name} className="max-h-[80dvh] max-w-full rounded-xl" />
+          <button type="button" onClick={() => setViewing(null)} className="h-12 rounded-xl bg-white px-8 font-medium">
+            {t('common.close')}
+          </button>
         </div>
       )}
       <div className="flex items-end gap-3">

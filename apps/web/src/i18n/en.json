@@ -60,6 +60,11 @@
     "building": "Whole property (main meter)"
   },
   "readings": {
+    "photo": "Photo of the meter",
+    "photoTaken": "The photo you took",
+    "viewPhoto": "View the photo",
+    "photoFailed": "The photo could not be taken or uploaded. You can go on without it.",
+    "photoHint": "Photograph the meter – the picture is kept next to the reading, in case of a dispute.",
     "nextUnit": "Next unit",
     "fixedTitle": "Fixed charges this month",
     "fixedHint": "The amounts come from the property tariff – update them if the bill changed; they hold for the coming months too.",

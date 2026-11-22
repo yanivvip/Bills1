@@ -6,6 +6,7 @@ import { useProperty } from '../landlord/PropertyContext';
 import MonthNav from './MonthNav';
 import ReadingInput from './ReadingInput';
 import FixedChargesCard from './FixedChargesCard';
+import { CameraIcon } from '../../components/NavIcons';
 import { useMonthlyReadings, type MeterRow } from './useMonthlyReadings';
 
 interface Group {
@@ -79,10 +80,14 @@ export default function ReadingsPage() {
         <div key={shown.key} className="flex flex-col gap-3.5">
           {groups.length === 1 && <h2 className="text-sm font-semibold text-muted">{shown.title}</h2>}
           {shown.meters.map((m) => (
-            <ReadingInput key={m.id} meter={m} period={period} current={current(m.id)} previous={previous(m.id)} onSave={(v, d) => save(m, v, d)} />
+            <ReadingInput key={m.id} meter={m} period={period} current={current(m.id)} previous={previous(m.id)} onSave={(v, d, p) => save(m, v, d, p)} />
           ))}
         </div>
       )}
+      <p className="flex items-center gap-3 rounded-2xl bg-primary-soft p-3.5 text-[15px] leading-snug text-primary-dark">
+        <CameraIcon />
+        {t('readings.photoHint')}
+      </p>
       {shown && groups.length > 1 && groups.findIndex((g) => g.key === shown.key) < groups.length - 1 && (
         <button type="button" onClick={() => setGroup(groups[groups.findIndex((g) => g.key === shown.key) + 1]!.key)} className="h-14 rounded-2xl bg-primary text-[17px] font-medium text-white">
           {t('readings.nextUnit')}

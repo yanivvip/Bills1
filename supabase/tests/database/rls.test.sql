@@ -1,7 +1,7 @@
 -- Database security tests (pgTAP). Run with: supabase test db
 -- Everything runs in one transaction that is rolled back, so no data is left behind.
 begin;
-select plan(93);
+select plan(100);
 
 -- ── Fixtures (as the postgres superuser) ─────────────────────────────────
 insert into auth.users (id, email, email_confirmed_at, instance_id, aud, role) values
@@ -309,6 +309,18 @@ select is((select count(*)::int from public.terms_acceptances), 1, 'the acceptan
 select throws_ok($q$insert into public.terms_acceptances (user_id, version) values ('00000000-0000-0000-0000-0000000000c2', 'forged')$q$, '42501', null, 'a consent record cannot be written directly');
 select pg_temp.act_as('00000000-0000-0000-0000-0000000000b1');
 select is((select count(*)::int from public.terms_acceptances where version = 'v1-test'), 0, 'another user cannot see it');
+
+-- ── Meter photos (storage policies) ──────────────────────────────────────
+select pg_temp.act_as('00000000-0000-0000-0000-0000000000a1');
+select lives_ok($q$insert into storage.objects (bucket_id, name) values ('meter-photos', '10000000-0000-0000-0000-00000000000a/50000000-0000-0000-0000-0000000000a0/2026-11-01.jpg')$q$, 'a landlord stores a photo of a meter of their org');
+select pg_temp.act_as('00000000-0000-0000-0000-0000000000c2');
+select lives_ok($q$insert into storage.objects (bucket_id, name) values ('meter-photos', '10000000-0000-0000-0000-00000000000a/50000000-0000-0000-0000-000000000002/2026-11-01.jpg')$q$, 'a renter stores a photo of their own unit meter');
+select throws_ok($q$insert into storage.objects (bucket_id, name) values ('meter-photos', '10000000-0000-0000-0000-00000000000a/50000000-0000-0000-0000-000000000001/2026-11-01.jpg')$q$, '42501', null, 'a renter cannot store a photo for another unit');
+select throws_ok($q$insert into storage.objects (bucket_id, name) values ('meter-photos', '10000000-0000-0000-0000-00000000000a/50000000-0000-0000-0000-0000000000a0/2026-12-01.jpg')$q$, '42501', null, 'a renter cannot store a photo for the main meter');
+select is((select count(*)::int from storage.objects where bucket_id = 'meter-photos'), 1, 'a renter sees only the photo of their own meter');
+select pg_temp.act_as('00000000-0000-0000-0000-0000000000b1');
+select throws_ok($q$insert into storage.objects (bucket_id, name) values ('meter-photos', '10000000-0000-0000-0000-00000000000a/50000000-0000-0000-0000-000000000001/2026-10-01.jpg')$q$, '42501', null, 'another landlord cannot store a photo in this org');
+select is((select count(*)::int from storage.objects where bucket_id = 'meter-photos'), 0, 'and cannot see the photos of this org');
 
 select * from finish();
 rollback;

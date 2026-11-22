@@ -89,3 +89,9 @@ export const LinesIcon = () => (
     <path d="M6 8h12M6 12h12M6 16h8" />
   </Svg>
 );
+export const CameraIcon = () => (
+  <Svg>
+    <path d="M4 8h3l1.5-2h7L17 8h3v11H4z" />
+    <circle cx="12" cy="13" r="3.5" />
+  </Svg>
+);

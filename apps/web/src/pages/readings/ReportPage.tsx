@@ -4,6 +4,7 @@ import { monthStart } from '../../lib/period';
 import MonthNav from './MonthNav';
 import ReadingInput from './ReadingInput';
 import { useMonthlyReadings } from './useMonthlyReadings';
+import { CameraIcon } from '../../components/NavIcons';
 
 // Renter: report this month's readings for the meters of the unit they rent (RLS limits the list).
 export default function ReportPage() {
@@ -26,8 +27,12 @@ export default function ReportPage() {
       {error && <p className="text-sm text-danger">{error}</p>}
       {meters.length === 0 && <p className="text-muted">{t('readings.renterNoMeters')}</p>}
       {meters.map((m) => (
-        <ReadingInput key={m.id} meter={m} period={period} current={current(m.id)} previous={previous(m.id)} onSave={(v, d) => save(m, v, d)} />
+        <ReadingInput key={m.id} meter={m} period={period} current={current(m.id)} previous={previous(m.id)} onSave={(v, d, p) => save(m, v, d, p)} />
       ))}
+      <p className="flex items-center gap-3 rounded-2xl bg-primary-soft p-3.5 text-[15px] leading-snug text-primary-dark">
+        <CameraIcon />
+        {t('readings.photoHint')}
+      </p>
     </section>
   );
 }

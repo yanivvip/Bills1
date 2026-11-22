@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { supabase } from '../../lib/supabase';
 import { parseAgorot } from '../../lib/money';
 import { shiftMonth } from '../../lib/period';
-import { card, input, primary } from '../landlord/shared';
+import { card, input } from '../landlord/shared';
 import type { useBilling } from './useBilling';
 
 export type Act = (op: PromiseLike<{ error: { message: string } | null }>) => Promise<boolean>;
@@ -74,7 +74,7 @@ export function Charges({
 
   return (
     <div className="flex flex-col gap-2">
-      <h2 className="text-xl font-semibold text-ink-2">{t('bills.charges')}</h2>
+      <h2 className="text-[17px] font-semibold">{t('bills.charges')}</h2>
       {b.charges.map((c) => (
         <div key={c.id} className="flex items-center justify-between gap-2 rounded-xl border border-line bg-card px-3 py-2 text-sm">
           <span>
@@ -92,23 +92,40 @@ export function Charges({
       <button disabled={busy} className="self-start text-sm text-ink-2 underline" onClick={() => void copyRecurring()}>
         {t('bills.copyRecurring')}
       </button>
-      <form onSubmit={add} className={`${card} flex-row flex-wrap items-center`}>
-        <select value={who} onChange={(e) => setWho(e.target.value)} className={input} aria-label={t('bills.chargeTo')}>
-          <option value="units">{t('bills.chargeUnits')}</option>
-          {landlordHome && <option value="all">{t('bills.chargeAll')}</option>}
-          {b.units.map((u) => (
-            <option key={u.id} value={u.id}>
-              {u.name}
-            </option>
-          ))}
-        </select>
-        <input value={description} onChange={(e) => setDescription(e.target.value)} placeholder={t('bills.chargeDescription')} className={`${input} min-w-0 flex-1`} />
-        <input type="text" inputMode="decimal" value={amount} onChange={(e) => setAmount(e.target.value)} placeholder="₪" className={`${input} w-24`} aria-label={t('bills.chargeAmount')} />
-        <label className="flex items-center gap-2 text-sm">
-          <input type="checkbox" checked={recurring} onChange={(e) => setRecurring(e.target.checked)} />
-          {t('bills.chargeRecurring')}
+      <form onSubmit={add} className="flex flex-col gap-4 rounded-[18px] border border-line bg-card p-4">
+        <label className="block text-sm text-muted">
+          {t('bills.chargeName')}
+          <input value={description} onChange={(e) => setDescription(e.target.value)} placeholder={t('bills.chargeDescription')} className={`${input} mt-1.5 h-[50px] w-full text-base text-ink`} />
         </label>
-        <button disabled={busy || !agorot || !description.trim()} className={`${primary} disabled:opacity-50`}>
+        <label className="block text-sm text-muted">
+          {t('bills.chargeAmount')}
+          <input type="text" inputMode="decimal" dir="ltr" value={amount} onChange={(e) => setAmount(e.target.value)} placeholder="₪" className={`${input} mt-1.5 h-[50px] w-full text-base text-ink`} />
+        </label>
+        <div>
+          <div className="mb-1.5 text-sm text-muted">{t('bills.chargeKind')}</div>
+          <div className="flex gap-1 rounded-xl bg-track p-1" role="group">
+            {[false, true].map((r) => (
+              <button type="button" key={String(r)} aria-pressed={recurring === r} onClick={() => setRecurring(r)} className={`h-10 flex-1 rounded-[9px] text-sm ${recurring === r ? 'bg-white font-semibold text-primary-dark shadow-sm' : 'text-[#3e4643]'}`}>
+                {r ? t('bills.chargeRecurring') : t('bills.chargeOneTime')}
+              </button>
+            ))}
+          </div>
+        </div>
+        <div>
+          <div className="mb-1.5 text-sm text-muted">{t('bills.chargeTo')}</div>
+          <div className="flex flex-wrap gap-2">
+            {[
+              ['units', t('bills.chargeUnits')],
+              ...(landlordHome ? [['all', t('bills.chargeAll')]] : []),
+              ...b.units.map((u) => [u.id, u.name]),
+            ].map(([key, label]) => (
+              <button type="button" key={key} aria-pressed={who === key} onClick={() => setWho(key!)} className={`h-10 rounded-full border px-3.5 text-sm ${who === key ? 'border-primary bg-primary-soft font-semibold text-primary-dark' : 'border-line-strong bg-white text-[#3e4643]'}`}>
+                {label}
+              </button>
+            ))}
+          </div>
+        </div>
+        <button disabled={busy || !agorot || !description.trim()} className="h-14 rounded-2xl bg-primary text-[17px] font-medium text-white disabled:opacity-50">
           {t('bills.addCharge')}
         </button>
       </form>

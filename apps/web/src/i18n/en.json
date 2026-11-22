@@ -215,6 +215,9 @@
     "waterPercent": "Share of the shared water meter (%)"
   },
   "bills": {
+    "chargeName": "Charge name",
+    "chargeKind": "Kind of charge",
+    "chargeOneTime": "One-off",
     "totalToPay": "Total to pay",
     "totalToCollect": "Total to collect",
     "title": "Monthly bills",

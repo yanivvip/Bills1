@@ -133,18 +133,18 @@ export default function OnboardingPage({ orgId }: { orgId: string }) {
   };
 
   const section = (n: number, title: string, children: ReactNode) => (
-    <div className={card}>
-      <h2 className="flex items-center gap-2 text-xl font-semibold text-ink-2">
-        <span className="flex h-7 w-7 items-center justify-center rounded-full bg-primary text-sm text-white">{n}</span>
+    <div className="flex flex-col gap-2.5">
+      <h2 className="mt-2 flex items-center gap-2.5 text-[19px] font-semibold">
+        <span className="flex h-[30px] w-[30px] flex-none items-center justify-center rounded-full bg-primary text-[15px] text-white">{n}</span>
         {title}
       </h2>
-      {children}
+      <div className="flex flex-col gap-3.5 rounded-[18px] border border-line bg-card p-[18px]">{children}</div>
     </div>
   );
   const field = (label: string, value: string, onChange: (v: string) => void, opts: { placeholder?: string; type?: string; numeric?: boolean } = {}) => (
-    <label className="flex flex-col gap-1 text-sm text-ink-2">
+    <label className="flex flex-col gap-1.5 text-sm text-muted">
       {label}
-      <input type={opts.type ?? 'text'} inputMode={opts.numeric ? 'decimal' : undefined} dir={opts.numeric ? 'ltr' : undefined} value={value} placeholder={opts.placeholder} onChange={(e) => onChange(e.target.value)} className={input} />
+      <input type={opts.type ?? 'text'} inputMode={opts.numeric ? 'decimal' : undefined} dir={opts.numeric ? 'ltr' : undefined} value={value} placeholder={opts.placeholder} onChange={(e) => onChange(e.target.value)} className={`${input} h-[50px] text-base text-ink`} />
     </label>
   );
   const select = <V extends string>(label: string, value: V, options: { v: V; text: string }[], onChange: (v: V) => void) => (
@@ -165,10 +165,10 @@ export default function OnboardingPage({ orgId }: { orgId: string }) {
   const setKind = (k: (typeof KINDS)[number], patch: Partial<KindLayout>) => setLayout((cur) => ({ ...cur, [k]: { ...cur[k], ...patch } }));
 
   return (
-    <section className="flex flex-col gap-4 p-4">
+    <section className="flex flex-col gap-3.5 px-[18px] pb-6 pt-1">
       <BackLink to="/property">{t('landlord.properties')}</BackLink>
       <div>
-        <h1 className="text-2xl font-bold">{t('onboarding.title')}</h1>
+        <h1 className="text-2xl font-semibold">{t('onboarding.title')}</h1>
         <p className="text-sm text-muted">{t('onboarding.intro')}</p>
       </div>
 
@@ -181,13 +181,13 @@ export default function OnboardingPage({ orgId }: { orgId: string }) {
             {t('onboarding.livesHere')}
           </label>
           {livesHere && field(t('onboarding.homeOccupants'), homeOccupants, setHomeOccupants, { numeric: true })}
-          <div className="flex items-center gap-3 text-sm">
+          <div className="flex items-center justify-between gap-3 text-[15px]">
             <span>{t('onboarding.unitCount')}</span>
-            <button type="button" aria-label="−" className="h-9 w-9 rounded-lg bg-field text-lg" onClick={() => setCount(Math.max(1, units.length - 1))}>
+            <button type="button" aria-label="−" className="h-11 w-11 rounded-xl border border-line-strong bg-white text-xl" onClick={() => setCount(Math.max(1, units.length - 1))}>
               −
             </button>
             <strong dir="ltr" aria-live="polite">{units.length}</strong>
-            <button type="button" aria-label="+" className="h-9 w-9 rounded-lg bg-field text-lg" onClick={() => setCount(Math.min(20, units.length + 1))}>
+            <button type="button" aria-label="+" className="h-11 w-11 rounded-xl border border-line-strong bg-white text-xl" onClick={() => setCount(Math.min(20, units.length + 1))}>
               +
             </button>
           </div>
@@ -300,7 +300,7 @@ export default function OnboardingPage({ orgId }: { orgId: string }) {
             </ul>
           )}
           {error && <p className="text-sm text-danger">{error}</p>}
-          <button disabled={busy || problems.length > 0} onClick={() => void finish()} className={`${primary} disabled:opacity-50`}>
+          <button disabled={busy || problems.length > 0} onClick={() => void finish()} className="h-14 rounded-2xl bg-primary text-[17px] font-medium text-white disabled:opacity-50">
             {t('onboarding.finish')}
           </button>
           <p className="text-xs text-muted">{t('onboarding.finishHint')}</p>

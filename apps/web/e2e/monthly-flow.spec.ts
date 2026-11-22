@@ -160,7 +160,7 @@ test('the landlord sets tariffs, approves the month and marks it paid', async ({
   // a one-off charge changes the total
   await page.getByPlaceholder(he.bills.chargeDescription).fill('Repair');
   await page.getByLabel(he.bills.chargeAmount).fill('25.5');
-  await page.getByLabel(he.bills.chargeRecurring).check();
+  await page.getByRole('button', { name: he.bills.chargeRecurring }).click();
   await page.getByRole('button', { name: he.bills.addCharge }).click();
   await expect(page.getByText('₪425.50')).toBeVisible();
   await expect(page.getByText(/↻ Repair/)).toBeVisible();

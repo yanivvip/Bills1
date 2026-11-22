@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { ShieldIcon } from '../components/NavIcons';
 import { supabase } from '../lib/supabase';
 import { TERMS_FOOTER, TERMS_SECTIONS, TERMS_VERSION } from '../legal/terms';
 
@@ -36,20 +37,22 @@ export default function DisclaimerPage({ onAccepted }: { onAccepted: () => void 
         </button>
       </header>
       <div>
-        <h1 className="text-2xl font-bold">{t('terms.title')}</h1>
+        <h1 className="text-[26px] font-semibold">{t('terms.title')}</h1>
         <p className="text-ink-2">{t('terms.intro')}</p>
       </div>
-      <ul className="flex flex-col gap-2 rounded-2xl border border-line bg-card p-4 text-sm">
+      <ul className="flex flex-col gap-3.5 rounded-[18px] border border-line bg-card p-4">
         {(t('terms.points', { returnObjects: true }) as string[]).map((p) => (
-          <li key={p} className="flex gap-2">
-            <span aria-hidden>•</span>
-            <span>{p}</span>
+          <li key={p} className="flex items-start gap-3">
+            <span aria-hidden className="flex h-9 w-9 flex-none items-center justify-center rounded-[11px] bg-warn-soft text-warn">
+              <ShieldIcon />
+            </span>
+            <span className="text-[15px] leading-relaxed">{p}</span>
           </li>
         ))}
       </ul>
 
       <h2 className="font-semibold text-ink-2">{t('terms.fullText')}</h2>
-      <div ref={box} data-testid="terms-scroll" onScroll={check} tabIndex={0} role="region" aria-label={t('terms.fullText')} className="h-72 overflow-y-auto rounded-2xl border border-line bg-card p-4 text-sm leading-relaxed">
+      <div ref={box} data-testid="terms-scroll" onScroll={check} tabIndex={0} role="region" aria-label={t('terms.fullText')} className="h-72 overflow-y-auto rounded-[18px] border border-line bg-card p-4 text-[13px] leading-[1.65]">
         {TERMS_SECTIONS.map((s) => (
           <section key={s.title} className="mb-3">
             <h3 className="font-semibold">{s.title}</h3>
@@ -65,7 +68,7 @@ export default function DisclaimerPage({ onAccepted }: { onAccepted: () => void 
         {t('terms.agree')}
       </label>
       {error && <p className="text-sm text-danger">{error}</p>}
-      <button disabled={!agree || busy} onClick={() => void accept()} className="rounded-lg bg-primary text-white px-4 py-3 font-semibold disabled:opacity-50">
+      <button disabled={!agree || busy} onClick={() => void accept()} className="h-14 rounded-2xl bg-primary text-[17px] font-medium text-white disabled:opacity-50">
         {t('terms.accept')}
       </button>
     </div>

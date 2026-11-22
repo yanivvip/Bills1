@@ -50,9 +50,9 @@ export default function BillDocument() {
   };
 
   return (
-    <section className="flex flex-col gap-4 p-4 print:p-0 print:text-black">
+    <section className="flex flex-col gap-3.5 px-[18px] pb-4 pt-1 print:p-0 print:text-black">
       <div className="flex flex-wrap gap-2 print:hidden">
-        <button className="rounded-lg bg-primary text-white px-4 py-2 font-semibold" onClick={() => window.print()}>
+        <button className="h-12 rounded-xl bg-primary px-5 font-medium text-white" onClick={() => window.print()}>
           {t('bills.print')}
         </button>
         <button className="px-2 py-2 text-muted underline" onClick={() => history.back()}>
@@ -60,7 +60,7 @@ export default function BillDocument() {
         </button>
       </div>
 
-      <div className="flex flex-col gap-3 rounded-2xl border border-line bg-card p-5 print:rounded-none print:bg-white print:p-0">
+      <div className="flex flex-col gap-3 rounded-[18px] border border-line bg-card p-5 print:rounded-none print:bg-white print:p-0">
         <div className="flex items-start justify-between gap-3">
           <div>
             <h1 className="text-2xl font-bold">{paid ? t('bills.receipt') : t('bills.bill')}</h1>
@@ -117,16 +117,16 @@ function MessageEditor({ initial }: { initial: string }) {
     }
   };
   return (
-    <div className="flex flex-col gap-2 rounded-2xl border border-line bg-card p-4 print:hidden">
+    <div className="flex flex-col gap-3 rounded-[18px] border border-line bg-card p-4 print:hidden">
       <label htmlFor="wa-text" className="text-sm font-semibold text-ink-2">
         {t('whatsapp.title')}
       </label>
-      <textarea id="wa-text" value={text} onChange={(e) => { setText(e.target.value); setCopied(false); }} rows={Math.min(14, text.split('\n').length + 1)} className="rounded-lg bg-field px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary" />
+      <textarea id="wa-text" value={text} onChange={(e) => { setText(e.target.value); setCopied(false); }} rows={Math.min(14, text.split('\n').length + 1)} className="rounded-2xl bg-[#e7f5df] px-3.5 py-3 text-[15px] leading-relaxed outline-none focus:ring-2 focus:ring-primary" />
       <div className="flex flex-wrap items-center gap-2">
-        <a className="rounded-lg bg-primary text-white px-4 py-2 font-semibold" href={whatsappLink(text)} target="_blank" rel="noreferrer">
+        <a className="flex h-[54px] w-full items-center justify-center rounded-2xl bg-primary text-base font-medium text-white" href={whatsappLink(text)} target="_blank" rel="noreferrer">
           {t('whatsapp.open')}
         </a>
-        <button className="rounded-lg bg-field px-4 py-2 font-semibold" onClick={() => void copy()}>
+        <button className="h-[54px] flex-1 rounded-2xl border border-line-strong bg-white text-base font-medium text-primary-dark" onClick={() => void copy()}>
           {copied ? `✓ ${t('whatsapp.copied')}` : t('whatsapp.copy')}
         </button>
         {text !== initial && (

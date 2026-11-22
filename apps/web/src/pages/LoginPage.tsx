@@ -6,7 +6,7 @@ import { supabase } from '../lib/supabase';
 
 // text-base (16px) keeps iOS Safari from zooming into the field on focus.
 const inputClass =
-  'w-full rounded-xl border border-line bg-white px-4 py-3 text-base outline-none placeholder:text-faint focus:border-primary focus:ring-2 focus:ring-primary/40';
+  'h-[52px] w-full rounded-xl border border-line-strong bg-white px-4 text-base outline-none placeholder:text-faint focus:border-primary focus:ring-2 focus:ring-primary/40';
 
 export default function LoginPage() {
   const { t } = useTranslation();
@@ -44,14 +44,26 @@ export default function LoginPage() {
   return (
     <div className="relative min-h-dvh overflow-hidden bg-page">
       <main className="relative mx-auto flex min-h-dvh max-w-sm flex-col justify-center gap-6 px-5 py-10">
-        <header className="flex flex-col items-center gap-3 text-center">
-          <h1>
-            <img src="/brand/logo.svg" alt={t('app.name')} width={220} height={78} />
+        <header className="flex flex-col gap-5">
+          <h1 className="self-start">
+            <img src="/brand/logo.svg" alt={t('app.name')} width={180} height={64} />
           </h1>
-          <p className="text-ink-2">{t('auth.hero')}</p>
+          <div className="relative flex h-[190px] items-end justify-center overflow-hidden rounded-[28px] bg-primary-soft pb-6" aria-hidden="true">
+            <svg width="190" height="140" viewBox="0 0 200 150" fill="none">
+              <path d="M30 70 100 18l70 52v72H30z" fill="#fff" stroke="#0E6B5E" strokeWidth="3" strokeLinejoin="round" />
+              <rect x="84" y="96" width="32" height="46" rx="4" fill="#0E6B5E" />
+              <rect x="44" y="84" width="28" height="24" rx="4" fill="#E4F0EC" stroke="#0E6B5E" strokeWidth="2" />
+              <rect x="128" y="84" width="28" height="24" rx="4" fill="#E4F0EC" stroke="#0E6B5E" strokeWidth="2" />
+              <circle cx="168" cy="36" r="18" fill="#fff" stroke="#B7791F" strokeWidth="3" />
+              <path d="M170 26l-7 11h6l-2 9 8-12h-6z" fill="#B7791F" />
+              <circle cx="30" cy="40" r="16" fill="#fff" stroke="#2B6CB0" strokeWidth="3" />
+              <path d="M30 30s7 7 7 12a7 7 0 0 1-14 0c0-5 7-12 7-12z" fill="#2B6CB0" />
+            </svg>
+          </div>
+          <p className="text-[28px] font-semibold leading-tight">{t('auth.hero')}</p>
         </header>
 
-        <form onSubmit={submit} className="flex flex-col gap-4 rounded-3xl border border-line bg-card p-5 shadow-sm">
+        <form onSubmit={submit} className="flex flex-col gap-4 rounded-[22px] border border-line bg-card p-5">
           <div>
             <h2 className="text-xl font-semibold">{invited ? t('auth.invitedTitle') : signIn ? t('auth.welcomeBack') : t('auth.createTitle')}</h2>
             <p className="mt-1 text-sm text-muted">{invited ? t('auth.invitedHint') : signIn ? t('auth.signInHint') : t('auth.signUpHint')}</p>
@@ -104,13 +116,13 @@ export default function LoginPage() {
 
           <button
             disabled={busy}
-            className="rounded-xl bg-primary py-3 text-base font-semibold text-white active:scale-[0.99] disabled:opacity-60"
+            className="h-14 rounded-2xl bg-primary text-[17px] font-medium text-white active:scale-[0.99] disabled:opacity-60"
           >
             {busy ? t('common.loading') : signIn ? t('auth.signIn') : t('auth.signUp')}
           </button>
         </form>
 
-        <button type="button" className="text-sm text-ink-2 underline underline-offset-4" onClick={() => setMode(signIn ? 'signUp' : 'signIn')}>
+        <button type="button" className="h-14 rounded-2xl border border-line-strong bg-white text-[17px] font-medium text-primary-dark" onClick={() => setMode(signIn ? 'signUp' : 'signIn')}>
           {signIn ? t('auth.toSignUp') : t('auth.toSignIn')}
         </button>
       </main>

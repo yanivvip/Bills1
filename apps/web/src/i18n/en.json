@@ -422,6 +422,12 @@
       "heads": "By number of people",
       "percent": "By percentage"
     },
+    "short": {
+      "main_sub": "One meter for the property and a sub-meter for each unit",
+      "separate": "Each meter is connected straight to the utility",
+      "shared": "Consumption is split by percent or head-count",
+      "direct": "Tracking only, not in the bill"
+    },
     "hint": {
       "main_sub": "One meter for the property and one for each unit. The difference is the main house consumption, or is shared evenly between the units.",
       "separate": "Every meter is connected straight to the supplier. A main meter, if any, is not part of the bill.",
@@ -509,6 +515,14 @@
     "reportsHint": "Annual report, collections and Excel export"
   },
   "onboarding": {
+    "whatRent": "What are you renting out?",
+    "optOne": "One flat or house",
+    "optOneHint": "The whole property is rented",
+    "optMany": "Several flats / units",
+    "optManyHint": "I do not live there",
+    "optLiveHint": "Part is mine, part is rented",
+    "renterPhone": "Renter phone (optional)",
+    "renterPhoneHint": "WhatsApp opens on this number with the bill.",
     "start": "Set up a new property – one scroll",
     "title": "Set up a new property",
     "intro": "Fill it in once, in one scroll. Nothing is saved until the end, and everything can be changed later.",

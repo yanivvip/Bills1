@@ -19,6 +19,7 @@ export default function BillDocument() {
   const { id } = useParams();
   const [doc, setDoc] = useState<Doc | null | undefined>(undefined);
   const [payments, setPayments] = useState<PaymentRow[]>([]);
+  const [phone, setPhone] = useState<string | null>(null);
 
   useEffect(() => {
     void supabase
@@ -26,7 +27,11 @@ export default function BillDocument() {
       .select('id,unit_id,contract_id,period,total_agorot,lines,readings,paid_agorot,paid_on,paid_method,units(name,properties(name,address))')
       .eq('id', id!)
       .maybeSingle()
-      .then(({ data }) => setDoc(data ? ({ ...(data as unknown as Doc), total_agorot: Number((data as { total_agorot: number }).total_agorot), paid_agorot: Number((data as { paid_agorot: number }).paid_agorot) }) : null));
+      .then(({ data }) => {
+        const cid = (data as { contract_id?: string } | null)?.contract_id;
+        if (cid) void supabase.from('contract_renters').select('phone').eq('contract_id', cid).not('phone', 'is', null).limit(1).then(({ data: r }) => setPhone(((r ?? []) as { phone: string }[])[0]?.phone ?? null));
+        setDoc(data ? ({ ...(data as unknown as Doc), total_agorot: Number((data as { total_agorot: number }).total_agorot), paid_agorot: Number((data as { paid_agorot: number }).paid_agorot) }) : null);
+      });
     void supabase
       .from('payments')
       .select('id,statement_id,amount_agorot,paid_on,method,note')
@@ -98,13 +103,13 @@ export default function BillDocument() {
               : t('bills.unpaid')}
         </p>
       </div>
-      <MessageEditor initial={text} />
+      <MessageEditor initial={text} phone={phone} />
     </section>
   );
 }
 
 // The WhatsApp message for the renter: edit it before it is sent, or copy it.
-function MessageEditor({ initial }: { initial: string }) {
+function MessageEditor({ initial, phone }: { initial: string; phone: string | null }) {
   const { t } = useTranslation();
   const [text, setText] = useState(initial);
   const [copied, setCopied] = useState(false);
@@ -123,7 +128,7 @@ function MessageEditor({ initial }: { initial: string }) {
       </label>
       <textarea id="wa-text" value={text} onChange={(e) => { setText(e.target.value); setCopied(false); }} rows={Math.min(14, text.split('\n').length + 1)} className="rounded-2xl bg-[#e7f5df] px-3.5 py-3 text-[15px] leading-relaxed outline-none focus:ring-2 focus:ring-primary" />
       <div className="flex flex-wrap items-center gap-2">
-        <a className="flex h-[54px] w-full items-center justify-center rounded-2xl bg-primary text-base font-medium text-white" href={whatsappLink(text)} target="_blank" rel="noreferrer">
+        <a className="flex h-[54px] w-full items-center justify-center rounded-2xl bg-primary text-base font-medium text-white" href={whatsappLink(text, phone)} target="_blank" rel="noreferrer">
           {t('whatsapp.open')}
         </a>
         <button className="h-[54px] flex-1 rounded-2xl border border-line-strong bg-white text-base font-medium text-primary-dark" onClick={() => void copy()}>

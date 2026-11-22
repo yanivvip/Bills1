@@ -47,4 +47,10 @@ export function billMessage(t: TFunction, opts: { property: string; unit: string
   return [head, ...rows, foot].join('\n');
 }
 
-export const whatsappLink = (text: string) => `https://wa.me/?text=${encodeURIComponent(text)}`;
+// wa.me wants the number with the country code and no signs: an Israeli 05x number becomes 9725x
+export const whatsappNumber = (phone: string | null | undefined) => {
+  const digits = (phone ?? '').replace(/D/g, '');
+  if (digits.length < 7) return '';
+  return digits.startsWith('0') ? `972${digits.slice(1)}` : digits;
+};
+export const whatsappLink = (text: string, phone?: string | null) => `https://wa.me/${whatsappNumber(phone)}?text=${encodeURIComponent(text)}`;

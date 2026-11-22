@@ -299,8 +299,9 @@ test('a new landlord sets up a whole property in one scroll', async ({ page }) =
   await expect(finish).toBeEnabled();
 
   // the owner lives in the main house; the unit has a renter
-  await page.getByLabel(he.onboarding.livesHere).check();
+  await page.getByRole('radio', { name: he.onboarding.livesHere }).click();
   await page.getByLabel(he.landlord.renterEmails).fill(wizardRenter);
+  await page.getByLabel(he.onboarding.renterPhone).fill('050-1234567');
   await page.getByLabel(he.tariff.electricityRate, { exact: true }).fill('0.64');
   await page.getByLabel(he.tariff.electricityFixed, { exact: true }).fill('90');
   await finish.click();

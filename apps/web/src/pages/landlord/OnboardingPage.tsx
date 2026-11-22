@@ -10,6 +10,7 @@ import { BackLink, card, input, primary } from './shared';
 interface UnitDraft {
   name: string;
   emails: string;
+  phone: string;
   start: string;
   end: string;
   rent: string;
@@ -19,7 +20,7 @@ interface UnitDraft {
   occupants: string;
   open: { electricity: string; water: string };
 }
-const emptyUnit = (): UnitDraft => ({ name: '', emails: '', start: today(), end: '', rent: '', fee: '', tax: '', quota: '', occupants: '1', open: { electricity: '', water: '' } });
+const emptyUnit = (): UnitDraft => ({ name: '', emails: '', phone: '', start: today(), end: '', rent: '', fee: '', tax: '', quota: '', occupants: '1', open: { electricity: '', water: '' } });
 const KINDS = ['electricity', 'water'] as const;
 const MODES: KindLayout['mode'][] = ['main_sub', 'separate', 'shared', 'direct'];
 const SCOPES: FixedScope[] = ['units', 'all', 'landlord'];
@@ -46,6 +47,7 @@ export default function OnboardingPage({ orgId }: { orgId: string }) {
   const [taxEvery, setTaxEvery] = useState<1 | 2>(1);
   const [taxAnchor, setTaxAnchor] = useState('');
   const [homeOccupants, setHomeOccupants] = useState('1');
+  const [unitTab, setUnitTab] = useState(0);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
 
@@ -129,6 +131,12 @@ export default function OnboardingPage({ orgId }: { orgId: string }) {
       setError(err.message.includes('landlord_cannot_be_renter') ? t('landlord.landlordCannotBeRenter') : err.message.includes('duplicate') ? t('onboarding.uniqueUnitNames') : err.message);
       return;
     }
+    // the renters' phone numbers (optional): kept next to the e-mail so bills can open WhatsApp on the right number
+    for (const u of units) {
+      const phone = u.phone.trim();
+      const list = emailsOf(u.emails);
+      if (phone && list.length > 0) await supabase.from('contract_renters').update({ phone }).eq('org_id', orgId).in('email', list);
+    }
     navigate(`/properties/${data as string}`);
   };
 
@@ -160,6 +168,25 @@ export default function OnboardingPage({ orgId }: { orgId: string }) {
     </label>
   );
 
+  // a group of big option cards, one of which is chosen (the design's radio rows)
+  const cards = <V extends string>(label: string, value: V, items: { v: V; title: string; sub?: string }[], onChange: (v: V) => void) => (
+    <div role="radiogroup" aria-label={label} className="flex flex-col gap-2">
+      <div className="text-sm text-muted">{label}</div>
+      {items.map((o) => {
+        const on = o.v === value;
+        return (
+          <button type="button" role="radio" aria-checked={on} key={o.v} onClick={() => onChange(o.v)} className={`flex w-full items-center gap-3 rounded-[14px] px-3.5 py-3 text-start ${on ? 'border-2 border-primary bg-[#f1f8f6]' : 'border border-line-strong bg-white'}`}>
+            <span className={`h-[22px] w-[22px] flex-none rounded-full ${on ? 'border-[7px] border-primary' : 'border-2 border-[#a7adaa]'}`} />
+            <span className="flex-1">
+              <span className="block text-[15px] font-medium">{o.title}</span>
+              {o.sub && <span className="mt-0.5 block text-[13px] text-muted">{o.sub}</span>}
+            </span>
+          </button>
+        );
+      })}
+    </div>
+  );
+
   const usesMain = (k: (typeof KINDS)[number]) => layout[k].mode === 'main_sub' || layout[k].mode === 'shared';
   const usesUnitMeters = (k: (typeof KINDS)[number]) => layout[k].mode !== 'shared';
   const setKind = (k: (typeof KINDS)[number], patch: Partial<KindLayout>) => setLayout((cur) => ({ ...cur, [k]: { ...cur[k], ...patch } }));
@@ -176,12 +203,23 @@ export default function OnboardingPage({ orgId }: { orgId: string }) {
         <>
           {field(t('onboarding.propertyName'), name, setName)}
           {field(t('landlord.address'), address, setAddress)}
-          <label className="flex items-center gap-2 text-sm">
-            <input type="checkbox" checked={livesHere} onChange={(e) => setLivesHere(e.target.checked)} />
-            {t('onboarding.livesHere')}
-          </label>
+          {cards(
+            t('onboarding.whatRent'),
+            livesHere ? 'live' : units.length > 1 ? 'many' : 'one',
+            [
+              { v: 'one', title: t('onboarding.optOne'), sub: t('onboarding.optOneHint') },
+              { v: 'many', title: t('onboarding.optMany'), sub: t('onboarding.optManyHint') },
+              { v: 'live', title: t('onboarding.livesHere'), sub: t('onboarding.optLiveHint') },
+            ],
+            (v) => {
+              setLivesHere(v === 'live');
+              if (v === 'one') setCount(1);
+              if (v === 'many' && units.length < 2) setCount(2);
+              setUnitTab(0);
+            },
+          )}
           {livesHere && field(t('onboarding.homeOccupants'), homeOccupants, setHomeOccupants, { numeric: true })}
-          <div className="flex items-center justify-between gap-3 text-[15px]">
+          {(livesHere || units.length > 1) && <div className="flex items-center justify-between gap-3 text-[15px]">
             <span>{t('onboarding.unitCount')}</span>
             <button type="button" aria-label="−" className="h-11 w-11 rounded-xl border border-line-strong bg-white text-xl" onClick={() => setCount(Math.max(1, units.length - 1))}>
               −
@@ -190,20 +228,31 @@ export default function OnboardingPage({ orgId }: { orgId: string }) {
             <button type="button" aria-label="+" className="h-11 w-11 rounded-xl border border-line-strong bg-white text-xl" onClick={() => setCount(Math.min(20, units.length + 1))}>
               +
             </button>
-          </div>
+          </div>}
         </>
       ))}
 
       {section(2, t('onboarding.unitsAndRenters'), (
-        <div className="flex flex-col gap-4">
-          {units.map((u, i) => (
-            <fieldset key={i} className="flex flex-col gap-2 rounded-xl border border-line bg-card p-3">
-              <legend className="px-1 text-sm font-semibold text-ink-2">{t('onboarding.unitN', { n: i + 1 })}</legend>
+        <div className="flex flex-col gap-3.5">
+          {units.length > 1 && (
+            <div className="flex gap-1 rounded-xl bg-track p-1" role="tablist">
+              {units.map((u, i) => (
+                <button type="button" key={i} role="tab" aria-selected={i === Math.min(unitTab, units.length - 1)} onClick={() => setUnitTab(i)} className={`h-10 flex-1 rounded-[9px] text-sm ${i === Math.min(unitTab, units.length - 1) ? 'bg-white font-semibold text-primary-dark shadow-sm' : 'text-[#3e4643]'}`}>
+                  {t('onboarding.unitN', { n: i + 1 })}
+                </button>
+              ))}
+            </div>
+          )}
+          {units.map((u, i) => i !== Math.min(unitTab, units.length - 1) ? null : (
+            <fieldset key={i} className="flex flex-col gap-3.5 border-0 p-0">
+              <legend className="sr-only">{t('onboarding.unitN', { n: i + 1 })}</legend>
               {field(t('onboarding.unitName'), u.name, (v) => patchUnit(i, { name: v }))}
               <label className="flex flex-col gap-1 text-sm text-ink-2">
                 {t('landlord.renterEmails')}
                 <textarea rows={2} value={u.emails} onChange={(e) => patchUnit(i, { emails: e.target.value })} className={input} />
               </label>
+              {field(t('onboarding.renterPhone'), u.phone, (v) => patchUnit(i, { phone: v }), { type: 'tel', numeric: true })}
+              <p className="-mt-2 text-[13px] text-muted">{t('onboarding.renterPhoneHint')}</p>
               <div className="grid grid-cols-2 gap-2">
                 {field(t('onboarding.contractStart'), u.start, (v) => patchUnit(i, { start: v }), { type: 'date' })}
                 {field(t('onboarding.contractEnd'), u.end, (v) => patchUnit(i, { end: v }), { type: 'date' })}
@@ -218,13 +267,13 @@ export default function OnboardingPage({ orgId }: { orgId: string }) {
       {section(3, t('onboarding.meters'), (
         <>
           {KINDS.map((k) => (
-            <div key={k} className="flex flex-col gap-2 rounded-xl border border-line bg-card p-3">
-              {select(t(`layout.${k}`), layout[k].mode, MODES.map((m) => ({ v: m, text: t(`layout.mode.${m}`) })), (v) => setKind(k, { mode: v }))}
+            <div key={k} className="flex flex-col gap-3 rounded-[14px] border border-line bg-[#fbfaf7] p-3.5">
+              {cards(t(`layout.${k}`), layout[k].mode, MODES.map((m) => ({ v: m, title: t(`layout.mode.${m}`), sub: t(`layout.short.${m}`) })), (v) => setKind(k, { mode: v }))}
               {layout[k].mode === 'main_sub' &&
                 select(t('layout.differenceLabel'), layout[k].difference, [{ v: 'landlord', text: t('layout.difference.landlord') }, { v: 'units', text: t('layout.difference.units') }], (v) => setKind(k, { difference: v }))}
               {layout[k].mode === 'shared' &&
                 select(t('layout.splitLabel'), layout[k].split, [{ v: 'heads', text: t('layout.split.heads') }, { v: 'percent', text: t('layout.split.percent') }], (v) => setKind(k, { split: v }))}
-              <p className="text-xs text-muted">{t(`layout.hint.${layout[k].mode}`)}</p>
+              <p className="text-[13px] leading-relaxed text-muted">{t(`layout.hint.${layout[k].mode}`)}</p>
               {usesMain(k) && field(`${t('onboarding.openingMain')} (${t(`meters.${k}`)})`, mainOpen[k], (v) => setMainOpen({ ...mainOpen, [k]: v }), { numeric: true })}
               {usesUnitMeters(k) &&
                 units.map((u, i) => (

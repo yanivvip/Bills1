@@ -60,6 +60,9 @@
     "building": "Whole property (main meter)"
   },
   "readings": {
+    "fixedTitle": "Fixed charges this month",
+    "fixedHint": "The amounts come from the property tariff – update them if the bill changed; they hold for the coming months too.",
+    "fixedSaved": "Fixed amounts updated",
     "title": "Monthly readings",
     "report": "Report reading",
     "submitted": "Reported",
@@ -505,6 +508,7 @@
     "reset": "Restore the original text"
   },
   "landlordHome": {
+    "sendReminder": "Send reminder",
     "night": "Good night",
     "morning": "Good morning",
     "afternoon": "Good afternoon",

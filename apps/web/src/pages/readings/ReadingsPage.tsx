@@ -5,6 +5,7 @@ import { monthStart } from '../../lib/period';
 import { useProperty } from '../landlord/PropertyContext';
 import MonthNav from './MonthNav';
 import ReadingInput from './ReadingInput';
+import FixedChargesCard from './FixedChargesCard';
 import { useMonthlyReadings, type MeterRow } from './useMonthlyReadings';
 
 interface Group {
@@ -51,6 +52,7 @@ export default function ReadingsPage() {
         </p>
       )}
       {error && <p className="text-sm text-danger">{error}</p>}
+      {propertyId && period >= monthStart() && <FixedChargesCard propertyId={propertyId} />}
 
       {meters.length === 0 && (
         <p className="text-muted">

@@ -7,12 +7,13 @@ import { monthLabel, monthStart } from '../../lib/period';
 import AttentionCard from './AttentionCard';
 import { useProperty } from './PropertyContext';
 import { ChevronIcon, PlusIcon } from '../../components/NavIcons';
+import { whatsappLink } from '../../lib/billLabels';
 
 interface Data {
   orgName: string;
   properties: number;
   /** every meter of a rented unit, and every main meter, with whether it has this month's reading */
-  meters: { id: string; label: string; done: boolean }[];
+  meters: { id: string; label: string; done: boolean; remind?: string }[];
   bill: { period: string; total: number; paid: number; count: number; paidCount: number } | null;
 }
 
@@ -28,18 +29,24 @@ export default function LandlordHome({ orgId }: { orgId: string }) {
       const [org, props, units, meters, readings, statements] = await Promise.all([
         supabase.from('organizations').select('name').eq('id', orgId).single(),
         supabase.from('properties').select('id'),
-        supabase.from('units').select('id,name,property_id,contracts(status)'),
+        supabase.from('units').select('id,name,property_id,contracts(status,contract_renters(phone))'),
         supabase.from('meters').select('id,unit_id,kind,property_id'),
         supabase.from('readings').select('meter_id').eq('period', period),
         supabase.from('statements').select('period,total_agorot,paid_agorot,paid_on').order('period', { ascending: false }).limit(60),
       ]);
-      const unitRows = ((units.data ?? []) as { id: string; name: string; property_id: string; contracts: { status: string }[] }[]).filter((u) => !propertyId || u.property_id === propertyId);
+      const unitRows = ((units.data ?? []) as { id: string; name: string; property_id: string; contracts: { status: string; contract_renters: { phone: string | null }[] }[] }[]).filter((u) => !propertyId || u.property_id === propertyId);
       const reported = new Set(((readings.data ?? []) as { meter_id: string }[]).map((x) => x.meter_id));
       const expected = ((meters.data ?? []) as { id: string; unit_id: string | null; kind: 'electricity' | 'water'; property_id: string }[])
         .filter((m) => !propertyId || m.property_id === propertyId)
         .map((m) => ({ m, unit: unitRows.find((u) => u.id === m.unit_id) }))
         .filter(({ m, unit }) => m.unit_id === null || unit?.contracts.some((c) => c.status === 'active'))
-        .map(({ m, unit }) => ({ id: m.id, label: `${unit ? unit.name : t('bills.mainMeters')} · ${t(`meters.${m.kind}`)}`, done: reported.has(m.id) }));
+        .map(({ m, unit }) => ({
+          id: m.id,
+          label: `${unit ? unit.name : t('bills.mainMeters')} · ${t(`meters.${m.kind}`)}`,
+          done: reported.has(m.id),
+          // a ready WhatsApp reminder for the renter of a unit meter that is still empty
+          remind: unit && !reported.has(m.id) ? whatsappLink(t('attention.remindReport', { unit: unit.name, kind: t(`meters.${m.kind}`) }), unit.contracts.find((c) => c.status === 'active')?.contract_renters.find((r) => r.phone)?.phone) : undefined,
+        }));
 
       const rows = (statements.data ?? []) as { period: string; total_agorot: number; paid_agorot: number; paid_on: string | null }[];
       const latest = rows[0]?.period;
@@ -103,6 +110,10 @@ export default function LandlordHome({ orgId }: { orgId: string }) {
                 <span className="font-medium">{m.label}</span>
                 {m.done ? (
                   <span className="inline-flex h-[26px] items-center rounded-full bg-primary-soft px-2.5 text-[13px] font-medium text-primary-dark">✓ {t('landlordHome.reported')}</span>
+                ) : m.remind ? (
+                  <a href={m.remind} target="_blank" rel="noreferrer" className="inline-flex h-9 items-center rounded-[10px] border border-line-strong bg-white px-3 text-sm font-medium text-primary-dark">
+                    {t('landlordHome.sendReminder')}
+                  </a>
                 ) : (
                   <span className="inline-flex h-[26px] items-center rounded-full bg-warn-soft px-2.5 text-[13px] font-medium text-warn">{t('landlordHome.waiting')}</span>
                 )}

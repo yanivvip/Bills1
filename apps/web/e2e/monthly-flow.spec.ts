@@ -344,3 +344,18 @@ test('the header switches between properties and the pages follow', async ({ pag
   await switcher.selectOption({ label: 'Wizard 5' });
   await expect(page.getByText(he.readings.noMeters)).toHaveCount(0);
 });
+
+test('fixed charges are edited beside the readings and the home reminder opens the renter chat', async ({ page }) => {
+  await signIn(page, wizardLandlord);
+  await page.getByRole('link', { name: he.nav.readings }).click();
+  const electricity = page.getByLabel(`${he.readings.fixedTitle} – ${he.meters.electricity}`);
+  await expect(electricity).toHaveValue('90');
+  await electricity.fill('95');
+  await page.getByRole('button', { name: he.common.save }).first().click();
+  await expect(page.getByText(he.readings.fixedSaved)).toBeVisible();
+  await page.reload();
+  await expect(page.getByLabel(`${he.readings.fixedTitle} – ${he.meters.electricity}`)).toHaveValue('95');
+
+  await page.getByRole('link', { name: he.nav.home, exact: true }).click();
+  await expect(page.getByRole('link', { name: he.landlordHome.sendReminder }).first()).toHaveAttribute('href', /wa\.me\/972527654321/);
+});

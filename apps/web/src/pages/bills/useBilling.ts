@@ -103,7 +103,7 @@ export function useBilling(propertyId: string | undefined, period: string) {
 
   const load = useCallback(async () => {
     if (!propertyId) return;
-    const [t, u, m, r, c, b, sb, sw] = await Promise.all([
+    const [t, u, m, r, c, b, sb, sw, mf] = await Promise.all([
       supabase.from('tariffs').select(TARIFF_COLUMNS).eq('property_id', propertyId).maybeSingle(),
       supabase.from('units').select('id,name,community_fee_agorot,water_quota,is_residual,property_tax_agorot,occupants,electricity_percent,water_percent,contracts(id,status)').eq('property_id', propertyId).order('created_at'),
       supabase.from('meters').select('id,unit_id,kind').eq('property_id', propertyId),
@@ -112,10 +112,13 @@ export function useBilling(propertyId: string | undefined, period: string) {
       supabase.from('billing_periods').select('id').eq('property_id', propertyId).eq('period', period).maybeSingle(),
       supabase.from('supplier_bills').select('kind,amount_agorot').eq('property_id', propertyId).eq('period', period),
       supabase.from('sewage_entries').select('unit_id,qty').eq('property_id', propertyId).eq('period', period),
+      // the standing charges of the latest month up to this one (they hold until they are changed again)
+      supabase.from('monthly_fixed').select('electricity_fixed,water_fixed').eq('property_id', propertyId).lte('period', period).order('period', { ascending: false }).limit(1),
     ]);
     const err = [t, u, m, r, c, b].find((x) => x.error)?.error;
     setError(err?.message ?? '');
-    setTariff((t.data as TariffRow | null) ?? null);
+    const fixed = ((mf.data ?? []) as { electricity_fixed: number; water_fixed: number }[])[0];
+    setTariff(t.data ? ({ ...(t.data as unknown as TariffRow), ...(fixed ? { electricity_fixed: fixed.electricity_fixed, water_fixed: fixed.water_fixed } : {}) } as TariffRow) : null);
     setUnits((u.data as UnitInfo[]) ?? []);
     setMeters((m.data as MeterInfo[]) ?? []);
     setReadings(((r.data ?? []) as { meter_id: string; period: string; value: number }[]).map((x) => ({ ...x, value: Number(x.value) })));
@@ -149,8 +152,8 @@ export function useBilling(propertyId: string | undefined, period: string) {
   // property tax and sewage are billed only in the months the property-tax bill falls in
   const taxDue = tariff ? isDueMonth(Number(tariff.property_tax_every) === 2 ? 2 : 1, tariff.property_tax_anchor, period) : false;
 
-  const { input, result } = useMemo(() => {
-    if (!tariff) return { input: null, result: null as BillResult | null };
+  const { input, result, own } = useMemo(() => {
+    if (!tariff) return { input: null, result: null as BillResult | null, own: null as number | null };
     const prev = shiftMonth(period, -1);
     const read = (meterId: string) => {
       const cur = readings.find((x) => x.meter_id === meterId && x.period === period);
@@ -179,8 +182,16 @@ export function useBilling(propertyId: string | undefined, period: string) {
       })),
       charges: billCharges,
     };
-    return { input: inp, result: computeBills(inp) };
+    // what the landlord's own household uses, priced like a renter's (the difference between the main meter and the units)
+    const ownUnit = inp.units.find((u) => u.residual && !u.billed);
+    let own: number | null = null;
+    if (ownUnit) {
+      const hypothetical = computeBills({ ...inp, units: inp.units.map((u) => (u === ownUnit ? { ...u, billed: true } : u)) });
+      const b = hypothetical.bills.find((x) => x.unitId === ownUnit.id);
+      if (b) own = b.lines.filter((l) => l.type === 'electricity' || l.type === 'waterA' || l.type === 'waterB').reduce((s, l) => s + l.amount, 0);
+    }
+    return { input: inp, result: computeBills(inp), own };
   }, [tariff, units, meters, readings, charges, period, taxDue, sewage]);
 
-  return { loaded, error, setError, tariff, taxDue, sewage, units, charges, billing, statements, payments, supplier, input, result, reload: load };
+  return { loaded, error, setError, tariff, taxDue, sewage, units, charges, billing, statements, payments, supplier, input, result, own, reload: load };
 }

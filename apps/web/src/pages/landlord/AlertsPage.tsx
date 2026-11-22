@@ -2,7 +2,7 @@ import { Link } from 'react-router-dom';
 import type { ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import BackButton from '../../components/BackButton';
-import { BoltIcon, CalendarIcon, CheckIcon, DropIcon, GaugeIcon, ReceiptIcon } from '../../components/NavIcons';
+import { BellIcon, BoltIcon, CalendarIcon, CheckIcon, DropIcon, GaugeIcon, ReceiptIcon } from '../../components/NavIcons';
 import { formatMoney } from '../../lib/money';
 import { monthLabel } from '../../lib/period';
 import { useAlerts, type Alert } from './useAlerts';
@@ -18,6 +18,8 @@ export default function AlertsPage() {
   const text = (a: Alert) => {
     const p = a.params;
     switch (a.type) {
+      case 'monthlyReminder':
+        return { title: t('alerts.monthlyReminder.title'), body: t('alerts.monthlyReminder.body', { count: Number(p.count) }) };
       case 'highUsage':
         return { title: t('alerts.highUsage.title', { kind: t(`meters.${p.kind}`) }), body: t('alerts.highUsage.body', { name: p.name, pct: p.pct }) };
       case 'noReport':
@@ -36,6 +38,8 @@ export default function AlertsPage() {
   // the round icon of an alert: its colour says how serious it is
   const icon = (a: Alert): [ReactNode, string] => {
     switch (a.type) {
+      case 'monthlyReminder':
+        return [<BellIcon />, 'bg-warn-soft text-warn'];
       case 'highUsage':
         return [a.params.kind === 'water' ? <DropIcon /> : <BoltIcon />, 'bg-warn-soft text-warn'];
       case 'noReport':
@@ -53,6 +57,8 @@ export default function AlertsPage() {
   // the link line under an alert, as in the design
   const goLabel = (a: Alert) => {
     switch (a.type) {
+      case 'monthlyReminder':
+        return t('alerts.go.home');
       case 'highUsage':
         return t('alerts.go.history');
       case 'noReport':

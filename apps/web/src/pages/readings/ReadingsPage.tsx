@@ -1,8 +1,10 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { monthStart } from '../../lib/period';
 import { useProperty } from '../landlord/PropertyContext';
+import { loadOrgSettings } from '../landlord/useOrgSettings';
+import { purgeOldMeterPhotos } from '../../lib/photo';
 import MonthNav from './MonthNav';
 import ReadingInput from './ReadingInput';
 import FixedChargesCard from './FixedChargesCard';
@@ -20,9 +22,18 @@ export default function ReadingsPage() {
   const { t } = useTranslation();
   const [period, setPeriod] = useState(monthStart());
   const [group, setGroup] = useState('');
-  const { meters: all, error, save, current, previous } = useMonthlyReadings(period);
+  const { meters: all, error, save, current, previous, reload } = useMonthlyReadings(period);
   const { propertyId } = useProperty();
   const meters = all && (propertyId ? all.filter((m) => m.property_id === propertyId) : all);
+
+  // pictures older than the chosen retention are removed (once a day)
+  const orgId = all?.[0]?.org_id;
+  const meterIds = (all ?? []).map((m) => m.id).join(',');
+  useEffect(() => {
+    if (!orgId || !meterIds) return;
+    void loadOrgSettings().then((s) => purgeOldMeterPhotos(orgId, meterIds.split(','), s.photo_retention_months).then((n) => { if (n > 0) void reload(); }));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [orgId, meterIds]);
 
   if (!meters) return <p className="p-4">{t('common.loading')}</p>;
 
@@ -53,7 +64,7 @@ export default function ReadingsPage() {
         </p>
       )}
       {error && <p className="text-sm text-danger">{error}</p>}
-      {propertyId && period >= monthStart() && <FixedChargesCard propertyId={propertyId} />}
+      {propertyId && period >= monthStart() && <FixedChargesCard propertyId={propertyId} period={period} />}
 
       {meters.length === 0 && (
         <p className="text-muted">

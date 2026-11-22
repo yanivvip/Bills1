@@ -58,5 +58,5 @@ export function useMonthlyReadings(period: string) {
   const current = (meterId: string) => readings.find((x) => x.meter_id === meterId && x.period === period);
   const previous = (meterId: string) => readings.find((x) => x.meter_id === meterId && x.period === shiftMonth(period, -1));
 
-  return { meters, error, save, current, previous };
+  return { meters, error, save, current, previous, reload: load };
 }

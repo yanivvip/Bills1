@@ -103,6 +103,7 @@ export default function BillsPage({ orgId }: { orgId: string }) {
           {b.statements.map((s) => (
             <StatementCard key={s.id} s={s} unit={unitName(s.unit_id)} renters={renterNames[s.contract_id] ?? ''} payments={b.payments.filter((p) => p.statement_id === s.id)} busy={busy} act={act} />
           ))}
+          <OwnHouseCard amount={b.own} />
           <SupplierCard orgId={orgId} propertyId={propertyId!} period={period} supplier={b.supplier} lines={b.statements.map((s) => s.lines)} act={act} busy={busy} />
           <Link to="/reports" className="flex h-12 items-center justify-center gap-2 rounded-xl border border-line-strong bg-white text-[15px] font-medium text-primary-dark">
             {t('bills.downloadYearly')}
@@ -137,6 +138,7 @@ export default function BillsPage({ orgId }: { orgId: string }) {
           ))}
           {b.result.bills.length === 0 && b.result.problems.length === 0 && <p className="text-muted">{t('bills.nothingToBill')}</p>}
 
+          <OwnHouseCard amount={b.own} />
           <SewageEntries orgId={orgId} propertyId={propertyId!} period={period} b={b} act={act} busy={busy} />
           <Charges orgId={orgId} propertyId={propertyId!} period={period} b={b} unitName={unitName} act={act} busy={busy} money={money} />
 
@@ -151,6 +153,23 @@ export default function BillsPage({ orgId }: { orgId: string }) {
         </>
       )}
     </section>
+  );
+}
+
+// The landlord's own house is not billed; its cost is shown for information, as in the design.
+function OwnHouseCard({ amount }: { amount: number | null }) {
+  const { t, i18n } = useTranslation();
+  if (amount === null || amount <= 0) return null;
+  return (
+    <div className="flex items-center justify-between gap-3 rounded-[18px] border border-line bg-[#fbfaf7] p-4">
+      <div>
+        <h2 className="text-[17px] font-semibold">{t('bills.ownHouse')}</h2>
+        <div className="mt-0.5 text-[13px] text-muted">{t('bills.ownHouseHint')}</div>
+      </div>
+      <span className="text-[22px] font-semibold" dir="ltr">
+        {formatMoney(amount, i18n.language)}
+      </span>
+    </div>
   );
 }
 

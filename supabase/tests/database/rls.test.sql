@@ -1,7 +1,7 @@
 -- Database security tests (pgTAP). Run with: supabase test db
 -- Everything runs in one transaction that is rolled back, so no data is left behind.
 begin;
-select plan(100);
+select plan(108);
 
 -- ── Fixtures (as the postgres superuser) ─────────────────────────────────
 insert into auth.users (id, email, email_confirmed_at, instance_id, aud, role) values
@@ -321,6 +321,19 @@ select is((select count(*)::int from storage.objects where bucket_id = 'meter-ph
 select pg_temp.act_as('00000000-0000-0000-0000-0000000000b1');
 select throws_ok($q$insert into storage.objects (bucket_id, name) values ('meter-photos', '10000000-0000-0000-0000-00000000000a/50000000-0000-0000-0000-000000000001/2026-10-01.jpg')$q$, '42501', null, 'another landlord cannot store a photo in this org');
 select is((select count(*)::int from storage.objects where bucket_id = 'meter-photos'), 0, 'and cannot see the photos of this org');
+
+-- ── Settings and monthly fixed charges ───────────────────────────────────
+select pg_temp.act_as('00000000-0000-0000-0000-0000000000a1');
+select lives_ok($q$insert into public.org_settings (org_id, usage_threshold_pct) values ('10000000-0000-0000-0000-00000000000a', 35)$q$, 'a landlord saves their alert settings');
+select throws_ok($q$update public.org_settings set remind_day = 40 where org_id = '10000000-0000-0000-0000-00000000000a'$q$, '23514', null, 'a reminder day outside the month is refused');
+select lives_ok($q$insert into public.monthly_fixed (property_id, org_id, period, electricity_fixed, water_fixed) values ('20000000-0000-0000-0000-00000000000a', '10000000-0000-0000-0000-00000000000a', '2026-11-01', 4759, 1860)$q$, 'a landlord sets the fixed charges of a month');
+select throws_ok($q$insert into public.monthly_fixed (property_id, org_id, period, electricity_fixed, water_fixed) values ('20000000-0000-0000-0000-00000000000a', '10000000-0000-0000-0000-00000000000a', '2026-11-15', 1, 1)$q$, '23514', null, 'a fixed charge must be on the first day of a month');
+select pg_temp.act_as('00000000-0000-0000-0000-0000000000b1');
+select is((select count(*)::int from public.org_settings), 0, 'another landlord cannot see these settings');
+select is((select count(*)::int from public.monthly_fixed), 0, 'nor these fixed charges');
+select throws_ok($q$insert into public.org_settings (org_id) values ('10000000-0000-0000-0000-00000000000a')$q$, '42501', null, 'and cannot change settings of another org');
+select pg_temp.act_as('00000000-0000-0000-0000-0000000000c2');
+select is((select count(*)::int from public.monthly_fixed), 0, 'a renter does not see the property fixed charges');
 
 select * from finish();
 rollback;

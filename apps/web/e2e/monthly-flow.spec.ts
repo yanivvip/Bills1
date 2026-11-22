@@ -403,3 +403,107 @@ test('a photo of the meter is kept next to the reading and can be viewed', async
   await expect.poll(() => shown.evaluate((el) => (el as HTMLImageElement).naturalWidth)).toBeGreaterThan(0);
   await page.getByRole('button', { name: he.common.close }).click();
 });
+
+test('alert settings in the Property tab change what the alerts centre shows', async ({ page }) => {
+  await signIn(page, wizardLandlord);
+  // from the chosen day on, renters who have not reported get one reminder line
+  await page.goto('/alerts');
+  await expect(page.getByText(he.alerts.monthlyReminder.title)).toBeVisible();
+
+  await page.getByRole('link', { name: he.nav.property, exact: true }).click();
+  const remind = page.getByRole('switch', { name: he.settings.remindTitle });
+  await expect(remind).toHaveAttribute('aria-checked', 'true');
+  await Promise.all([page.waitForResponse((r) => r.url().includes('org_settings') && r.request().method() === 'POST'), remind.click()]);
+  await expect(remind).toHaveAttribute('aria-checked', 'false');
+
+  // the choice is kept and the reminder is gone
+  await page.goto('/property');
+  await expect(page.getByRole('switch', { name: he.settings.remindTitle })).toHaveAttribute('aria-checked', 'false');
+  await page.goto('/alerts');
+  await expect(page.getByRole('heading', { name: he.alerts.title })).toBeVisible();
+  await expect(page.getByText(he.alerts.monthlyReminder.title)).toHaveCount(0);
+
+  // a threshold and the retention of photos can be changed too
+  await page.goto('/property');
+  const usage = page.getByRole('switch', { name: he.settings.usageTitle });
+  await expect(usage).toHaveAttribute('aria-checked', 'true');
+  const pct = page.getByLabel(`${he.settings.usageTitle} – %`);
+  await Promise.all([page.waitForResponse((r) => r.url().includes('org_settings') && r.request().method() === 'POST'), pct.fill('45')]);
+  await Promise.all([page.waitForResponse((r) => r.url().includes('org_settings') && r.request().method() === 'POST'), page.getByLabel(he.settings.retentionTitle).selectOption('12')]);
+  await page.reload();
+  await expect(page.getByLabel(`${he.settings.usageTitle} – %`)).toHaveValue('45');
+  await expect(page.getByLabel(he.settings.retentionTitle)).toHaveValue('12');
+});
+
+test('photos older than the retention are removed', async ({ page }) => {
+  await signIn(page, wizardLandlord);
+  // retention back to 6 months for this test
+  await page.goto('/property');
+  await Promise.all([page.waitForResponse((r) => r.url().includes('org_settings') && r.request().method() === 'POST'), page.getByLabel(he.settings.retentionTitle).selectOption('6')]);
+
+  await page.goto('/readings');
+  await page.getByRole('tab', { name: /Apt W/ }).click();
+  for (let i = 0; i < 8; i++) await page.getByLabel('previous month').click();
+  const card = page.locator('form', { hasText: 'Apt W' }).first();
+  const jpeg = await page.evaluate(async () => {
+    const c = document.createElement('canvas');
+    c.width = 800;
+    c.height = 400;
+    const x = c.getContext('2d')!;
+    x.fillStyle = '#fff';
+    x.fillRect(0, 0, 800, 400);
+    const blob = await new Promise<Blob>((r) => c.toBlob((b) => r(b!), 'image/jpeg'));
+    let s = '';
+    new Uint8Array(await blob.arrayBuffer()).forEach((v) => (s += String.fromCharCode(v)));
+    return btoa(s);
+  });
+  await card.getByLabel(he.readings.photo).setInputFiles({ name: 'old.jpg', mimeType: 'image/jpeg', buffer: Buffer.from(jpeg, 'base64') });
+  await card.locator('input[type=number]').fill('500');
+  await card.getByRole('button', { name: he.common.save }).click();
+  await expect(card.getByRole('button', { name: he.readings.viewPhoto })).toBeVisible();
+
+  // the daily clean-up runs when the readings page opens: the eight-month-old picture goes
+  await page.evaluate(() => localStorage.removeItem('bills.photoPurge'));
+  await page.reload();
+  await page.getByRole('tab', { name: /Apt W/ }).click();
+  for (let i = 0; i < 8; i++) await page.getByLabel('previous month').click();
+  await expect(page.locator('form', { hasText: 'Apt W' }).first().getByText(`✓ ${he.readings.submitted}`)).toBeVisible();
+  await expect(page.locator('form', { hasText: 'Apt W' }).first().getByRole('button', { name: he.readings.viewPhoto })).toHaveCount(0);
+});
+
+test('the landlord’s own house shows its cost on the bills page', async ({ page }) => {
+  const owner = uniqueEmail('ownhouse');
+  await signUp(page, owner);
+  await page.getByPlaceholder(he.home.orgName).fill('Own House Org');
+  await page.getByRole('button', { name: he.home.createOrg }).click();
+  await page.getByRole('link', { name: he.landlordHome.firstProperty }).click();
+
+  await page.getByLabel(he.onboarding.propertyName).fill('Own 1');
+  await page.getByRole('radio', { name: he.onboarding.livesHere }).click();
+  await page.getByLabel(he.onboarding.unitName).fill('Flat Z');
+  await page.getByLabel(he.landlord.renterEmails).fill(uniqueEmail('ownrenter'));
+  // water is paid directly by the renter, so only electricity is billed
+  await page.getByRole('radiogroup', { name: he.layout.water }).getByRole('radio', { name: he.layout.mode.direct }).click();
+  await page.getByLabel(`${he.onboarding.openingMain} (${he.meters.electricity})`).fill('1000');
+  await page.getByLabel(`${he.onboarding.opening} – Flat Z (${he.meters.electricity})`).fill('200');
+  await page.getByLabel(he.tariff.electricityRate, { exact: true }).fill('0.64');
+  await page.getByRole('button', { name: he.onboarding.finish }).click();
+  await expect(page.getByRole('heading', { name: 'Own 1' })).toBeVisible();
+
+  // this month: the building meter used 300 kWh, the flat 100, so the owner's house used 200 kWh = 200 x 0.64
+  await page.getByRole('link', { name: he.nav.readings }).click();
+  await page.getByRole('tab', { name: new RegExp(he.meters.main) }).click();
+  const main = page.locator('form').first();
+  await main.locator('input[type=number]').fill('1300');
+  await main.getByRole('button', { name: he.common.save }).click();
+  await expect(main.getByText(`✓ ${he.readings.submitted}`)).toBeVisible();
+  await page.getByRole('tab', { name: /Flat Z/ }).click();
+  const flat = page.locator('form').first();
+  await flat.locator('input[type=number]').fill('300');
+  await flat.getByRole('button', { name: he.common.save }).click();
+  await expect(flat.getByText(`✓ ${he.readings.submitted}`)).toBeVisible();
+
+  await page.getByRole('link', { name: he.nav.bills }).click();
+  await expect(page.getByText(he.bills.ownHouse)).toBeVisible();
+  await expect(page.getByText('₪128.00').first()).toBeVisible();
+});

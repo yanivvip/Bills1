@@ -67,7 +67,7 @@
     "photoHint": "Photograph the meter – the picture is kept next to the reading, in case of a dispute.",
     "nextUnit": "Next unit",
     "fixedTitle": "Fixed charges this month",
-    "fixedHint": "The amounts come from the property tariff – update them if the bill changed; they hold for the coming months too.",
+    "fixedHint": "Filled from the previous month – update it if it changed; the new amount holds for the coming months too.",
     "fixedSaved": "Fixed amounts updated",
     "title": "Monthly readings",
     "report": "Report reading",
@@ -93,6 +93,7 @@
     "orgName": "Organization name"
   },
   "landlord": {
+    "alertsTitle": "Alerts",
     "unitsAndRenters": "Units and renters",
     "tariffs": "Tariffs",
     "updatedOn": "Updated",
@@ -246,6 +247,8 @@
     "waterPercent": "Share of the shared water meter (%)"
   },
   "bills": {
+    "ownHouse": "Main house (mine)",
+    "ownHouseHint": "The difference between the main meter and the units",
     "newCharge": "New charge",
     "willBeAdded": "Will be added to the {{month}} bill:",
     "yourShare": "Your share",
@@ -474,9 +477,25 @@
       "direct": "Nothing is billed for this kind. Readings are kept for tracking only."
     }
   },
+  "settings": {
+    "remindTitle": "Remind renters to report their meters",
+    "remindSub": "From day {{day}} of the month, if there is no reading yet",
+    "usageTitle": "Unusual usage alert",
+    "usageSub": "More than {{pct}}% above the average",
+    "contractTitle": "Contract about to end",
+    "contractSub": "{{days}} days before",
+    "change": "Change:",
+    "dayUnit": "day",
+    "daysUnit": "days",
+    "retentionTitle": "Keeping meter photos",
+    "retentionSub": "Older photos are deleted automatically",
+    "months": "{{count}} months",
+    "forever": "No limit"
+  },
   "alerts": {
     "title": "Alerts",
-    "go": { "history": "To the usage chart", "readings": "Check the readings", "bills": "To the bills", "unit": "To the unit" },
+    "monthlyReminder": { "title": "Time to remind the renters to report their meters", "body": "{{count}} meters still have no reading this month. You can send a WhatsApp reminder from the home screen." },
+    "go": { "home": "Send reminders", "history": "To the usage chart", "readings": "Check the readings", "bills": "To the bills", "unit": "To the unit" },
     "markAllRead": "Mark all as read",
     "new": "New",
     "earlier": "Earlier",

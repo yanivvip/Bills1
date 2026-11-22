@@ -5,6 +5,8 @@ import { supabase } from '../../lib/supabase';
 import { BoltIcon, ChevronIcon, DropIcon, LinesIcon, PlusIcon } from '../../components/NavIcons';
 import { AddToggle, input, useWriter } from './shared';
 import { useProperty } from './PropertyContext';
+import { useOrgSettings } from './useOrgSettings';
+import Switch from '../../components/Switch';
 import { formatMoney, rateToShekels } from '../../lib/money';
 
 interface Tariff {
@@ -57,6 +59,7 @@ export default function PropertiesPage({ orgId }: { orgId: string }) {
   const [name, setName] = useState('');
   const [address, setAddress] = useState('');
   const { propertyId, reload: reloadProperties } = useProperty();
+  const { settings, save: saveSettings } = useOrgSettings(orgId);
 
   const load = async () => {
     const [{ data: org }, { data: props }, { data: tar }] = await Promise.all([
@@ -201,6 +204,38 @@ export default function PropertiesPage({ orgId }: { orgId: string }) {
         </>
       )}
 
+      {settings && (
+        <div>
+          <Title>{t('landlord.alertsTitle')}</Title>
+          <div className={group}>
+            {(
+              [
+                ['remind_monthly', t('settings.remindTitle'), t('settings.remindSub', { day: settings.remind_day }), 'remind_day', settings.remind_day, 1, 28, t('settings.dayUnit')],
+                ['usage_alert', t('settings.usageTitle'), t('settings.usageSub', { pct: settings.usage_threshold_pct }), 'usage_threshold_pct', settings.usage_threshold_pct, 5, 500, '%'],
+                ['contract_alert', t('settings.contractTitle'), t('settings.contractSub', { days: settings.contract_alert_days }), 'contract_alert_days', settings.contract_alert_days, 1, 365, t('settings.daysUnit')],
+              ] as const
+            ).map(([flag, title, sub, field, value, min, max, unit]) => (
+              <div key={flag} className="border-t border-line-soft px-4 py-2.5 first:border-t-0">
+                <div className="flex min-h-[46px] items-center gap-3">
+                  <span className="flex-1">
+                    {title}
+                    <span className="mt-0.5 block text-[13px] text-muted">{sub}</span>
+                  </span>
+                  <Switch checked={settings[flag]} onChange={(v) => void saveSettings({ [flag]: v })} label={title} />
+                </div>
+                {settings[flag] && (
+                  <label className="mt-1 flex items-center gap-2 text-[13px] text-muted">
+                    {t('settings.change')}
+                    <input type="number" min={min} max={max} value={value} dir="ltr" aria-label={`${title} – ${unit}`} onChange={(e) => { const n = Math.round(Number(e.target.value)); if (n >= min && n <= max) void saveSettings({ [field]: n }); }} className="h-10 w-20 rounded-xl border border-line-strong bg-white px-3 text-base text-ink" />
+                    {unit}
+                  </label>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
       <div>
         <Title>{t('landlord.general')}</Title>
         <div className={group}>
@@ -209,6 +244,21 @@ export default function PropertiesPage({ orgId }: { orgId: string }) {
               <span className="flex-1">{t('landlord.tariffsAndMeters')}</span>
               {chevron}
             </Link>
+          )}
+          {settings && (
+            <label className={rowCls}>
+              <span className="flex-1">
+                {t('settings.retentionTitle')}
+                <span className="mt-0.5 block text-[13px] text-muted">{t('settings.retentionSub')}</span>
+              </span>
+              <select aria-label={t('settings.retentionTitle')} value={settings.photo_retention_months} onChange={(e) => void saveSettings({ photo_retention_months: Number(e.target.value) })} className="h-10 rounded-xl border border-line-strong bg-white px-2 text-[15px]">
+                {[3, 6, 12, 24, 0].map((m) => (
+                  <option key={m} value={m}>
+                    {m === 0 ? t('settings.forever') : t('settings.months', { count: m })}
+                  </option>
+                ))}
+              </select>
+            </label>
           )}
           <Link to="/reports" className={rowCls}>
             <span className="flex-1">

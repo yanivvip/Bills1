@@ -3,8 +3,9 @@ import { attentionItems, contractsEnding } from '@bills/engine';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../auth/AuthProvider';
 import { monthStart, shiftMonth, today } from '../../lib/period';
+import { loadOrgSettings } from './useOrgSettings';
 
-export type AlertType = 'highUsage' | 'noReport' | 'unpaid' | 'contractEnding' | 'reported' | 'renterPaid';
+export type AlertType = 'monthlyReminder' | 'highUsage' | 'noReport' | 'unpaid' | 'contractEnding' | 'reported' | 'renterPaid';
 export interface Alert {
   /** stable id used to remember that the alert was read */
   key: string;
@@ -41,7 +42,8 @@ export function useAlerts() {
     setSeen(readSeen(userId));
     void (async () => {
       const period = monthStart();
-      const [u, m, r, s] = await Promise.all([
+      const [settings, u, m, r, s] = await Promise.all([
+        loadOrgSettings(),
         supabase.from('units').select('id,name,contracts(status,end_date)'),
         supabase.from('meters').select('id,unit_id,kind,name'),
         supabase.from('readings').select('meter_id,period,value,submitted_by,submitted_at').gte('period', shiftMonth(period, -4)),
@@ -62,10 +64,13 @@ export function useAlerts() {
         statements: statements
           .filter((x) => Number(x.total_agorot) > Number(x.paid_agorot))
           .map((x) => ({ unitId: x.unit_id, period: x.period, total: Number(x.total_agorot) - Number(x.paid_agorot), paid: false })),
+        thresholdPct: settings.usage_threshold_pct,
       });
+      const day = new Date().getDate();
+      const remindNow = settings.remind_monthly && day >= settings.remind_day;
       for (const it of items) {
-        if (it.type === 'highUsage') out.push({ key: `high:${it.meterId}:${period}`, type: 'highUsage', to: '/history', params: { name: name(it.unitId), kind: it.kind, pct: Math.round((it.usage / it.average - 1) * 100) } });
-        if (it.type === 'noReport') out.push({ key: `noreport:${it.meterId}:${period}`, type: 'noReport', to: '/readings', params: { unit: name(it.unitId), kind: it.kind } });
+        if (it.type === 'highUsage' && settings.usage_alert) out.push({ key: `high:${it.meterId}:${period}`, type: 'highUsage', to: '/history', params: { name: name(it.unitId), kind: it.kind, pct: Math.round((it.usage / it.average - 1) * 100) } });
+        if (it.type === 'noReport' && remindNow) out.push({ key: `noreport:${it.meterId}:${period}`, type: 'noReport', to: '/readings', params: { unit: name(it.unitId), kind: it.kind } });
         if (it.type === 'unpaid') out.push({ key: `unpaid:${it.unitId}:${it.period}`, type: 'unpaid', to: '/bills', params: { unit: name(it.unitId), period: it.period, total: it.total } });
       }
 
@@ -85,10 +90,17 @@ export function useAlerts() {
       }
       for (const [unitId, at] of reported) out.push({ key: `reported:${unitId}:${period}:${at}`, type: 'reported', to: '/readings', params: { unit: name(unitId) } });
 
-      const ending = contractsEnding(
-        units.flatMap((x) => x.contracts.filter((c) => c.status === 'active').map((c) => ({ unitId: x.id, endDate: c.end_date }))),
-        today(),
-      );
+      // the monthly reminder: from the chosen day, one line to remind the renters who have not reported
+      const missing = items.filter((it) => it.type === 'noReport').length;
+      if (remindNow && missing > 0) out.unshift({ key: `remind:${period}`, type: 'monthlyReminder', to: '/', params: { count: missing } });
+
+      const ending = settings.contract_alert
+        ? contractsEnding(
+            units.flatMap((x) => x.contracts.filter((c) => c.status === 'active').map((c) => ({ unitId: x.id, endDate: c.end_date }))),
+            today(),
+            settings.contract_alert_days,
+          )
+        : [];
       for (const c of ending) out.push({ key: `ending:${c.unitId}:${c.endDate}`, type: 'contractEnding', to: `/units/${c.unitId}`, params: { unit: name(c.unitId), days: c.days, date: c.endDate } });
 
       setAlerts(out);
